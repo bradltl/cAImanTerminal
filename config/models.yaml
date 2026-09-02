@@ -9,12 +9,25 @@ models:
     chat_format: "raw"
     description: "In-memory mock model for testing and validating benchmark pipelines"
 
+  qwen2.5-0.5b:
+    name: "Qwen 2.5 0.5B"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+    download_url: "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Ultra-compact 0.5B candidate (~398MB) for low-memory environments"
+
   qwen3-0.6b:
     name: "Qwen3 0.6B"
     architecture: "qwen"
     parameters: "0.6B"
     context_length: 8192
-    gguf_path: "models/qwen3-0.6b-instruct-q4_k_m.gguf"
+    gguf_path: "models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+    download_url: "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf"
     temperature: 0.1
     top_p: 0.95
     chat_format: "chatml"
@@ -26,6 +39,7 @@ models:
     parameters: "1B"
     context_length: 8192
     gguf_path: "models/gemma-3-1b-it-q4_k_m.gguf"
+    download_url: ""
     temperature: 0.1
     top_p: 0.95
     chat_format: "gemma"
@@ -36,11 +50,12 @@ models:
     architecture: "llama"
     parameters: "1.2B"
     context_length: 8192
-    gguf_path: "models/llama-3.2-1b-instruct-q4_k_m.gguf"
+    gguf_path: "models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+    download_url: "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
     temperature: 0.1
     top_p: 0.95
     chat_format: "llama-3"
-    description: "Meta Llama 3.2 1B instruct candidate"
+    description: "Meta Llama 3.2 1B instruct candidate (~750MB)"
 
   smollm2-1.7b:
     name: "SmolLM2 1.7B"
@@ -48,7 +63,8 @@ models:
     parameters: "1.7B"
     context_length: 8192
     gguf_path: "models/smollm2-1.7b-instruct-q4_k_m.gguf"
+    download_url: "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_k_m.gguf"
     temperature: 0.1
     top_p: 0.95
     chat_format: "chatml"
-    description: "HuggingFace SmolLM2 1.7B instruct candidate"
+    description: "HuggingFace SmolLM2 1.7B instruct candidate (~1.05GB)"

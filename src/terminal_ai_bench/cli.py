@@ -41,6 +41,79 @@ def run_command(model: str, domain: Optional[str], scenario: Optional[str], mock
         raise click.Abort()
 
 
+@main.command(name="pull")
+@click.argument("model")
+@click.option("--url", help="Direct download URL for GGUF model")
+@click.option("--models-config", default="config/models.yaml", help="Path to models configuration")
+@click.option("--output-dir", default="models", help="Directory to save downloaded GGUF file")
+def pull_command(model: str, url: Optional[str], models_config: str, output_dir: str):
+    """Download a GGUF model weights file to test against."""
+    import urllib.request
+    from rich.progress import Progress, TextColumn, BarColumn, DownloadColumn, TransferSpeedColumn, TimeRemainingColumn
+    import yaml
+
+    console = Console()
+    out_path = Path(output_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    with open(models_config, "r", encoding="utf-8") as f:
+        models_data = yaml.safe_load(f).get("models", {})
+
+    target_url = url
+    target_filename = None
+
+    if model in models_data:
+        m_cfg = models_data[model]
+        target_url = target_url or m_cfg.get("download_url")
+        gguf_path = m_cfg.get("gguf_path")
+        if gguf_path:
+            target_filename = Path(gguf_path).name
+
+    if not target_url:
+        console.print(f"[bold red]Error:[/bold red] No download URL configured for '{model}'.")
+        console.print(f"Specify a direct URL using: [cyan]bench pull {model} --url <URL>[/cyan]")
+        raise click.Abort()
+
+    if not target_filename:
+        target_filename = target_url.split("/")[-1].split("?")[0]
+        if not target_filename.endswith(".gguf"):
+            target_filename = f"{model}.gguf"
+
+    dest_file = out_path / target_filename
+    console.print(f"[bold cyan]Downloading {model}:[/bold cyan] {target_url}")
+    console.print(f"[bold dim]Destination:[/bold dim] {dest_file}")
+
+    try:
+        with Progress(
+            TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
+            BarColumn(bar_width=None),
+            "[progress.percentage]{task.percentage:>3.1f}%",
+            "•",
+            DownloadColumn(),
+            "•",
+            TransferSpeedColumn(),
+            "•",
+            TimeRemainingColumn(),
+            console=console,
+        ) as progress:
+            task_id = progress.add_task("download", filename=target_filename, total=None)
+
+            def update_progress(block_num, block_size, total_size):
+                if total_size > 0:
+                    progress.update(task_id, total=total_size, completed=block_num * block_size)
+
+            urllib.request.urlretrieve(target_url, dest_file, reporthook=update_progress)
+
+        console.print(f"[bold green]✔ Successfully downloaded {dest_file.name} ({dest_file.stat().st_size / (1024*1024):.1f} MB)![/bold green]")
+        console.print(f"To run the benchmark against this model:")
+        console.print(f"  [cyan]bench run {model}[/cyan]")
+    except Exception as exc:
+        console.print(f"[bold red]Download failed:[/bold red] {exc}")
+        if dest_file.exists():
+            dest_file.unlink()
+        raise click.Abort()
+
+
 @main.command(name="validate")
 @click.option("--scenarios-dir", default="scenarios", help="Path to scenarios directory")
 def validate_command(scenarios_dir: str):
