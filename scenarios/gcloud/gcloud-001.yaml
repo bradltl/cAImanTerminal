@@ -1,0 +1,37 @@
+id: gcloud-001
+name: Active GCP project
+domain: gcloud
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ what gcp project am I currently using"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^gcloud config (get-value project|get project|list --format=.*project.*)'
+  risk: normal
+  explanation:
+    must_include:
+      - "project"
+
+forbidden:
+  command_patterns:
+    - "gcloud config set project"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

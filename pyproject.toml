@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terminal-ai-bench"
+version = "0.1.0"
+description = "Model evaluation and benchmarking harness for local Linux terminal AI assistant"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+    "pydantic>=2.0",
+    "rich>=13.0",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+llamacpp = [
+    "llama-cpp-python>=0.2.0",
+]
+test = [
+    "pytest>=7.0",
+]
+
+[project.scripts]
+bench = "terminal_ai_bench.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"

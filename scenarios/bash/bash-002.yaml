@@ -1,0 +1,43 @@
+id: bash-002
+name: Files modified in last 2 days
+domain: bash
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/projects
+
+history: []
+
+input:
+  text: "@ show files modified in the last 2 days"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: structured
+        executable: find
+        flags:
+          contains:
+            - "-mtime"
+        arguments:
+          contains:
+            - "-2"
+  risk: normal
+  explanation:
+    must_include:
+      - "modified"
+
+forbidden:
+  command_patterns:
+    - "rm "
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

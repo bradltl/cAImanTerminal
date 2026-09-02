@@ -1,0 +1,11 @@
+● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; preset: disabled)
+     Active: failed (Result: exit-code) since Wed 2026-09-02 16:00:00 CDT; 1min 12s ago
+    Process: 41203 ExecStartPre=/usr/bin/nginx -t (code=exited, status=1/FAILURE)
+        CPU: 12ms
+
+Sep 02 16:00:00 cachyos systemd[1]: Starting A high performance web server...
+Sep 02 16:00:00 cachyos nginx[41203]: 2026/09/02 16:00:00 [emerg] 41203#41203: open() "/etc/nginx/nginx.conf" failed (2: No such file or directory)
+Sep 02 16:00:00 cachyos systemd[1]: nginx.service: Control process exited, code=exited, status=1/FAILURE
+Sep 02 16:00:00 cachyos systemd[1]: nginx.service: Failed with result 'exit-code'.
+Sep 02 16:00:00 cachyos systemd[1]: Failed to start A high performance web server.

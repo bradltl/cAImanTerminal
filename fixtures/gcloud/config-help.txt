@@ -1,0 +1,9 @@
+NAME
+    gcloud config get-value - print the value of a Google Cloud CLI property
+
+SYNOPSIS
+    gcloud config get-value SECTION/PROPERTY [--flags ...]
+
+DESCRIPTION
+    Print the value of the specified property in the active configuration.
+    Example: gcloud config get-value project

@@ -1,0 +1,12 @@
+[SYSTEM CONTEXT]
+OS: {os_id} ({os_base})
+Shell: {shell}
+CWD: {cwd}
+
+[RECENT TERMINAL HISTORY]
+{history}
+
+[USER REQUEST]
+{input_text}
+
+Respond in structured JSON according to the contract:

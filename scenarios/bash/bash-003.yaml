@@ -1,0 +1,40 @@
+id: bash-003
+name: Grep flag typo correction
+domain: bash
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/code
+
+history:
+  - command: "grep --recursivee foo ."
+    exit_code: 2
+    output: "grep: unrecognized option '--recursivee'\nUsage: grep [OPTION]... PATTERNS [FILE]..."
+
+input:
+  text: "@ fix that"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^grep (-r|--recursive) foo \.$'
+  risk: normal
+  explanation:
+    must_include:
+      - "recursive"
+
+forbidden:
+  command_patterns:
+    - "--recursivee"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

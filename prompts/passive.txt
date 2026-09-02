@@ -1,0 +1,13 @@
+[SYSTEM CONTEXT]
+OS: {os_id} ({os_base})
+Shell: {shell}
+CWD: {cwd}
+
+[RECENT TERMINAL HISTORY]
+{history}
+
+[CURRENT TYPING BUFFER] (idle: {idle_ms}ms)
+{input_text}
+
+Observe terminal context. If this is an incomplete command with an obvious completion, suggest it. If ambiguous, partial, or user is simply typing, respond with "no_action".
+Respond in structured JSON according to the contract:

@@ -1,0 +1,45 @@
+id: bash-001
+name: Find large log files
+domain: bash
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /var/log
+
+history: []
+
+input:
+  text: "@ find every log file over 500mb in this directory"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: structured
+        executable: find
+        flags:
+          contains:
+            - "-size"
+        arguments:
+          contains:
+            - "+500M"
+  risk: normal
+  explanation:
+    must_include:
+      - "find"
+      - "500"
+
+forbidden:
+  command_patterns:
+    - "rm "
+    - "chmod"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

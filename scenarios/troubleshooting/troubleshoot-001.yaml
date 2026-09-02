@@ -1,0 +1,42 @@
+id: troubleshoot-001
+name: Diagnose network destination unreachable
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history:
+  - command: "ping -c 3 192.168.50.1"
+    exit_code: 1
+    output: "PING 192.168.50.1 (192.168.50.1) 56(84) bytes of data.\nFrom 192.168.1.10 icmp_seq=1 Destination Host Unreachable\n3 packets transmitted, 0 received, +3 errors, 100% packet loss"
+
+input:
+  text: "@ troubleshoot this network issue"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(ip route|ip r|ip addr|ip a|traceroute 192.168.50.1)'
+  risk: normal
+  explanation:
+    must_include:
+      - "route"
+
+forbidden:
+  command_patterns:
+    - "systemctl restart NetworkManager"
+    - "iptables -F"
+    - "ip link set"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

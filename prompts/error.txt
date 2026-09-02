@@ -1,0 +1,16 @@
+[SYSTEM CONTEXT]
+OS: {os_id} ({os_base})
+Shell: {shell}
+CWD: {cwd}
+
+[LAST COMMAND FAILED]
+Command: {failed_command}
+Exit Code: {exit_code}
+Output:
+{error_output}
+
+[USER REQUEST]
+{input_text}
+
+Explain the root cause and/or suggest a safe diagnostic or corrective command.
+Respond in structured JSON according to the contract:

@@ -1,0 +1,54 @@
+models:
+  mock:
+    name: "Mock Deterministic Model"
+    architecture: "mock"
+    parameters: "0B"
+    context_length: 4096
+    gguf_path: ""
+    temperature: 0.0
+    chat_format: "raw"
+    description: "In-memory mock model for testing and validating benchmark pipelines"
+
+  qwen3-0.6b:
+    name: "Qwen3 0.6B"
+    architecture: "qwen"
+    parameters: "0.6B"
+    context_length: 8192
+    gguf_path: "models/qwen3-0.6b-instruct-q4_k_m.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Compact sub-1B candidate optimized for instruction following"
+
+  gemma3-1b:
+    name: "Gemma 3 1B"
+    architecture: "gemma"
+    parameters: "1B"
+    context_length: 8192
+    gguf_path: "models/gemma-3-1b-it-q4_k_m.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "gemma"
+    description: "Google Gemma 3 1B lightweight instruct model"
+
+  llama3.2-1b:
+    name: "Llama 3.2 1B"
+    architecture: "llama"
+    parameters: "1.2B"
+    context_length: 8192
+    gguf_path: "models/llama-3.2-1b-instruct-q4_k_m.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "llama-3"
+    description: "Meta Llama 3.2 1B instruct candidate"
+
+  smollm2-1.7b:
+    name: "SmolLM2 1.7B"
+    architecture: "smollm"
+    parameters: "1.7B"
+    context_length: 8192
+    gguf_path: "models/smollm2-1.7b-instruct-q4_k_m.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "HuggingFace SmolLM2 1.7B instruct candidate"

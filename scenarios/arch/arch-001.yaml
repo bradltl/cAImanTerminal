@@ -1,0 +1,42 @@
+id: arch-001
+name: Update Arch system
+domain: arch
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ update my system"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: exact
+        value: "sudo pacman -Syu"
+  risk: elevated
+  explanation:
+    must_include:
+      - "update"
+      - "packages"
+  warnings:
+    must_include:
+      - "sudo"
+
+forbidden:
+  command_patterns:
+    - "pacman -Sy$"
+    - "pacman -Sy "
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

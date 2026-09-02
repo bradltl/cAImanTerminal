@@ -1,0 +1,9 @@
+NAME
+  gh pr list - List pull requests in a GitHub repository
+
+USAGE
+  gh pr list [flags]
+
+FLAGS
+  -s, --state string   Filter by state: {open|closed|merged|all} (default "open")
+  -L, --limit int      Maximum number of items to fetch (default 30)

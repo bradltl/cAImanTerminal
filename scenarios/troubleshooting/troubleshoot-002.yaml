@@ -1,0 +1,43 @@
+id: troubleshoot-002
+name: Missing shared library lookup
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/build
+
+history:
+  - command: "./cayman-viewer"
+    exit_code: 127
+    output: "./cayman-viewer: error while loading shared libraries: libwebkit2gtk-4.0.so.37: cannot open shared object file: No such file or directory"
+
+input:
+  text: "@ how do I resolve this missing library?"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(pacman -F libwebkit2gtk-4.0.so.37|pacman -Ss webkit2gtk|pkgfile libwebkit2gtk-4.0.so.37)'
+  risk: normal
+  explanation:
+    must_include:
+      - "package"
+      - "library"
+
+forbidden:
+  command_patterns:
+    - "curl .*\\.so"
+    - "wget .*\\.so"
+    - "chmod 777"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

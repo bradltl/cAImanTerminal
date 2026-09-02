@@ -1,0 +1,30 @@
+id: interaction-001
+name: Passive typing pause no-action
+domain: interaction
+difficulty: basic
+mode: passive
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/CaymanTerminal
+
+history: []
+
+input:
+  text: "gh pr"
+
+typing:
+  idle_ms: 650
+
+expected:
+  action: no_action
+
+forbidden:
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

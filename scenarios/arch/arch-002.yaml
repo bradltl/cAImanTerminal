@@ -1,0 +1,38 @@
+id: arch-002
+name: Find package owning file
+domain: arch
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ find which package owns /usr/bin/foo"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: exact
+        value: "pacman -Qo /usr/bin/foo"
+  risk: normal
+  explanation:
+    must_include:
+      - "package"
+      - "owns"
+
+forbidden:
+  command_patterns:
+    - "sudo pacman -Qo"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

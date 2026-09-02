@@ -1,0 +1,25 @@
+PACMAN(8)                      Pacman Manual                     PACMAN(8)
+
+NAME
+       pacman - package manager utility
+
+SYNOPSIS
+       pacman <operation> [options] [targets]
+
+OPERATIONS
+       -S, --sync
+           Synchronize packages. Packages are installed directly from the
+           remote repositories.
+
+       -Syu
+           Update all packages currently installed on the system.
+
+       -Q, --query
+           Query the package database.
+
+       -Qo, --owns <file>
+           Search for packages owning the specified file(s).
+
+       -F, --files
+           Query the files database. Useful to look for packages owning files
+           not yet installed.

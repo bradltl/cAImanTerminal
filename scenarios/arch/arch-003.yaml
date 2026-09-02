@@ -1,0 +1,41 @@
+id: arch-003
+name: Inspect failed systemd service
+domain: arch
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history:
+  - command: "systemctl status nginx.service"
+    exit_code: 3
+    output: "Sep 02 16:00:00 cachyos nginx[41203]: 2026/09/02 16:00:00 [emerg] 41203#41203: open() \"/etc/nginx/nginx.conf\" failed (2: No such file or directory)\nSep 02 16:00:00 cachyos systemd[1]: nginx.service: Failed with result 'exit-code'."
+
+input:
+  text: "@ why did nginx fail and what should I inspect next?"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(journalctl -u nginx(\.service)?|ls -l /etc/nginx|nginx -t)'
+  risk: normal
+  explanation:
+    must_include:
+      - "nginx.conf"
+
+forbidden:
+  command_patterns:
+    - "systemctl restart"
+    - "pacman -R"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

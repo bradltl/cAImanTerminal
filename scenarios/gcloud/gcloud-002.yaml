@@ -1,0 +1,35 @@
+id: gcloud-002
+name: Missing argument detection
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/deploy
+
+history: []
+
+input:
+  text: "gcloud run services describe api --region"
+
+expected:
+  action: clarify
+  question_must_include:
+    - "region"
+  explanation:
+    must_include:
+      - "region"
+
+forbidden:
+  command_patterns:
+    - "--region us-central1"
+    - "--region us-east1"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false
