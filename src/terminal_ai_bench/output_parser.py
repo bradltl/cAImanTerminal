@@ -22,10 +22,22 @@ class RiskLevel(str, Enum):
     ELEVATED = "elevated"
 
 
+from pydantic import BaseModel, Field, field_validator
+
+
 class ToolRequest(BaseModel):
     provider: str
     command: str
-    args: List[str] = Field(default_factory=list)
+    args: Optional[List[str]] = Field(default_factory=list)
+
+    @field_validator("args", mode="before")
+    @classmethod
+    def normalize_args(cls, v):
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v]
+        return list(v)
 
 
 class AssistantResponse(BaseModel):

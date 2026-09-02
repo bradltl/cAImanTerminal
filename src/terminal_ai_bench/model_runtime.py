@@ -576,19 +576,52 @@ class LlamaCppRuntime(ModelRuntime):
             raise RuntimeError("Model is not loaded. Call load() first.")
 
         start = time.perf_counter()
-        output = self.model(
-            prompt,
-            max_tokens=kwargs.get("max_tokens", 512),
-            temperature=kwargs.get("temperature", 0.1),
-            stop=kwargs.get("stop", ["</s>", "<|im_end|>"]),
-        )
-        total_latency = (time.perf_counter() - start) * 1000.0
+        stop_tokens = kwargs.get("stop", ["</s>", "<|im_end|>", "<|eot_id|>", "<end_of_turn>"])
 
-        choice = output["choices"][0]
-        text = choice["text"].strip()
-        usage = output.get("usage", {})
-        prompt_tokens = usage.get("prompt_tokens", 0)
-        completion_tokens = usage.get("completion_tokens", len(text.split()))
+        # Use chat completion if available for robust instruct template application
+        try:
+            if "\n\n[SYSTEM CONTEXT]" in prompt:
+                parts = prompt.split("\n\n[SYSTEM CONTEXT]", 1)
+                sys_part = parts[0].strip()
+                user_part = "[SYSTEM CONTEXT]" + parts[1]
+            elif "\n\n" in prompt:
+                parts = prompt.split("\n\n", 1)
+                sys_part = parts[0].strip()
+                user_part = parts[1].strip()
+            else:
+                sys_part = "You are a Linux terminal AI assistant."
+                user_part = prompt
+
+            output = self.model.create_chat_completion(
+                messages=[
+                    {"role": "system", "content": sys_part},
+                    {"role": "user", "content": user_part},
+                ],
+                max_tokens=kwargs.get("max_tokens", 512),
+                temperature=kwargs.get("temperature", 0.1),
+                stop=stop_tokens,
+            )
+            total_latency = (time.perf_counter() - start) * 1000.0
+            choice = output["choices"][0]["message"]
+            text = (choice.get("content") or "").strip()
+            usage = output.get("usage", {})
+            prompt_tokens = usage.get("prompt_tokens", len(prompt.split()))
+            completion_tokens = usage.get("completion_tokens", len(text.split()))
+
+        except Exception:
+            # Fallback to direct completion
+            output = self.model(
+                prompt,
+                max_tokens=kwargs.get("max_tokens", 512),
+                temperature=kwargs.get("temperature", 0.1),
+                stop=stop_tokens,
+            )
+            total_latency = (time.perf_counter() - start) * 1000.0
+            choice = output["choices"][0]
+            text = choice["text"].strip()
+            usage = output.get("usage", {})
+            prompt_tokens = usage.get("prompt_tokens", 0)
+            completion_tokens = usage.get("completion_tokens", len(text.split()))
 
         tps = (completion_tokens / (total_latency / 1000.0)) if total_latency > 0 else 0.0
 
