@@ -83,29 +83,53 @@ def pull_command(model: str, url: Optional[str], models_config: str, output_dir:
     console.print(f"[bold cyan]Downloading {model}:[/bold cyan] {target_url}")
     console.print(f"[bold dim]Destination:[/bold dim] {dest_file}")
 
+    import shutil
+    import subprocess
+
+    if shutil.which("curl"):
+        try:
+            # Use curl directly for fast, resumable streaming with progress bar
+            cmd = ["curl", "-L", "-C", "-", "--progress-bar", "-o", str(dest_file), target_url]
+            res = subprocess.run(cmd)
+            if res.returncode != 0:
+                raise RuntimeError(f"curl exited with code {res.returncode}")
+            console.print(f"[bold green]✔ Successfully downloaded {dest_file.name} ({dest_file.stat().st_size / (1024*1024):.1f} MB)![/bold green]")
+            console.print("To run the benchmark against this model:")
+            console.print(f"  [cyan]bench run {model}[/cyan]")
+            return
+        except Exception as exc:
+            console.print(f"[bold red]curl download failed:[/bold red] {exc}")
+            raise click.Abort()
+
+    # Fallback to urllib with custom User-Agent
     try:
-        with Progress(
-            TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
-            BarColumn(bar_width=None),
-            "[progress.percentage]{task.percentage:>3.1f}%",
-            "•",
-            DownloadColumn(),
-            "•",
-            TransferSpeedColumn(),
-            "•",
-            TimeRemainingColumn(),
-            console=console,
-        ) as progress:
-            task_id = progress.add_task("download", filename=target_filename, total=None)
-
-            def update_progress(block_num, block_size, total_size):
-                if total_size > 0:
-                    progress.update(task_id, total=total_size, completed=block_num * block_size)
-
-            urllib.request.urlretrieve(target_url, dest_file, reporthook=update_progress)
+        req = urllib.request.Request(
+            target_url,
+            headers={"User-Agent": "terminal-ai-bench/0.2.0 (Linux; x86_64)"},
+        )
+        with urllib.request.urlopen(req) as resp, open(dest_file, "wb") as f_out:
+            total_size = int(resp.headers.get("Content-Length", 0))
+            with Progress(
+                TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
+                BarColumn(bar_width=None),
+                "[progress.percentage]{task.percentage:>3.1f}%",
+                "•",
+                DownloadColumn(),
+                "•",
+                TransferSpeedColumn(),
+                console=console,
+            ) as progress:
+                task_id = progress.add_task("download", filename=target_filename, total=total_size or None)
+                chunk_size = 64 * 1024
+                while True:
+                    chunk = resp.read(chunk_size)
+                    if not chunk:
+                        break
+                    f_out.write(chunk)
+                    progress.update(task_id, advance=len(chunk))
 
         console.print(f"[bold green]✔ Successfully downloaded {dest_file.name} ({dest_file.stat().st_size / (1024*1024):.1f} MB)![/bold green]")
-        console.print(f"To run the benchmark against this model:")
+        console.print("To run the benchmark against this model:")
         console.print(f"  [cyan]bench run {model}[/cyan]")
     except Exception as exc:
         console.print(f"[bold red]Download failed:[/bold red] {exc}")

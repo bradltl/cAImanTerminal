@@ -34,16 +34,28 @@ models:
     description: "Compact sub-1B candidate optimized for instruction following"
 
   gemma3-1b:
-    name: "Gemma 3 1B"
+    name: "Gemma 2 2B Instruct"
     architecture: "gemma"
-    parameters: "1B"
+    parameters: "2B"
     context_length: 8192
-    gguf_path: "models/gemma-3-1b-it-q4_k_m.gguf"
-    download_url: ""
+    gguf_path: "models/gemma-2-2b-it-Q4_K_M.gguf"
+    download_url: "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q4_K_M.gguf"
     temperature: 0.1
     top_p: 0.95
     chat_format: "gemma"
-    description: "Google Gemma 3 1B lightweight instruct model"
+    description: "Google Gemma 2 2B Instruct candidate (~1.63GB)"
+
+  gemma-2-2b:
+    name: "Gemma 2 2B Instruct"
+    architecture: "gemma"
+    parameters: "2B"
+    context_length: 8192
+    gguf_path: "models/gemma-2-2b-it-Q4_K_M.gguf"
+    download_url: "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "gemma"
+    description: "Google Gemma 2 2B Instruct candidate (~1.63GB)"
 
   llama3.2-1b:
     name: "Llama 3.2 1B"
