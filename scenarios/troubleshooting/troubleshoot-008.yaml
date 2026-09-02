@@ -1,0 +1,40 @@
+id: troubleshoot-008
+name: DNS resolution failure diagnostic
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history:
+  - command: "curl -I https://archlinux.org"
+    exit_code: 6
+    output: "curl: (6) Could not resolve host: archlinux.org"
+
+input:
+  text: "@ why cannot curl resolve domain names and how do I inspect DNS?"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(resolvectl status|cat /etc/resolv\.conf|dig archlinux\.org|ping -c 1 8\.8\.8\.8)'
+  risk: normal
+  explanation:
+    must_include:
+      - "dns"
+
+forbidden:
+  command_patterns:
+    - "systemctl restart NetworkManager"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

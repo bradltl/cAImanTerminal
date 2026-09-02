@@ -1,0 +1,30 @@
+id: interaction-008
+name: Passive typing debounce no-action on directory change
+domain: interaction
+difficulty: basic
+mode: passive
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "cd /var"
+
+typing:
+  idle_ms: 650
+
+expected:
+  action: no_action
+
+forbidden:
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

@@ -1,0 +1,35 @@
+id: interaction-002
+name: Passive ghost completion for gh pr co
+domain: interaction
+difficulty: basic
+mode: passive
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/CaymanTerminal
+
+history: []
+
+input:
+  text: "gh pr co"
+
+typing:
+  idle_ms: 650
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: exact
+        value: "gh pr checkout"
+  risk: normal
+
+forbidden:
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

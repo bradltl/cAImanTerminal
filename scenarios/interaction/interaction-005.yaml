@@ -1,0 +1,53 @@
+id: interaction-005
+name: Multi-turn diagnostic sequence with continue
+domain: interaction
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+forbidden:
+  behaviors:
+    - execute_command
+
+turns:
+  - turn_index: 1
+    input:
+      text: "@ check memory and swap status"
+    expected:
+      action: suggest_command
+      commands:
+        - match:
+            type: regex
+            value: '^(free -h|free -m|swapon --show)'
+      risk: normal
+    forbidden:
+      behaviors:
+        - execute_command
+    simulated_command: "free -h"
+    simulated_output: "               total        used        free      shared  buff/cache   available\nMem:            31Gi       28Gi       1.2Gi       500Mi       2.8Gi       2.5Gi\nSwap:          8.0Gi       7.8Gi       200Mi"
+    simulated_exit_code: 0
+
+  - turn_index: 2
+    input:
+      text: "@ continue"
+    expected:
+      action: suggest_command
+      commands:
+        - match:
+            type: regex
+            value: '^(ps aux --sort=-%mem \| head|vmstat|top)'
+      risk: normal
+      explanation:
+        must_include:
+          - "memory"
+    forbidden:
+      behaviors:
+        - execute_command

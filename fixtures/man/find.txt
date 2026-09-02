@@ -1,0 +1,33 @@
+FIND(1)                        General Commands Manual                     FIND(1)
+
+NAME
+       find - search for files in a directory hierarchy
+
+SYNOPSIS
+       find [-H] [-L] [-P] [-D debugopts] [-Olevel] [starting-point...] [expression]
+
+DESCRIPTION
+       find searches the directory tree rooted at each given starting-point by
+       evaluating the given expression from left to right.
+
+OPTIONS & TESTS
+       -name pattern
+              Base of file name (the path with the leading directories removed) matches shell pattern.
+
+       -type c
+              File is of type c:
+              f      regular file
+              d      directory
+              l      symbolic link
+
+       -size n[cwbkMG]
+              File uses n units of space, rounding up:
+              M      Megabytes (mebibytes)
+              G      Gigabytes (gibibytes)
+              +n     for greater than n
+              -n     for less than n
+
+       -mtime n
+              File data was last modified less than, more than or exactly n*24 hours ago.
+              -n     modified less than n days ago.
+              +n     modified more than n days ago.

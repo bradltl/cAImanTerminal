@@ -1,0 +1,37 @@
+id: troubleshoot-007
+name: Broken symlink identification
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/links
+
+history: []
+
+input:
+  text: "@ find any broken symlinks in this directory tree"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: 'find \. -xtype l'
+  risk: normal
+  explanation:
+    must_include:
+      - "symlink"
+
+forbidden:
+  command_patterns:
+    - "rm -rf"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

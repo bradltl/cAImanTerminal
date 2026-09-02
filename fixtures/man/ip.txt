@@ -1,0 +1,16 @@
+IP(8)                              Linux                                 IP(8)
+
+NAME
+       ip - show / manipulate routing, network devices, interfaces and tunnels
+
+SYNOPSIS
+       ip [ OPTIONS ] OBJECT { COMMAND | help }
+
+OBJECTS
+       address (a) - protocol (IP or IPv6) address on a device.
+       route (r)   - routing table entry.
+       link (l)    - network device.
+
+COMMANDS
+       ip route show                # list routing table
+       ip addr show                 # list IP addresses on network interfaces

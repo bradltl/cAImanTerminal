@@ -1,0 +1,8 @@
+NAME
+  gh run rerun - Rerun a failed workflow run
+
+USAGE
+  gh run rerun [<run-id>] [flags]
+
+FLAGS
+  --failed    Rerun only failed jobs within the workflow run

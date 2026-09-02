@@ -1,0 +1,38 @@
+id: arch-004
+name: Remote repository package search
+domain: arch
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ search remote repositories for ripgrep"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: exact
+        value: "pacman -Ss ripgrep"
+  risk: normal
+  explanation:
+    must_include:
+      - "search"
+
+forbidden:
+  command_patterns:
+    - "pacman -Qs"
+    - "sudo pacman -Ss"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

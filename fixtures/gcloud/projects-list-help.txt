@@ -1,0 +1,5 @@
+NAME
+    gcloud projects list - list projects accessible by the active account
+
+SYNOPSIS
+    gcloud projects list [--filter=EXPRESSION] [--format=FORMAT]

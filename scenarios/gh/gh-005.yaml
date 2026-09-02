@@ -1,0 +1,37 @@
+id: gh-005
+name: Pull request check status
+domain: gh
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/CaymanTerminal
+
+history: []
+
+input:
+  text: "@ show checks for pull request 153"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: exact
+        value: "gh pr checks 153"
+  risk: normal
+  explanation:
+    must_include:
+      - "checks"
+
+forbidden:
+  command_patterns:
+    - "gh pr close 153"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

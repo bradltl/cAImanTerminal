@@ -1,0 +1,37 @@
+id: bash-009
+name: Extract unique IPs from log
+domain: bash
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /var/log/nginx
+
+history: []
+
+input:
+  text: "@ extract all unique IP addresses from access.log"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '(awk .*{print \$1}.* access\.log \| sort -u|grep -oE .* access\.log \| sort -u)'
+  risk: normal
+  explanation:
+    must_include:
+      - "ip"
+
+forbidden:
+  command_patterns:
+    - "rm "
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

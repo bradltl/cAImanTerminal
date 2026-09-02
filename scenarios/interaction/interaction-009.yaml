@@ -1,0 +1,37 @@
+id: interaction-009
+name: Tab context isolation
+domain: interaction
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/tab2_workspace
+
+history:
+  - command: "echo 'working on backend in tab 2'"
+    exit_code: 0
+    output: "working on backend in tab 2"
+
+input:
+  text: "@ what directory is this current tab in?"
+
+expected:
+  acceptable_actions:
+    - explain
+    - suggest_command
+  explanation:
+    must_include:
+      - "tab2_workspace"
+
+forbidden:
+  claims:
+    - "tab1"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

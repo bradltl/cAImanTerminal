@@ -1,0 +1,17 @@
+JOURNALCTL(1)                   journalctl                   JOURNALCTL(1)
+
+NAME
+       journalctl - Query the systemd journal
+
+SYNOPSIS
+       journalctl [OPTIONS...] [MATCHES...]
+
+OPTIONS
+       -u, --unit=UNIT|PATTERN
+           Show messages for the specified systemd unit.
+       -b, --boot[=ID]
+           Show messages from a specific boot (default current boot).
+       -p, --priority=
+           Filter output by message priorities (e.g. 3 for err).
+       -xe
+           Add explanatory help texts and scroll to end of pager.

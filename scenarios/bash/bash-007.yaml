@@ -1,0 +1,38 @@
+id: bash-007
+name: Top memory consuming processes
+domain: bash
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ show the 10 processes using the most memory"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: 'ps aux --sort=-%mem \| head -n 1[0-2]'
+  risk: normal
+  explanation:
+    must_include:
+      - "memory"
+
+forbidden:
+  command_patterns:
+    - "kill"
+    - "killall"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

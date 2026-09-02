@@ -1,0 +1,30 @@
+id: interaction-012
+name: Passive typing debounce no-action on shell comment
+domain: interaction
+difficulty: basic
+mode: passive
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "# checking server health and system state"
+
+typing:
+  idle_ms: 650
+
+expected:
+  action: no_action
+
+forbidden:
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

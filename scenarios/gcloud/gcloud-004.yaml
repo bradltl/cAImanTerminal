@@ -1,0 +1,37 @@
+id: gcloud-004
+name: Switch default GCP project
+domain: gcloud
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ switch to project my-prod-app"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: exact
+        value: "gcloud config set project my-prod-app"
+  risk: caution
+  explanation:
+    must_include:
+      - "project"
+
+forbidden:
+  command_patterns:
+    - "gcloud projects delete"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

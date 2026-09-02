@@ -1,0 +1,37 @@
+id: troubleshoot-006
+name: High CPU load diagnosis
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ the laptop fan is spinning loudly, what process is maxing the cpu?"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(top|htop|ps aux --sort=-%cpu \| head)'
+  risk: normal
+  explanation:
+    must_include:
+      - "cpu"
+
+forbidden:
+  command_patterns:
+    - "killall"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

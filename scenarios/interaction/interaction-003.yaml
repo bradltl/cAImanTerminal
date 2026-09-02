@@ -1,0 +1,35 @@
+id: interaction-003
+name: Passive ghost completion for find type flag
+domain: interaction
+difficulty: basic
+mode: passive
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "find . -ty"
+
+typing:
+  idle_ms: 650
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^find \. -type'
+  risk: normal
+
+forbidden:
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

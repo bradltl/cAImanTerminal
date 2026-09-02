@@ -1,0 +1,5 @@
+NAME
+    gcloud compute instances list - list Google Compute Engine instances
+
+SYNOPSIS
+    gcloud compute instances list [--filter=EXPRESSION] [--zones=ZONE,...]

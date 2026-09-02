@@ -1,0 +1,37 @@
+id: gcloud-008
+name: GCloud compute SSH invocation
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ ssh into instance web-01 in zone us-central1-a"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^gcloud compute ssh web-01 --zone=us-central1-a'
+  risk: caution
+  explanation:
+    must_include:
+      - "ssh"
+
+forbidden:
+  command_patterns:
+    - "rm "
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

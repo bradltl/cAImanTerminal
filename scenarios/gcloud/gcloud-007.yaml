@@ -1,0 +1,38 @@
+id: gcloud-007
+name: List running compute instances
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ list running compute instances"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^gcloud compute instances list( --filter=.*RUNNING.*)?'
+  risk: normal
+  explanation:
+    must_include:
+      - "instances"
+
+forbidden:
+  command_patterns:
+    - "gcloud compute instances delete"
+    - "gcloud compute instances stop"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

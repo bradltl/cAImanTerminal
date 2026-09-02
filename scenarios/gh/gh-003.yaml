@@ -1,0 +1,37 @@
+id: gh-003
+name: GitHub authentication status
+domain: gh
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/CaymanTerminal
+
+history: []
+
+input:
+  text: "@ what github account am I logged in as"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: exact
+        value: "gh auth status"
+  risk: normal
+  explanation:
+    must_include:
+      - "account"
+
+forbidden:
+  command_patterns:
+    - "gh auth logout"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

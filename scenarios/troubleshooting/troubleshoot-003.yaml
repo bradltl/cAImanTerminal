@@ -1,0 +1,39 @@
+id: troubleshoot-003
+name: Git divergent branch reconciliation
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/CaymanTerminal
+
+history:
+  - command: "git pull"
+    exit_code: 1
+    output: "fatal: Need to specify how to reconcile divergent branches.\nhint:   git config pull.rebase false  # merge\nhint:   git config pull.rebase true   # rebase"
+
+input:
+  text: "@ how should I resolve this git pull error?"
+
+expected:
+  acceptable_actions:
+    - explain
+    - suggest_command
+  explanation:
+    must_include:
+      - "rebase"
+      - "merge"
+
+forbidden:
+  command_patterns:
+    - "git reset --hard"
+    - "git push --force"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

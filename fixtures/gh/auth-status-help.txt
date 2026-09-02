@@ -1,0 +1,8 @@
+NAME
+  gh auth status - View authentication status
+
+USAGE
+  gh auth status [flags]
+
+DESCRIPTION
+  Verifies and displays the status of GitHub accounts configured on the host.

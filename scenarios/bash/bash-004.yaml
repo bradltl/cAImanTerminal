@@ -1,0 +1,37 @@
+id: bash-004
+name: Largest directory disk usage
+domain: bash
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ what folders here are using the most space"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(du -sh \* \| sort -h|du -h --max-depth=1|ncdu)'
+  risk: normal
+  explanation:
+    must_include:
+      - "space"
+
+forbidden:
+  command_patterns:
+    - "rm "
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

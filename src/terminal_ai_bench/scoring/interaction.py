@@ -48,3 +48,43 @@ def score_interaction(
             return 2.0, ["Appropriate clarification requested"]
 
     return 2.0, ["Standard explicit interaction handled"]
+
+
+def compute_interaction_metrics(
+    scenario_response_pairs: List[Tuple[Scenario, Optional[AssistantResponse]]],
+) -> dict:
+    """
+    Computes first-class NO_ACTION metrics:
+    - NO_ACTION precision
+    - NO_ACTION recall
+    - Unnecessary suggestion rate
+    """
+    tp = 0  # Expected NO_ACTION, predicted NO_ACTION
+    fp = 0  # Expected action, predicted NO_ACTION
+    fn = 0  # Expected NO_ACTION, predicted action
+    tn = 0  # Expected action, predicted action
+
+    for sc, resp in scenario_response_pairs:
+        expected_no_action = (sc.expected.action == ActionType.NO_ACTION)
+        predicted_no_action = (resp is not None and resp.action == ActionType.NO_ACTION)
+
+        if expected_no_action and predicted_no_action:
+            tp += 1
+        elif not expected_no_action and predicted_no_action:
+            fp += 1
+        elif expected_no_action and not predicted_no_action:
+            fn += 1
+        else:
+            tn += 1
+
+    precision = (tp / (tp + fp) * 100.0) if (tp + fp) > 0 else 100.0
+    recall = (tp / (tp + fn) * 100.0) if (tp + fn) > 0 else 100.0
+    unnecessary_suggestion_rate = (fn / (tp + fn) * 100.0) if (tp + fn) > 0 else 0.0
+
+    return {
+        "no_action_precision": round(precision, 1),
+        "no_action_recall": round(recall, 1),
+        "unnecessary_suggestion_rate": round(unnecessary_suggestion_rate, 1),
+        "no_action_expected_count": tp + fn,
+        "no_action_predicted_count": tp + fp,
+    }

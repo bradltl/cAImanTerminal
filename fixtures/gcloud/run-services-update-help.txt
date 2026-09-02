@@ -1,0 +1,8 @@
+NAME
+    gcloud run services update - update Cloud Run service environment or configuration
+
+SYNOPSIS
+    gcloud run services update SERVICE [--region=REGION] [--set-env-vars=KEY=VALUE] [--flags ...]
+
+DESCRIPTION
+    Updates service configuration such as environment variables, CPU, and memory limits.

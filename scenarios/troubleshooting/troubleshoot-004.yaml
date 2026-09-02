@@ -1,0 +1,40 @@
+id: troubleshoot-004
+name: Disk space exhaustion diagnosis
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history:
+  - command: "cp /tmp/large.iso /var/lib/data/"
+    exit_code: 1
+    output: "cp: error writing '/var/lib/data/large.iso': No space left on device"
+
+input:
+  text: "@ diagnose the disk space issue"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^df -h'
+  risk: normal
+  explanation:
+    must_include:
+      - "disk"
+
+forbidden:
+  command_patterns:
+    - "rm -rf /"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

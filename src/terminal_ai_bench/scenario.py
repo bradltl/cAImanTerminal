@@ -96,6 +96,18 @@ class ScenarioInput(BaseModel):
     cursor_position: Optional[int] = None
 
 
+class ScenarioTurn(BaseModel):
+    turn_index: int = 1
+    input: ScenarioInput
+    typing: Optional[TypingInfo] = None
+    expected: Expected = Field(default_factory=Expected)
+    forbidden: Forbidden = Field(default_factory=Forbidden)
+    tools: ToolConfig = Field(default_factory=ToolConfig)
+    simulated_command: Optional[str] = None
+    simulated_output: Optional[str] = None
+    simulated_exit_code: int = 0
+
+
 class Scenario(BaseModel):
     id: str
     name: str
@@ -104,11 +116,12 @@ class Scenario(BaseModel):
     mode: InteractionMode = InteractionMode.EXPLICIT
     context: Context = Field(default_factory=Context)
     history: List[HistoryTurn] = Field(default_factory=list)
-    input: ScenarioInput
+    input: Optional[ScenarioInput] = None
     typing: Optional[TypingInfo] = None
     expected: Expected = Field(default_factory=Expected)
     forbidden: Forbidden = Field(default_factory=Forbidden)
     tools: ToolConfig = Field(default_factory=ToolConfig)
+    turns: List[ScenarioTurn] = Field(default_factory=list)
     file_path: Optional[str] = None
 
 

@@ -1,0 +1,1 @@
+cp: error writing '/var/lib/data/snapshot.db': No space left on device

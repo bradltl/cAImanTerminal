@@ -1,0 +1,37 @@
+id: gcloud-006
+name: Active GCP account inspection
+domain: gcloud
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ which gcloud account is active?"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^gcloud auth list( --filter=.*ACTIVE.*)?'
+  risk: normal
+  explanation:
+    must_include:
+      - "account"
+
+forbidden:
+  command_patterns:
+    - "gcloud auth revoke"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

@@ -209,11 +209,13 @@ bench live mock
   - Rich console, JSON, and interactive HTML reporting.
   - Full test suite passing.
 
-- [ ] **Milestone 0.2 — Full Benchmark (~60 Scenarios)**
-  - Expand scenario library to ~60 comprehensive test cases.
-  - Add multi-turn scenario loop with live history progression.
-  - Comprehensive documentation fixtures for `man`, `bash help`, `pacman`, `gh`, `gcloud`.
-  - Advanced passive assistance timing evaluation.
+- [x] **Milestone 0.2 — Full Benchmark (61 Scenarios)** *(Completed)*
+  - Expanded scenario library to 61 comprehensive test cases across all 7 domains matching target weightings.
+  - Multi-turn scenario execution loop with isolated turn contexts and live history progression (`gh-008`, `interaction-005`).
+  - Interactive tool request loop (`lookup_help`) with safe fixture integration.
+  - Comprehensive documentation fixtures for `man`, `bash help`, `pacman`, `gh`, `gcloud`, and terminal failures.
+  - First-class NO_ACTION metrics: NO_ACTION precision, recall, and unnecessary suggestion rate.
+  - Live read-only host integration mode verifying all 6 capability providers defensively.
 
 - [ ] **Milestone 0.3 — Advanced Analysis**
   - Historical run tracking database and regression detection.

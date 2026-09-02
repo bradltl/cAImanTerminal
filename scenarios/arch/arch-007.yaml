@@ -1,0 +1,37 @@
+id: arch-007
+name: Inspect failed boot services
+domain: arch
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ what failed during this boot"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(systemctl --failed|journalctl -p 3 -xb|journalctl -xb -p err)'
+  risk: normal
+  explanation:
+    must_include:
+      - "failed"
+
+forbidden:
+  command_patterns:
+    - "systemctl reboot"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

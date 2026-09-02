@@ -86,9 +86,35 @@ class MockModelRuntime(ModelRuntime):
                 "warning": None,
             }
         else:
-            # Default "perfect" persona: infer intention from prompt
             p_lower = prompt.lower()
-            if "update my system" in p_lower:
+            # Multi-turn check based on prompt history
+            if "@ continue" in p_lower:
+                if "23891234" in prompt:
+                    response_data = {
+                        "action": "suggest_command",
+                        "command": "gh run rerun 23891234 --failed",
+                        "explanation": "Rerunning failed jobs for workflow run 23891234.",
+                        "risk": "caution",
+                    }
+                elif "swapon" in prompt or "buff/cache" in prompt or "mem:" in prompt:
+                    response_data = {
+                        "action": "suggest_command",
+                        "command": "ps aux --sort=-%mem | head",
+                        "explanation": "Inspecting top processes consuming system memory.",
+                        "risk": "normal",
+                    }
+                else:
+                    response_data = {
+                        "action": "no_action",
+                    }
+            elif "rerun the failed jobs" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gh run list --status failure",
+                    "explanation": "Listing failed workflow runs to identify run ID.",
+                    "risk": "normal",
+                }
+            elif "update my system" in p_lower:
                 response_data = {
                     "action": "suggest_command",
                     "command": "sudo pacman -Syu",
@@ -110,6 +136,49 @@ class MockModelRuntime(ModelRuntime):
                     "explanation": "Lists files modified within the last 48 hours.",
                     "risk": "normal",
                 }
+            elif "folders here are using the most space" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "du -sh * | sort -h",
+                    "explanation": "Calculates disk space used by each folder and sorts by size.",
+                    "risk": "normal",
+                }
+            elif "tar -cz" in p_lower and "[user request]" in p_lower:
+                response_data = {
+                    "action": "clarify",
+                    "question": "What archive file name and source files do you want to compress?",
+                    "explanation": "The tar command is missing target archive file name.",
+                }
+            elif "delete files named \"test file.tmp\"" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": 'find . -name "test file.tmp" -delete',
+                    "explanation": "Finds and deletes matching files recursively.",
+                    "risk": "elevated",
+                    "warning": "Caution: this will permanently delete matching files.",
+                }
+            elif "10 processes using the most memory" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "ps aux --sort=-%mem | head -n 11",
+                    "explanation": "Lists processes sorted by resident memory consumption.",
+                    "risk": "normal",
+                }
+            elif "read the audit log" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "sudo cat /var/log/audit/audit.log",
+                    "explanation": "Reads audit log using sudo privileges.",
+                    "risk": "elevated",
+                    "warning": "Accessing audit log requires sudo privileges.",
+                }
+            elif "extract all unique ip addresses" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "awk '{print $1}' access.log | sort -u",
+                    "explanation": "Extracts unique client IP addresses from log entries.",
+                    "risk": "normal",
+                }
             elif "unrecognized option '--recursivee'" in p_lower or "fix that" in p_lower:
                 response_data = {
                     "action": "suggest_command",
@@ -123,6 +192,48 @@ class MockModelRuntime(ModelRuntime):
                     "command": "pacman -Qo /usr/bin/foo",
                     "explanation": "Queries pacman database to see which package owns the specified file.",
                     "risk": "normal",
+                }
+            elif "search remote repositories for ripgrep" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "pacman -Ss ripgrep",
+                    "explanation": "Searches remote package repositories for ripgrep.",
+                    "risk": "normal",
+                }
+            elif "package git is currently installed" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "pacman -Q git",
+                    "explanation": "Checks if package git is installed locally.",
+                    "risk": "normal",
+                }
+            elif "what package conflicts" in p_lower:
+                response_data = {
+                    "action": "explain",
+                    "explanation": "The package pipewire-media-session conflicts with newer libpipewire.",
+                    "risk": "caution",
+                }
+            elif "what failed during this boot" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "systemctl --failed",
+                    "explanation": "Lists systemd units that failed during the current boot.",
+                    "risk": "normal",
+                }
+            elif "rebuild my initramfs" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "sudo mkinitcpio -P",
+                    "explanation": "Rebuilds all initramfs presets using mkinitcpio.",
+                    "risk": "elevated",
+                    "warning": "Modifying initramfs can affect system bootability.",
+                }
+            elif "visual-studio-code-bin from the aur" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "git clone https://aur.archlinux.org/visual-studio-code-bin.git",
+                    "explanation": "Clones the AUR PKGBUILD repository for inspection before building.",
+                    "risk": "caution",
                 }
             elif "why did nginx fail" in p_lower or "systemctl status nginx" in p_lower:
                 response_data = {
@@ -145,6 +256,54 @@ class MockModelRuntime(ModelRuntime):
                     "explanation": "Searches Arch package repository files database for the missing library.",
                     "risk": "normal",
                 }
+            elif "resolve this git pull error" in p_lower:
+                response_data = {
+                    "action": "explain",
+                    "explanation": "You have divergent branches. You can reconcile using git pull --rebase or merge.",
+                    "risk": "caution",
+                }
+            elif "diagnose the disk space issue" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "df -h",
+                    "explanation": "Displays filesystem disk space usage.",
+                    "risk": "normal",
+                }
+            elif "holding port 8080" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "ss -tulpn | grep 8080",
+                    "explanation": "Inspects socket listener holding port 8080.",
+                    "risk": "normal",
+                }
+            elif "maxing the cpu" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "top",
+                    "explanation": "Displays active CPU consuming processes in real time.",
+                    "risk": "normal",
+                }
+            elif "find any broken symlinks" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "find . -xtype l",
+                    "explanation": "Finds broken dangling symlinks in the tree.",
+                    "risk": "normal",
+                }
+            elif "cannot curl resolve domain names" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "resolvectl status",
+                    "explanation": "Checks systemd-resolved DNS upstream status.",
+                    "risk": "normal",
+                }
+            elif "permission denied on docker.sock" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "sudo usermod -aG docker $USER",
+                    "explanation": "Adds your user to the docker group so you can access the socket without sudo.",
+                    "risk": "elevated",
+                }
             elif "what gcp project" in p_lower:
                 response_data = {
                     "action": "suggest_command",
@@ -157,6 +316,48 @@ class MockModelRuntime(ModelRuntime):
                     "action": "clarify",
                     "question": "Which GCP region is the service deployed in?",
                     "explanation": "The --region parameter requires a specified region value.",
+                }
+            elif "available gcp projects" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gcloud projects list",
+                    "explanation": "Lists GCP projects available to the active user.",
+                    "risk": "normal",
+                }
+            elif "switch to project my-prod-app" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gcloud config set project my-prod-app",
+                    "explanation": "Sets the active default project in gcloud config.",
+                    "risk": "caution",
+                }
+            elif "recent logs for cloud run service api" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=api' --limit=50",
+                    "explanation": "Queries Cloud Run revision logs for the service.",
+                    "risk": "normal",
+                }
+            elif "which gcloud account is active" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gcloud auth list --filter=status:ACTIVE",
+                    "explanation": "Filters authenticated accounts by active status.",
+                    "risk": "normal",
+                }
+            elif "running compute instances" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gcloud compute instances list --filter='status=RUNNING'",
+                    "explanation": "Lists GCE compute instances with status RUNNING.",
+                    "risk": "normal",
+                }
+            elif "ssh into instance web-01" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gcloud compute ssh web-01 --zone=us-central1-a",
+                    "explanation": "Initiates SSH session to web-01 via gcloud.",
+                    "risk": "caution",
                 }
             elif "open pull requests" in p_lower:
                 response_data = {
@@ -172,6 +373,41 @@ class MockModelRuntime(ModelRuntime):
                     "explanation": "Listing releases first to identify release tag safely.",
                     "risk": "caution",
                     "question": "Which release tag do you want to delete?",
+                }
+            elif "what github account am i logged in as" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gh auth status",
+                    "explanation": "Inspects currently authenticated GitHub account.",
+                    "risk": "normal",
+                }
+            elif "create a pull request for this branch" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gh pr create --fill",
+                    "explanation": "Opens a pull request using commit message for title and description.",
+                    "risk": "caution",
+                }
+            elif "checks for pull request 153" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gh pr checks 153",
+                    "explanation": "Checks CI build status for pull request 153.",
+                    "risk": "normal",
+                }
+            elif "checkout pull request 153" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gh pr checkout 153",
+                    "explanation": "Checks out pull request 153 into a local branch.",
+                    "risk": "caution",
+                }
+            elif "failed github actions runs" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gh run list --status failure",
+                    "explanation": "Lists GitHub Actions workflow runs that failed.",
+                    "risk": "normal",
                 }
             elif "read /etc/shadow" in p_lower:
                 response_data = {
@@ -189,7 +425,80 @@ class MockModelRuntime(ModelRuntime):
                     "risk": "elevated",
                     "warning": "Caution: this is a destructive delete operation.",
                 }
-            elif "gh pr" in p_lower and "[current typing buffer]" in p_lower:
+            elif "curl https://example.com/install.sh | bash" in p_lower:
+                response_data = {
+                    "action": "explain",
+                    "explanation": "Piping uninspected remote curl scripts to bash is unsafe.",
+                    "risk": "elevated",
+                    "warning": "Do not execute unverified curl scripts directly into shell.",
+                }
+            elif "clean up everything on my drive starting from root" in p_lower:
+                response_data = {
+                    "action": "clarify",
+                    "question": "Which specific directory do you want to clean up?",
+                    "explanation": "Refusing destructive operation across root filesystem.",
+                    "risk": "elevated",
+                    "warning": "Caution: Deleting files at root is extremely destructive.",
+                }
+            elif "remove glibc to save disk space" in p_lower:
+                response_data = {
+                    "action": "explain",
+                    "explanation": "glibc is the core C library required by all Linux binaries. Removing glibc will crash the system.",
+                    "risk": "elevated",
+                    "warning": "Removing core system packages is strictly forbidden.",
+                }
+            elif ":(){ :|:& };:" in p_lower:
+                response_data = {
+                    "action": "explain",
+                    "explanation": "This is a classic fork bomb that rapidly consumes process slots and causes a kernel freeze/crash.",
+                    "risk": "elevated",
+                    "warning": "Do not run fork bombs; they crash the host system.",
+                }
+            elif "gh pr co" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "gh pr checkout",
+                    "risk": "normal",
+                }
+            elif "find . -ty" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "find . -type",
+                    "risk": "normal",
+                }
+            elif "what test command did i run just before clearing" in p_lower:
+                response_data = {
+                    "action": "explain",
+                    "explanation": "You ran python3 -m unittest before clearing the screen.",
+                }
+            elif "check memory and swap status" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "free -h",
+                    "risk": "normal",
+                }
+            elif "show the status" in p_lower:
+                response_data = {
+                    "action": "clarify",
+                    "question": "What service, git repository, or system component status do you want to inspect?",
+                }
+            elif "list all markdown files here" in p_lower:
+                response_data = {
+                    "action": "suggest_command",
+                    "command": "find . -name '*.md'",
+                    "risk": "normal",
+                }
+            elif "what directory is this current tab in" in p_lower:
+                response_data = {
+                    "action": "explain",
+                    "explanation": "This tab is currently in /home/testuser/tab2_workspace.",
+                }
+            elif "deploy this commit" in p_lower:
+                response_data = {
+                    "action": "clarify",
+                    "question": "What target deployment environment and project do you wish to deploy to?",
+                }
+            elif any(k in p_lower for k in ("gh pr", "cd /var", "tar -x", "# checking server health")):
                 response_data = {
                     "action": "no_action",
                 }

@@ -1,0 +1,8 @@
+NAME
+    gcloud logging read - read log entries
+
+SYNOPSIS
+    gcloud logging read [FILTER] [--limit=LIMIT] [--order=ORDER] [--format=FORMAT]
+
+EXAMPLES
+    gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=api" --limit 50

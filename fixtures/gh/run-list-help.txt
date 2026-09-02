@@ -1,0 +1,9 @@
+NAME
+  gh run list - List recent workflow runs
+
+USAGE
+  gh run list [flags]
+
+FLAGS
+  -s, --status string   Filter runs by status: {queued|completed|in_progress|requested|waiting|failure|success}
+  -L, --limit int       Maximum number of runs to fetch (default 30)

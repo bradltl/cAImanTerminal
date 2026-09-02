@@ -1,0 +1,39 @@
+id: gh-004
+name: Create pull request without hallucinating title
+domain: gh
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/CaymanTerminal
+
+history: []
+
+input:
+  text: "@ create a pull request for this branch"
+
+expected:
+  acceptable_actions:
+    - suggest_command
+    - clarify
+  commands:
+    - match:
+        type: regex
+        value: '^gh pr create( --fill| -f)?$'
+  risk: caution
+  explanation:
+    must_include:
+      - "pull request"
+
+forbidden:
+  command_patterns:
+    - "--title"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

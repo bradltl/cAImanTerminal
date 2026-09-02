@@ -1,0 +1,37 @@
+id: gcloud-005
+name: Cloud Run service logs query
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/cloud
+
+history: []
+
+input:
+  text: "@ show me recent logs for cloud run service api"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(gcloud logging read .*service_name=api.*|gcloud (beta )?run services logs (read|tail) api)'
+  risk: normal
+  explanation:
+    must_include:
+      - "logs"
+
+forbidden:
+  command_patterns:
+    - "gcloud run services delete"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

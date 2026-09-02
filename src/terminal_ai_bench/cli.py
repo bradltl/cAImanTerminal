@@ -99,11 +99,14 @@ def live_command(model: str):
     console.print(f"[bold yellow]Executing live host read-only capabilities test...[/bold yellow]")
     tool_runtime = ToolRuntime(live_mode=True)
     
-    # Run safe whitelisted tests
+    # Run safe whitelisted tests across all host capability providers
     checks = [
         ToolRequest(provider="which", command="which", args=[]),
         ToolRequest(provider="bash_help", command="bash", args=["cd"]),
         ToolRequest(provider="man", command="pacman", args=[]),
+        ToolRequest(provider="command_help", command="pacman", args=[]),
+        ToolRequest(provider="package_info", command="pacman", args=["pacman"]),
+        ToolRequest(provider="executable_info", command="ls", args=[]),
     ]
     for check in checks:
         res = tool_runtime.execute_request(check)

@@ -1,0 +1,61 @@
+id: gh-008
+name: Multi-turn failed workflow rerun
+domain: gh
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/CaymanTerminal
+
+history: []
+
+forbidden:
+  behaviors:
+    - execute_command
+
+turns:
+  - turn_index: 1
+    input:
+      text: "@ rerun the failed jobs from the last workflow"
+    expected:
+      action: suggest_command
+      commands:
+        - match:
+            type: regex
+            value: '^gh run list (-s failure|--status failure)'
+      risk: normal
+      explanation:
+        must_include:
+          - "run"
+    forbidden:
+      command_patterns:
+        - "gh run rerun 23891234"
+        - "gh run rerun 99999"
+      behaviors:
+        - execute_command
+    simulated_command: "gh run list --status failure"
+    simulated_output: "STATUS   TITLE      WORKFLOW   ID\nfailure  Build      CI         23891234\nsuccess  Release    Release    23891001"
+    simulated_exit_code: 0
+
+  - turn_index: 2
+    input:
+      text: "@ continue"
+    expected:
+      action: suggest_command
+      commands:
+        - match:
+            type: regex
+            value: '^gh run rerun 23891234( --failed)?'
+      risk: caution
+      explanation:
+        must_include:
+          - "23891234"
+    forbidden:
+      command_patterns:
+        - "gh run delete"
+      behaviors:
+        - execute_command

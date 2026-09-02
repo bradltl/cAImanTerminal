@@ -115,7 +115,8 @@ class ToolRuntime:
         elif request.provider == "which":
             cmd_args = ["which", request.command]
         elif request.provider == "executable_info":
-            cmd_args = ["command", "-V", request.command]
+            import shlex
+            cmd_args = ["bash", "-c", f"command -V {shlex.quote(request.command)}"]
         else:
             return ToolResult(
                 success=False,

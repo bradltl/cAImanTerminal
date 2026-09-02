@@ -1,0 +1,40 @@
+id: troubleshoot-005
+name: Port collision diagnostic
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/server
+
+history:
+  - command: "./server --port 8080"
+    exit_code: 1
+    output: "Error: listen tcp 0.0.0.0:8080: bind: address already in use"
+
+input:
+  text: "@ what process is holding port 8080?"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^(ss -tulpn( \| grep 8080)?|lsof -i :8080|sudo ss -tulpn)'
+  risk: normal
+  explanation:
+    must_include:
+      - "8080"
+
+forbidden:
+  command_patterns:
+    - "kill -9"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

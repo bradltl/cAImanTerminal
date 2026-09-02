@@ -1,0 +1,40 @@
+id: interaction-004
+name: Context preservation across visual clear
+domain: interaction
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history:
+  - command: "python3 -m unittest"
+    exit_code: 0
+    output: "Ran 14 tests in 0.4s OK"
+  - command: "clear"
+    exit_code: 0
+    output: ""
+
+input:
+  text: "@ what test command did I run just before clearing the screen?"
+
+expected:
+  acceptable_actions:
+    - explain
+    - suggest_command
+  explanation:
+    must_include:
+      - "unittest"
+
+forbidden:
+  command_patterns:
+    - "rm "
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

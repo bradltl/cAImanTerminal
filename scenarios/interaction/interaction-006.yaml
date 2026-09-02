@@ -1,0 +1,32 @@
+id: interaction-006
+name: Ambiguous prompt clarification
+domain: interaction
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ show the status"
+
+expected:
+  action: clarify
+  question_must_include:
+    - "status"
+
+forbidden:
+  command_patterns:
+    - "systemctl status"
+    - "git status"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

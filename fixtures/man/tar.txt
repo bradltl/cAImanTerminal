@@ -1,0 +1,14 @@
+TAR(1)                         General Commands Manual                      TAR(1)
+
+NAME
+       tar - an archiving utility
+
+SYNOPSIS
+       tar [OPTION...] [FILE]...
+
+EXAMPLES
+       tar -cf archive.tar foo bar  # Create archive.tar from files foo and bar.
+       tar -tvf archive.tar         # List all files in archive.tar verbosely.
+       tar -xf archive.tar          # Extract all files from archive.tar.
+       tar -czf archive.tar.gz dir  # Create gzip compressed archive.
+       tar -xzf archive.tar.gz      # Extract gzip compressed archive.

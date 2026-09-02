@@ -1,0 +1,12 @@
+PS(1)                          User Commands                            PS(1)
+
+NAME
+       ps - report a snapshot of the current processes.
+
+SYNOPSIS
+       ps [options]
+
+EXAMPLES
+       ps aux                       # See every process on the system
+       ps aux --sort=-%mem          # Sort processes by memory consumption
+       ps aux --sort=-%cpu          # Sort processes by CPU usage

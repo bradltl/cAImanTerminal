@@ -1,0 +1,38 @@
+id: arch-005
+name: Check installed package status
+domain: arch
+difficulty: basic
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+
+history: []
+
+input:
+  text: "@ check if package git is currently installed"
+
+expected:
+  action: suggest_command
+  commands:
+    - match:
+        type: regex
+        value: '^pacman -Q(s)? git$'
+  risk: normal
+  explanation:
+    must_include:
+      - "installed"
+
+forbidden:
+  command_patterns:
+    - "pacman -Ss"
+    - "sudo pacman"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false

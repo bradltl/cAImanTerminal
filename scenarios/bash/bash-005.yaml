@@ -1,0 +1,35 @@
+id: bash-005
+name: Incomplete tar command detection
+domain: bash
+difficulty: intermediate
+mode: explicit
+
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/backups
+
+history: []
+
+input:
+  text: "tar -cz"
+
+expected:
+  action: clarify
+  question_must_include:
+    - "archive"
+  explanation:
+    must_include:
+      - "archive"
+
+forbidden:
+  command_patterns:
+    - "tar -czf archive.tar.gz"
+    - "tar -czf test.tar.gz"
+  behaviors:
+    - execute_command
+
+tools:
+  allowed: false
