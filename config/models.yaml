@@ -60,3 +60,42 @@ models:
     top_p: 0.95
     chat_format: "gemma"
     description: "Google Gemma 2 2B Instruct candidate (~1.63GB)"
+
+  gemma-3-1b:
+    name: "Gemma 3 1B Instruct"
+    architecture: "gemma"
+    parameters: "1B"
+    context_length: 8192
+    gguf_path: "models/gemma-3-1b-it-Q4_K_M.gguf"
+    sha256: "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135"
+    download_url: "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "gemma"
+    description: "Google Gemma 3 1B Instruct candidate (~768MB)"
+
+  phi-1.5:
+    name: "Microsoft Phi 1.5"
+    architecture: "phi"
+    parameters: "1.4B"
+    context_length: 2048
+    gguf_path: "models/phi-1_5-Q4_K_M.gguf"
+    sha256: "5dfe310d09cc9ee85251e21c60e0a54d44480e3b69e27190d9f0edb1fc36325f"
+    download_url: "https://huggingface.co/TKDKid1000/phi-1_5-GGUF/resolve/main/phi-1_5-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "raw"
+    description: "Microsoft Phi 1.5 candidate (~876MB)"
+
+  lfm2-1.2b:
+    name: "Liquid AI LFM2 1.2B"
+    architecture: "lfm"
+    parameters: "1.2B"
+    context_length: 8192
+    gguf_path: "models/LFM2-1.2B-Q4_K_M.gguf"
+    sha256: "55175400e3f509a9616227afeffd58d87e80b9f628a5d3d54ada884d85221fed"
+    download_url: "https://huggingface.co/LiquidAI/LFM2-1.2B-GGUF/resolve/main/LFM2-1.2B-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Liquid Foundation Model 2 1.2B candidate (~697MB)"

@@ -100,8 +100,19 @@ class BenchmarkRunner:
         mock_persona: str = "perfect",
         live_mode: bool = False,
     ) -> RunSummary:
-        run_id = f"{model_name}-{int(time.time())}-{uuid.uuid4().hex[:6]}"
-        model_cfg = self.models_config.get(model_name, {})
+        alias_map = {
+            "gemma3-1b": "gemma-3-1b",
+            "gemma3": "gemma-3-1b",
+            "phi1.5": "phi-1.5",
+            "phi-1_5": "phi-1.5",
+            "phi": "phi-1.5",
+            "lfm2": "lfm2-1.2b",
+            "lfm": "lfm2-1.2b",
+            "lfm-1.2b": "lfm2-1.2b",
+        }
+        effective_model_name = alias_map.get(model_name.lower(), model_name)
+        run_id = f"{effective_model_name}-{int(time.time())}-{uuid.uuid4().hex[:6]}"
+        model_cfg = self.models_config.get(effective_model_name, {})
         self.tool_runtime.live_mode = live_mode
 
         # Load scenarios

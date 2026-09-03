@@ -59,11 +59,23 @@ def pull_command(model: str, url: Optional[str], models_config: str, output_dir:
     with open(models_config, "r", encoding="utf-8") as f:
         models_data = yaml.safe_load(f).get("models", {})
 
+    alias_map = {
+        "gemma3-1b": "gemma-3-1b",
+        "gemma3": "gemma-3-1b",
+        "phi1.5": "phi-1.5",
+        "phi-1_5": "phi-1.5",
+        "phi": "phi-1.5",
+        "lfm2": "lfm2-1.2b",
+        "lfm": "lfm2-1.2b",
+        "lfm-1.2b": "lfm2-1.2b",
+    }
+    canonical_model = alias_map.get(model.lower(), model)
+
     target_url = url
     target_filename = None
 
-    if model in models_data:
-        m_cfg = models_data[model]
+    if canonical_model in models_data:
+        m_cfg = models_data[canonical_model]
         target_url = target_url or m_cfg.get("download_url")
         gguf_path = m_cfg.get("gguf_path")
         if gguf_path:
