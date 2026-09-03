@@ -99,3 +99,16 @@ models:
     top_p: 0.95
     chat_format: "chatml"
     description: "Liquid Foundation Model 2 1.2B candidate (~697MB)"
+
+  deepseek-coder-1.3b-base:
+    name: "DeepSeek Coder 1.3B Base"
+    architecture: "deepseek"
+    parameters: "1.3B"
+    context_length: 4096
+    gguf_path: "models/deepseek-coder-1.3b-base.Q4_K_M.gguf"
+    sha256: "2ad96fe419b897dab9da8c8d0503047dd3ad9b30b7c11f65e0d69bba821e3a9c"
+    download_url: "https://huggingface.co/TheBloke/deepseek-coder-1.3b-base-GGUF/resolve/main/deepseek-coder-1.3b-base.Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "raw"
+    description: "DeepSeek Coder 1.3B Base code completion model (~833MB)"

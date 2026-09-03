@@ -109,6 +109,10 @@ class BenchmarkRunner:
             "lfm2": "lfm2-1.2b",
             "lfm": "lfm2-1.2b",
             "lfm-1.2b": "lfm2-1.2b",
+            "deepseek": "deepseek-coder-1.3b-base",
+            "deepseek-coder": "deepseek-coder-1.3b-base",
+            "deepseek-coder-1.3b": "deepseek-coder-1.3b-base",
+            "deepseek-1.3b": "deepseek-coder-1.3b-base",
         }
         effective_model_name = alias_map.get(model_name.lower(), model_name)
         run_id = f"{effective_model_name}-{int(time.time())}-{uuid.uuid4().hex[:6]}"

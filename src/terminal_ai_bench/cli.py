@@ -68,6 +68,10 @@ def pull_command(model: str, url: Optional[str], models_config: str, output_dir:
         "lfm2": "lfm2-1.2b",
         "lfm": "lfm2-1.2b",
         "lfm-1.2b": "lfm2-1.2b",
+        "deepseek": "deepseek-coder-1.3b-base",
+        "deepseek-coder": "deepseek-coder-1.3b-base",
+        "deepseek-coder-1.3b": "deepseek-coder-1.3b-base",
+        "deepseek-1.3b": "deepseek-coder-1.3b-base",
     }
     canonical_model = alias_map.get(model.lower(), model)
 
