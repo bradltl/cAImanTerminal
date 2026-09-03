@@ -22,6 +22,19 @@ models:
     chat_format: "chatml"
     description: "Ultra-compact 0.5B candidate (~398MB) for low-memory environments"
 
+  qwen3-0.6b:
+    name: "Qwen3 0.6B"
+    architecture: "qwen"
+    parameters: "0.6B"
+    context_length: 8192
+    gguf_path: "models/Qwen3-0.6B-Q4_K_M.gguf"
+    sha256: "ac2d97712095a558e31573f62f466a3f9d93990898b0ec79d7c974c1780d524a"
+    download_url: "https://huggingface.co/unsloth/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Next-gen Qwen3 0.6B compact candidate (~378MB)"
+
   llama3.2-1b:
     name: "Llama 3.2 1B"
     architecture: "llama"

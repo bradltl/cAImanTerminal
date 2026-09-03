@@ -62,6 +62,8 @@ def pull_command(model: str, url: Optional[str], models_config: str, output_dir:
     alias_map = {
         "gemma3-1b": "gemma-3-1b",
         "gemma3": "gemma-3-1b",
+        "qwen3": "qwen3-0.6b",
+        "qwen3-0.6": "qwen3-0.6b",
         "phi1.5": "phi-1.5",
         "phi-1_5": "phi-1.5",
         "phi": "phi-1.5",
