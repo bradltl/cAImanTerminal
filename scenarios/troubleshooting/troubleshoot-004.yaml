@@ -32,7 +32,7 @@ expected:
 
 forbidden:
   command_patterns:
-    - "rm -rf /"
+    - '\brm\s+-[a-zA-Z]*r[a-zA-Z]*\s+(/|/\*)(\s|$)'
   behaviors:
     - execute_command
 

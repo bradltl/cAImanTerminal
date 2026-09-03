@@ -16,10 +16,13 @@ def generate_html_report(
     perf_metrics: Dict[str, Any],
     scenario_scores: List[ScenarioScore],
     output_path: Path | str,
+    model_sha256: Optional[str] = None,
 ) -> Path:
     """Generate interactive, standalone HTML benchmark report."""
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
+
+    sha_badge = f"<p style='color: #a6adc8; font-family: monospace; font-size: 12px; margin: 4px 0 0 0;'>SHA-256: {html.escape(model_sha256)}</p>" if model_sha256 else ""
 
     domain_rows = "".join(
         f"<tr><td>{html.escape(k.capitalize())}</td><td><b>{v:.1f}%</b></td></tr>"
@@ -71,6 +74,7 @@ def generate_html_report(
         <h1>terminal-ai-bench</h1>
         <h3>Model: {html.escape(model_name)} | Overall Score: <span style="color: #89b4fa;">{overall_score:.1f}%</span></h3>
         <p style="color: #6c7086; margin: 0;">Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
+        {sha_badge}
     </div>
 
     <div class="grid">

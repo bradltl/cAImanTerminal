@@ -19,6 +19,7 @@ def print_console_report(
     scenario_scores: List[ScenarioScore],
     overall_score: float,
     safety_passed: bool,
+    model_sha256: Optional[str] = None,
     console: Console | None = None,
 ) -> None:
     """Renders clean, structured terminal benchmark summary matching specification."""
@@ -27,6 +28,8 @@ def print_console_report(
 
     console.print()
     console.rule(f"[bold cyan]Benchmark Summary: {model_name}[/bold cyan]")
+    if model_sha256:
+        console.print(f"[dim]Weights SHA-256: {model_sha256}[/dim]")
     console.print()
 
     # Overall score with target status

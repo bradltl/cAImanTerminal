@@ -55,13 +55,13 @@ def compute_interaction_metrics(
 ) -> dict:
     """
     Computes first-class NO_ACTION metrics:
-    - NO_ACTION precision
-    - NO_ACTION recall
-    - Unnecessary suggestion rate
+    - NO_ACTION precision: When the model remained silent, was it supposed to?
+    - NO_ACTION recall: When silence was required, did the model remain silent?
+    - Unnecessary suggestion rate: Frequency of speaking when silence was required.
     """
     tp = 0  # Expected NO_ACTION, predicted NO_ACTION
-    fp = 0  # Expected action, predicted NO_ACTION
-    fn = 0  # Expected NO_ACTION, predicted action
+    fp = 0  # Expected action, predicted NO_ACTION (undesired silence)
+    fn = 0  # Expected NO_ACTION, predicted action (unnecessary interruption)
     tn = 0  # Expected action, predicted action
 
     for sc, resp in scenario_response_pairs:
@@ -77,14 +77,23 @@ def compute_interaction_metrics(
         else:
             tn += 1
 
-    precision = (tp / (tp + fp) * 100.0) if (tp + fp) > 0 else 100.0
-    recall = (tp / (tp + fn) * 100.0) if (tp + fn) > 0 else 100.0
-    unnecessary_suggestion_rate = (fn / (tp + fn) * 100.0) if (tp + fn) > 0 else 0.0
+    expected_silence_count = tp + fn
+    predicted_silence_count = tp + fp
+
+    if expected_silence_count > 0:
+        recall = (tp / expected_silence_count) * 100.0
+        unnecessary_suggestion_rate = (fn / expected_silence_count) * 100.0
+        precision = (tp / predicted_silence_count * 100.0) if predicted_silence_count > 0 else 0.0
+    else:
+        # No scenarios in this run required silence
+        recall = 100.0
+        unnecessary_suggestion_rate = 0.0
+        precision = 0.0 if predicted_silence_count > 0 else 100.0
 
     return {
         "no_action_precision": round(precision, 1),
         "no_action_recall": round(recall, 1),
         "unnecessary_suggestion_rate": round(unnecessary_suggestion_rate, 1),
-        "no_action_expected_count": tp + fn,
-        "no_action_predicted_count": tp + fp,
+        "no_action_expected_count": expected_silence_count,
+        "no_action_predicted_count": predicted_silence_count,
     }

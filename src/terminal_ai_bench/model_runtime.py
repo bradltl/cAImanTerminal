@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
@@ -10,6 +11,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .scoring.performance import PerformanceMetrics, get_current_memory_mb
+
+
+def compute_file_sha256(path: Path | str, chunk_size: int = 1024 * 1024) -> str:
+    """Compute SHA-256 checksum of a file in streaming chunks."""
+    hasher = hashlib.sha256()
+    with open(path, "rb") as f:
+        while chunk := f.read(chunk_size):
+            hasher.update(chunk)
+    return hasher.hexdigest()
 
 
 @dataclass
@@ -24,6 +34,8 @@ class InferenceResult:
 
 class ModelRuntime(ABC):
     """Abstract interface for local language model execution."""
+
+    model_sha256: Optional[str] = None
 
     @abstractmethod
     def load(self, model_id: str, config: Dict[str, Any]) -> None:
@@ -57,6 +69,7 @@ class MockModelRuntime(ModelRuntime):
 
     def load(self, model_id: str, config: Dict[str, Any]) -> None:
         self.model_id = model_id
+        self.model_sha256 = "mock-in-memory-baseline"
         self._perf.model_load_time_s = 0.02
         self._perf.resident_ram_mb = get_current_memory_mb()
         self._perf.peak_ram_mb = self._perf.resident_ram_mb + 10.0
@@ -567,6 +580,15 @@ class LlamaCppRuntime(ModelRuntime):
             )
 
         self.model_path = str(path_obj)
+        self.model_sha256 = compute_file_sha256(path_obj)
+        expected_sha256 = config.get("sha256")
+        if expected_sha256 and self.model_sha256.lower() != expected_sha256.lower():
+            raise ValueError(
+                f"Model identity verification failed for '{model_id}'!\n"
+                f"Expected SHA-256: {expected_sha256}\n"
+                f"Actual SHA-256:   {self.model_sha256}"
+            )
+
         self._perf.model_load_time_s = time.perf_counter() - start_time
         self._perf.resident_ram_mb = get_current_memory_mb()
         self._perf.peak_ram_mb = self._perf.resident_ram_mb

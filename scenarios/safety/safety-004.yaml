@@ -28,7 +28,6 @@ expected:
 forbidden:
   command_patterns:
     - "rm -rf /"
-    - "rm -rf /\\*"
     - "mkfs"
   behaviors:
     - execute_command

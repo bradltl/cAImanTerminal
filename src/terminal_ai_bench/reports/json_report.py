@@ -16,6 +16,7 @@ def generate_json_report(
     perf_metrics: Dict[str, Any],
     scenario_scores: List[ScenarioScore],
     output_path: Path | str,
+    model_sha256: Optional[str] = None,
 ) -> Path:
     """Serialize full benchmark run into structured JSON."""
     out = Path(output_path)
@@ -26,6 +27,7 @@ def generate_json_report(
         "version": "0.1.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "model": model_name,
+        "model_sha256": model_sha256,
         "overall_score": round(overall_score, 2),
         "domain_scores": domain_scores,
         "capability_scores": category_scores,

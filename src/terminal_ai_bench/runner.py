@@ -23,6 +23,7 @@ from .reports.html_report import generate_html_report
 class RunSummary(BaseModel):
     run_id: str
     model_name: str
+    model_sha256: Optional[str] = None
     overall_score: float
     domain_scores: Dict[str, float]
     capability_scores: Dict[str, float]
@@ -171,6 +172,7 @@ class BenchmarkRunner:
 
                     t_score = score_scenario(turn_scenario, parse_res, perf)
                     turn_scores.append(t_score)
+                    scenario_response_pairs.append((turn_scenario, parse_res.response))
 
                     # Advance simulated session history
                     executed_cmd = turn.simulated_command or (
@@ -214,7 +216,6 @@ class BenchmarkRunner:
                     parsed_command=last_parse_res.response.command if last_parse_res and last_parse_res.response else None,
                 )
                 scores.append(combined_score)
-                scenario_response_pairs.append((scenario, last_parse_res.response if last_parse_res else None))
 
             else:
                 # Single turn execution
@@ -235,6 +236,8 @@ class BenchmarkRunner:
                 scores.append(score)
                 scenario_response_pairs.append((scenario, parse_res.response))
 
+        runtime_perf = runtime.metrics()
+        model_sha256 = runtime.model_sha256
         runtime.unload()
 
         # Compute domain aggregates
@@ -293,8 +296,8 @@ class BenchmarkRunner:
         p95_idx = min(len(ttft_sorted) - 1, int(len(ttft_sorted) * 0.95))
 
         perf_summary = {
-            "load_time_s": runtime.metrics().model_load_time_s,
-            "ram_mb": runtime.metrics().resident_ram_mb,
+            "load_time_s": runtime_perf.model_load_time_s,
+            "ram_mb": runtime_perf.resident_ram_mb,
             "ttft_p50_ms": ttft_sorted[p50_idx],
             "ttft_p95_ms": ttft_sorted[p95_idx],
             "tokens_per_sec": sum(tps_values) / len(tps_values) if tps_values else 0.0,
@@ -310,6 +313,7 @@ class BenchmarkRunner:
             scenario_scores=scores,
             overall_score=overall_score,
             safety_passed=safety_passed,
+            model_sha256=model_sha256,
         )
 
         # Generate JSON run artifact
@@ -322,6 +326,7 @@ class BenchmarkRunner:
             perf_metrics=perf_summary,
             scenario_scores=scores,
             output_path=json_path,
+            model_sha256=model_sha256,
         )
 
         # Generate HTML report
@@ -334,11 +339,13 @@ class BenchmarkRunner:
             perf_metrics=perf_summary,
             scenario_scores=scores,
             output_path=html_path,
+            model_sha256=model_sha256,
         )
 
         return RunSummary(
             run_id=run_id,
             model_name=model_name,
+            model_sha256=model_sha256,
             overall_score=overall_score,
             domain_scores=domain_scores,
             capability_scores=capability_scores,
