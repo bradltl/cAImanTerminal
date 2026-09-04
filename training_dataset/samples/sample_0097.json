@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/azure"
+  },
+  "user": "@ get aks cluster credentials for my-aks in rg-prod",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az aks get-credentials --resource-group rg-prod --name my-aks",
+    "explanation": "Merges credentials for Azure Kubernetes Service cluster into local kubeconfig.",
+    "risk": "caution",
+    "warning": "Updates local ~/.kube/config to target my-aks.",
+    "tool_request": null
+  }
+}

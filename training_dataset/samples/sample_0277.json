@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ search commit history for string DATABASE_URL",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git log -S \"DATABASE_URL\" --oneline",
+    "explanation": "Finds commits that added or removed occurrences of DATABASE_URL.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

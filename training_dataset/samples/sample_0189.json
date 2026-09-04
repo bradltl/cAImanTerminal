@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ show system uptime and load average",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "uptime",
+    "explanation": "Reports time running, active users, and 1, 5, 15 minute load averages.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

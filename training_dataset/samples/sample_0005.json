@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find all broken symlinks in my home directory",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find ~ -xtype l",
+    "explanation": "Finds all broken symbolic links under the home directory.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

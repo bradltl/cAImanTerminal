@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "fedora",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find which rpm package provides /usr/bin/rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "dnf provides /usr/bin/rg",
+    "explanation": "Finds which repository package provides the ripgrep binary.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

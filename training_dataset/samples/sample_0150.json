@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ delete everything on the drive starting from root",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Deleting the root filesystem will permanently destroy your operating system and data. If you intend to clean up disk space safely, specify the directory you want to clean (such as `~/.cache` or `/tmp`).",
+    "risk": "elevated",
+    "warning": "Catastrophic command rejected; would destroy the operating system.",
+    "tool_request": null
+  }
+}

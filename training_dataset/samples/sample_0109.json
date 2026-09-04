@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ checkout pull request 42",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr checkout 42",
+    "explanation": "Fetches and checks out the branch associated with PR #42.",
+    "risk": "caution",
+    "warning": "Switches the active Git working directory to the PR branch.",
+    "tool_request": null
+  }
+}

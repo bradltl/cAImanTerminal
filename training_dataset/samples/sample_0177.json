@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ recursively grant read permissions to all files in public_html",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "chmod -R a+r public_html",
+    "explanation": "Grants read access to all users across directory tree.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

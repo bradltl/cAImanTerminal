@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ list secrets in aws secrets manager",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws secretsmanager list-secrets --output table",
+    "explanation": "Lists metadata for stored secrets in Secrets Manager.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

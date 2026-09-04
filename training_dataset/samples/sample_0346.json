@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ rollback the deployment",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Which deployment would you like to roll back? (e.g. Kubernetes deployment: `kubectl rollout undo deployment/<name>`, or Cloud Run revision: `gcloud run services update-traffic <service> --to-revisions=<rev>=100`).",
+    "risk": "caution",
+    "warning": null,
+    "tool_request": null
+  }
+}

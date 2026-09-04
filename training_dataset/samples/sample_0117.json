@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/app"
+  },
+  "user": "@ list running docker containers",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker ps",
+    "explanation": "Shows active containers, exposed ports, and uptime.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

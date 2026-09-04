@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/var/log"
+  },
+  "user": "@ find log files bigger than 100 megabytes",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find /var/log -type f -name \"*.log\" -size +100M",
+    "explanation": "Finds files ending in .log larger than 100MB.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

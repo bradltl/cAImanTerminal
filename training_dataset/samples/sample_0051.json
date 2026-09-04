@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ clean cached package versions keeping only the latest 2",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo paccache -rk2",
+    "explanation": "Trims /var/cache/pacman/pkg to retain only the 2 most recent package releases.",
+    "risk": "elevated",
+    "warning": "Requires sudo; deletes older package tarballs from pacman cache.",
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/azure"
+  },
+  "user": "@ show my current azure subscription and tenant",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az account show --output table",
+    "explanation": "Displays details of the active Azure subscription and tenant in table format.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

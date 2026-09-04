@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ unstage file src/index.ts keeping working tree changes",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git restore --staged src/index.ts",
+    "explanation": "Removes src/index.ts from staging index without losing changes.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

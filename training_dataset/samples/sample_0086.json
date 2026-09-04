@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/aws"
+  },
+  "user": "@ stop ec2 instance i-0123456789abcdef0",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws ec2 stop-instances --instance-ids i-0123456789abcdef0",
+    "explanation": "Sends shutdown request to EC2 instance i-0123456789abcdef0.",
+    "risk": "caution",
+    "warning": "Shuts down the specified EC2 instance.",
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ show memory usage in human readable format",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "free -h",
+    "explanation": "Displays total, used, and available RAM and swap memory.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

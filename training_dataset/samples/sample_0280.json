@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ abort ongoing git rebase",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git rebase --abort",
+    "explanation": "Aborts the rebase and restores original branch state.",
+    "risk": "caution",
+    "warning": "Discards incomplete rebase state.",
+    "tool_request": null
+  }
+}

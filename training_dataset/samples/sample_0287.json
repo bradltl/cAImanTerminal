@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ delete untracked files and directories permanently",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git clean -fd",
+    "explanation": "Removes untracked files and directories from working tree.",
+    "risk": "caution",
+    "warning": "Permanently deletes untracked files without confirmation.",
+    "tool_request": null
+  }
+}

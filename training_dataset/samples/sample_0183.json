@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find files larger than 1 gigabyte in /var",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo find /var -type f -size +1G",
+    "explanation": "Searches /var for files exceeding 1GB in size.",
+    "risk": "elevated",
+    "warning": "Requires sudo to traverse protected directories.",
+    "tool_request": null
+  }
+}

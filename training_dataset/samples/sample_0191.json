@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ monitor disk input output statistics with iostat",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "iostat -xz 2 5",
+    "explanation": "Displays extended I/O throughput and service times per storage device.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

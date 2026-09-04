@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ create zip archive of folder my-project",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "zip -r my-project.zip my-project",
+    "explanation": "Packages my-project directory into a zip archive.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

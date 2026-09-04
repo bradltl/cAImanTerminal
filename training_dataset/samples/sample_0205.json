@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find lines containing fatal in all log files under /var/log",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo grep -rn \"fatal\" /var/log/",
+    "explanation": "Recursively searches /var/log for 'fatal'.",
+    "risk": "elevated",
+    "warning": "Requires sudo to inspect protected log files.",
+    "tool_request": null
+  }
+}

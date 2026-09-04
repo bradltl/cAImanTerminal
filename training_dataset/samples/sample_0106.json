@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ delete merged local branch feature/old-task",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git branch -d feature/old-task",
+    "explanation": "Deletes the local branch feature/old-task (safe delete, requires branch to be merged).",
+    "risk": "caution",
+    "warning": "Deletes local branch feature/old-task.",
+    "tool_request": null
+  }
+}

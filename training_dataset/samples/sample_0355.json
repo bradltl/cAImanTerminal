@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ explain what pacman -Syu does",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "explanation": "`pacman -Syu` refreshes repository package databases (-y), downloads latest package versions, and upgrades all installed software (-u) on Arch Linux and CachyOS.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

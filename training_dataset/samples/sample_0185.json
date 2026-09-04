@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ show block storage devices and partitions with file system types",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "lsblk -f",
+    "explanation": "Displays block device hierarchy, mountpoints, and filesystem UUIDs.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ enable and start docker service immediately",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo systemctl enable --now docker",
+    "explanation": "Enables docker service to start on boot and launches it immediately.",
+    "risk": "elevated",
+    "warning": "Requires sudo to configure system services.",
+    "tool_request": null
+  }
+}

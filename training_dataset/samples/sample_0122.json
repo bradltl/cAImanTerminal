@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/app"
+  },
+  "user": "@ start docker compose services in detached mode",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker compose up -d",
+    "explanation": "Builds, creates, and runs docker compose containers in the background.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ create snapshot of disk web-disk in zone us-central1-a",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud compute disks snapshot web-disk --zone=us-central1-a --snapshot-names=web-disk-backup",
+    "explanation": "Captures a point-in-time snapshot of persistent disk web-disk.",
+    "risk": "caution",
+    "warning": "Creates persistent disk snapshot resource.",
+    "tool_request": null
+  }
+}

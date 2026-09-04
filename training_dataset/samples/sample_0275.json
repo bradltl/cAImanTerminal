@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ show commits that are in feature branch but not in main",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git log main..feature/auth-flow --oneline",
+    "explanation": "Lists commits present on feature branch that have not been merged to main.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

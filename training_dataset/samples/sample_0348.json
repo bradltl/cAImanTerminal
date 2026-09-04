@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ update the database",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Are you looking to apply database schema migrations (e.g. via ORM / Alembic / Prisma), or update package software for PostgreSQL/MySQL?",
+    "risk": "caution",
+    "warning": null,
+    "tool_request": null
+  }
+}

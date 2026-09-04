@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ show history of layers in image myapp:1.0",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker history myapp:1.0",
+    "explanation": "Displays image layer commands, sizes, and timestamps.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

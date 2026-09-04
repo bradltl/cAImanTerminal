@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install build-essential and curl on ubuntu",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo apt install -y build-essential curl",
+    "explanation": "Installs compilation tools and curl using apt.",
+    "risk": "elevated",
+    "warning": "Requires sudo to install packages.",
+    "tool_request": null
+  }
+}

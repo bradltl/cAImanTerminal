@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ download assets for release v1.2.0",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh release download v1.2.0",
+    "explanation": "Downloads binary assets and tarballs attached to release v1.2.0.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

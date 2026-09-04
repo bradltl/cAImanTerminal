@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ show network security group rules for my-nsg in prod-rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az network nsg rule list --resource-group prod-rg --nsg-name my-nsg --output table",
+    "explanation": "Lists inbound and outbound security rules and priority rankings.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

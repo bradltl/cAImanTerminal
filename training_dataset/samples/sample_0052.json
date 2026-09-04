@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install visual-studio-code-bin from aur with yay",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "yay -S visual-studio-code-bin",
+    "explanation": "Builds and installs visual-studio-code-bin from the Arch User Repository using yay.",
+    "risk": "caution",
+    "warning": "Builds and installs third-party AUR software.",
+    "tool_request": null
+  }
+}

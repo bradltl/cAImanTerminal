@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ upgrade all packages on ubuntu",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo apt upgrade -y",
+    "explanation": "Upgrades all installed Debian/Ubuntu packages to latest versions.",
+    "risk": "elevated",
+    "warning": "Requires sudo; upgrades system packages.",
+    "tool_request": null
+  }
+}

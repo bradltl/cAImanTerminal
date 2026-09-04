@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ login to google cloud cli",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud auth login",
+    "explanation": "Launches interactive OAuth browser login for Google Cloud SDK.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

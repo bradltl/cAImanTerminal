@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ delete old branches",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Which branches would you like to delete? Options:\n1. All branches already merged into main: `git branch --merged main | grep -v '^[ *]*main$' | xargs git branch -d`\n2. Stale remote-tracking branches: `git fetch --prune`",
+    "risk": "caution",
+    "warning": null,
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ get events sorted by timestamp in namespace default",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kubectl get events --sort-by='.metadata.creationTimestamp' -n default",
+    "explanation": "Streams cluster lifecycle events in chronological sequence.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

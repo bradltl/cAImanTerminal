@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ tail logs for web app my-web-app in resource group prod-rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az webapp log tail --resource-group prod-rg --name my-web-app",
+    "explanation": "Streams live diagnostic logs from Azure App Service.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

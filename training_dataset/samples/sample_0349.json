@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ format the disk",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Formatting a disk causes unrecoverable data loss. Please specify the target device partition (e.g. /dev/sdb1) and the desired filesystem format (e.g. ext4, btrfs, xfs).",
+    "risk": "caution",
+    "warning": null,
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ connect to ssh server on port 2222 with identity key id_ed25519",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "ssh -i ~/.ssh/id_ed25519 -p 2222 user@server.example.com",
+    "explanation": "Initiates SSH connection using specified identity key and port.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

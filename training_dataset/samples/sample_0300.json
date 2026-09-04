@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ build docker image with tag myapp:1.0 using local Dockerfile",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker build -t myapp:1.0 .",
+    "explanation": "Compiles Docker container image from current directory.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

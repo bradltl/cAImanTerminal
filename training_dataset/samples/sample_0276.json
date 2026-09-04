@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ find which commit introduced bug in file config.py",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git blame -L 10,25 config.py",
+    "explanation": "Shows author and commit hash for lines 10 through 25 of config.py.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

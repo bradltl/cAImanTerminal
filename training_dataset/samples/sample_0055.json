@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ clean yay untracked build cache",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "yay -Sc",
+    "explanation": "Cleans downloaded package cache and untracked AUR build directories.",
+    "risk": "caution",
+    "warning": "Cleans build caches.",
+    "tool_request": null
+  }
+}

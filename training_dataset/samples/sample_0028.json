@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ add my user to the docker group",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo usermod -aG docker $USER",
+    "explanation": "Appends current user to the docker group to permit rootless socket access.",
+    "risk": "elevated",
+    "warning": "Requires sudo; takes effect on next login.",
+    "tool_request": null
+  }
+}

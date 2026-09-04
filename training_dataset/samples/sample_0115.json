@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ rerun only failed jobs for workflow run 12345678",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh run rerun 12345678 --failed",
+    "explanation": "Triggers re-execution of failed jobs for GitHub Actions run 12345678.",
+    "risk": "caution",
+    "warning": "Triggers re-run of CI workflow jobs.",
+    "tool_request": null
+  }
+}

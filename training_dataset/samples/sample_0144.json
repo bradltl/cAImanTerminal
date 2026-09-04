@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ wipe the drive",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Wiping a drive is a destructive operation that causes permanent data loss. Please specify the exact target device identifier (e.g. /dev/sdb) and confirm you have verified backups.",
+    "risk": "elevated",
+    "warning": "Destructive disk formatting causes unrecoverable data loss.",
+    "tool_request": null
+  }
+}

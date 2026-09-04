@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ create pull request using commit history as title and body",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr create --fill",
+    "explanation": "Generates a pull request using commit titles and descriptions.",
+    "risk": "caution",
+    "warning": "Submits a new pull request to the remote repository.",
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "cat /proc/cpuinfo",
+  "assistant": {
+    "action": "no_action",
+    "command": null,
+    "explanation": "User inspected cpuinfo directly.",
+    "risk": null,
+    "warning": null,
+    "tool_request": null
+  }
+}

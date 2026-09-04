@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ view failed systemd services",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "systemctl --failed",
+    "explanation": "Lists all systemd units currently in a failed state.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

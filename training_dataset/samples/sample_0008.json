@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad/config"
+  },
+  "user": "@ replace all occurrences of localhost with 127.0.0.1 in app.conf",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sed -i 's/localhost/127.0.0.1/g' app.conf",
+    "explanation": "In-place replaces all occurrences of 'localhost' with '127.0.0.1' in app.conf.",
+    "risk": "caution",
+    "warning": "Modifies app.conf in-place.",
+    "tool_request": null
+  }
+}

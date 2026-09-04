@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ print the second column of space separated ps output",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "ps aux | awk '{print $2}'",
+    "explanation": "Extracts process IDs from ps output using awk.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

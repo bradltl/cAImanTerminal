@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/app"
+  },
+  "user": "@ stop docker compose stack and remove volumes",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker compose down -v",
+    "explanation": "Halts compose services and removes declared persistent storage volumes.",
+    "risk": "caution",
+    "warning": "Destroys persistent database volumes declared in compose file.",
+    "tool_request": null
+  }
+}

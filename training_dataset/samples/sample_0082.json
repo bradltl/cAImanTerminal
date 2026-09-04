@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/aws"
+  },
+  "user": "@ verify which aws account and role i am logged into",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws sts get-caller-identity",
+    "explanation": "Returns the IAM User or Assumed Role ARN and Account ID for active AWS credentials.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

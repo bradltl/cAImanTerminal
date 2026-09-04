@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/projects"
+  },
+  "user": "@ find all python files modified in the last 7 days",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find . -name \"*.py\" -mtime -7",
+    "explanation": "Searches for Python files modified within the past 7 days.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

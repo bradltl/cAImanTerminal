@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ invert match to show lines not containing comment # in config.env",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "grep -v \"^#\" config.env",
+    "explanation": "Filters out lines starting with comment hash #.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

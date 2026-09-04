@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ list all resources in resource group prod-rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az resource list --resource-group prod-rg --output table",
+    "explanation": "Tabulates all Azure resources in prod-rg.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

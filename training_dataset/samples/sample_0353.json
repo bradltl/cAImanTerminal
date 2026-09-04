@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ explain the difference between process and thread",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "explanation": "A process is an isolated executing program with its own private virtual memory space and system resources. A thread is an execution unit inside a process that shares memory and resources with sibling threads.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

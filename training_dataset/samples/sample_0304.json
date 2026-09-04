@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ get nodes with status and roles",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kubectl get nodes -o wide",
+    "explanation": "Lists cluster nodes, ready statuses, kernel versions, and internal IPs.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

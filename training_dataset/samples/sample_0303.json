@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ stop all running docker containers",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker stop $(docker ps -q)",
+    "explanation": "Gracefully stops every running container on system.",
+    "risk": "caution",
+    "warning": "Stops all active container services.",
+    "tool_request": null
+  }
+}

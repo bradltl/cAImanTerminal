@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad/downloads"
+  },
+  "user": "@ find and delete all empty directories here",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find . -type d -empty -delete",
+    "explanation": "Finds and deletes empty directories under the current folder.",
+    "risk": "caution",
+    "warning": "Deletes empty directories immediately.",
+    "tool_request": null
+  }
+}

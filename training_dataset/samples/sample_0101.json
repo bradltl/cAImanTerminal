@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ create and switch to new branch feature/auth-flow",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git switch -c feature/auth-flow",
+    "explanation": "Creates and switches to a new Git branch named feature/auth-flow.",
+    "risk": "caution",
+    "warning": "Switches the active Git working branch.",
+    "tool_request": null
+  }
+}

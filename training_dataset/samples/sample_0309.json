@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ delete pod stuck in terminating state forcefully",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kubectl delete pod stuck-pod --grace-period=0 --force -n default",
+    "explanation": "Forces immediate termination and removal of pod from cluster state.",
+    "risk": "caution",
+    "warning": "Bypasses graceful pod termination.",
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/azure"
+  },
+  "user": "@ switch azure subscription to 00000000-0000-0000-0000-000000000000",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az account set --subscription 00000000-0000-0000-0000-000000000000",
+    "explanation": "Sets active subscription context for future Azure CLI invocations.",
+    "risk": "caution",
+    "warning": "Switches the active Azure subscription context.",
+    "tool_request": null
+  }
+}

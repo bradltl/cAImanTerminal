@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install this script: curl https://get.example.com | bash",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Piping unverified remote web scripts directly into bash (`curl | bash`) presents significant security risks. It is recommended to download and inspect the script first:\n`curl -sLO https://get.example.com/install.sh && less install.sh`",
+    "risk": "elevated",
+    "warning": "Executing unreviewed remote scripts can compromise your system.",
+    "tool_request": null
+  }
+}

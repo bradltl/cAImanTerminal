@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find files modified more than 30 days ago",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find /tmp -type f -mtime +30",
+    "explanation": "Lists files in /tmp with modification time over 30 days old.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

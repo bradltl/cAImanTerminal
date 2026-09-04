@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ flush local dns cache using systemd-resolved",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo resolvectl flush-caches",
+    "explanation": "Flushes DNS cache stored by systemd-resolved service.",
+    "risk": "elevated",
+    "warning": "Requires sudo to flush system DNS cache.",
+    "tool_request": null
+  }
+}

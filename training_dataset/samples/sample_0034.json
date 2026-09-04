@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ sync local build directory to remote server with dry run first",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "rsync -avzn --delete ./dist/ user@remote.example.com:/var/www/site/",
+    "explanation": "Performs dry-run rsync previewing file transfers and deletions.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

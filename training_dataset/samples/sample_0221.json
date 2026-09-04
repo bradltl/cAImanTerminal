@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ list rds database instances with status and engine",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws rds describe-db-instances --query \"DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus,Endpoint.Address]\" --output table",
+    "explanation": "Lists RDS databases, engines, endpoints, and statuses.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

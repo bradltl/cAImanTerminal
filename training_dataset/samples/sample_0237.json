@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ list cloud sql database instances",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud sql instances list",
+    "explanation": "Lists Cloud SQL managed database instances, tiers, and statuses.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

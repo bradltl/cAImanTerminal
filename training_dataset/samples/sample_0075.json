@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ ssh into compute instance backend-01 in us-central1-a",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud compute ssh backend-01 --zone=us-central1-a",
+    "explanation": "Establishes secure SSH tunnel to backend-01 using OS Login credentials.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

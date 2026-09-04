@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ merge pr 42 using squash and delete the branch",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr merge 42 --squash --delete-branch",
+    "explanation": "Merges pull request 42 with squash strategy and deletes its head branch.",
+    "risk": "caution",
+    "warning": "Merges PR #42 into base branch and deletes remote branch.",
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/aws"
+  },
+  "user": "@ list lambda functions in current region",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws lambda list-functions --query \"Functions[*].[FunctionName,Runtime,MemorySize]\" --output table",
+    "explanation": "Tabulates deployed AWS Lambda functions with their names, runtimes, and allocated memory.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

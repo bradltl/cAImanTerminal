@@ -1,0 +1,20 @@
+{
+  "dataset_name": "cayman-terminal-sft-v1",
+  "total_examples": 355,
+  "target_range": "250-400",
+  "validation_passed": true,
+  "action_distribution": {
+    "suggest_command": 288,
+    "no_action": 45,
+    "clarify": 13,
+    "explain": 9
+  },
+  "risk_distribution": {
+    "normal": 206,
+    "caution": 66,
+    "elevated": 38,
+    "none": 45
+  },
+  "output_directory": "training_dataset",
+  "jsonl_path": "training_dataset/dataset.jsonl"
+}

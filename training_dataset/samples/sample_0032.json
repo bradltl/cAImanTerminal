@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/api"
+  },
+  "user": "@ pretty print json response from localhost 3000 health endpoint",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "curl -s http://localhost:3000/health | jq .",
+    "explanation": "Fetches endpoint silently and formats JSON output with jq.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

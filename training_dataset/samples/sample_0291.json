@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ create new issue with title and body",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh issue create --title \"Memory leak in parser\" --body \"Observed 200MB memory spike on large payloads.\"",
+    "explanation": "Submits a new issue to repository tracker.",
+    "risk": "caution",
+    "warning": "Creates new public issue.",
+    "tool_request": null
+  }
+}

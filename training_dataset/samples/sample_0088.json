@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/k8s"
+  },
+  "user": "@ update kubeconfig for eks cluster prod-apps in us-west-2",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws eks update-kubeconfig --region us-west-2 --name prod-apps",
+    "explanation": "Fetches EKS cluster configuration and configures local kubectl context.",
+    "risk": "caution",
+    "warning": "Updates local ~/.kube/config to target prod-apps cluster.",
+    "tool_request": null
+  }
+}

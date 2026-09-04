@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ update only my aur packages using yay",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "yay -Sua",
+    "explanation": "Checks and updates only packages installed from the AUR.",
+    "risk": "caution",
+    "warning": "Rebuilds and updates AUR packages.",
+    "tool_request": null
+  }
+}

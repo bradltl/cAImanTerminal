@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/k8s"
+  },
+  "user": "@ tail logs from container api of pod web-pod-xyz in namespace default",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kubectl logs -f web-pod-xyz -c api -n default",
+    "explanation": "Follows log stream from specific container inside the pod.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

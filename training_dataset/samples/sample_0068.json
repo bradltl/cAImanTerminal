@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "fedora",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install development tools group on fedora",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo dnf groupinstall -y \"Development Tools\"",
+    "explanation": "Installs the Development Tools package group.",
+    "risk": "elevated",
+    "warning": "Requires sudo; installs build packages.",
+    "tool_request": null
+  }
+}

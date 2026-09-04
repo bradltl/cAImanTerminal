@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ verify sha256 checksums from checksums.txt",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sha256sum -c checksums.txt",
+    "explanation": "Verifies files against recorded SHA-256 hashes.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

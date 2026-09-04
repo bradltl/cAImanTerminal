@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ print lines matching pattern and their line numbers in server.log",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "grep -n \"CRITICAL\" server.log",
+    "explanation": "Displays matching lines prefixed with 1-based line numbers.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

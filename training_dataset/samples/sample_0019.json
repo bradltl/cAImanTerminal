@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ force kill process 4567",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kill -9 4567",
+    "explanation": "Sends SIGKILL (unconditional termination) to PID 4567.",
+    "risk": "caution",
+    "warning": "Immediately terminates PID 4567 without cleanup.",
+    "tool_request": null
+  }
+}

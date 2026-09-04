@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ generate 32 character random hex password with openssl",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "openssl rand -hex 16",
+    "explanation": "Generates 16 random cryptographic bytes as 32 hex characters.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

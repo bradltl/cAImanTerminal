@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ what does chmod 755 do",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "explanation": "`chmod 755` sets file/directory permissions where the owner has Read, Write, and Execute (7 = 4+2+1), while group members and others have Read and Execute permissions (5 = 4+1).",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

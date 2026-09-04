@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/data"
+  },
+  "user": "@ safely delete scratch directory",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "rm -rf /home/brad/data/scratch",
+    "explanation": "Recursively deletes the local scratch directory.",
+    "risk": "elevated",
+    "warning": "Permanently deletes /home/brad/data/scratch.",
+    "tool_request": null
+  }
+}

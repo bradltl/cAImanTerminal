@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "tar -czf b",
+  "assistant": {
+    "action": "no_action",
+    "command": null,
+    "explanation": "User is in the middle of typing arguments for tar; debounce typing without interruption.",
+    "risk": null,
+    "warning": null,
+    "tool_request": null
+  }
+}

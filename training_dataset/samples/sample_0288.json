@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ view pull request 100 in browser",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr view 100 --web",
+    "explanation": "Opens pull request 100 in default web browser.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

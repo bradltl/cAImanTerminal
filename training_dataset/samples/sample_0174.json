@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ inspect system journal for boots history",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "journalctl --list-boots",
+    "explanation": "Lists recorded boot cycles with timestamps and IDs.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

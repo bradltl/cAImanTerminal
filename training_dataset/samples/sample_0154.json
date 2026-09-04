@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ count total number of files in current directory recursively",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find . -type f | wc -l",
+    "explanation": "Recursively counts all regular files in current tree.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

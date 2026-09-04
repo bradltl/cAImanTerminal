@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ show size of s3 bucket my-large-bucket",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws s3 ls s3://my-large-bucket --recursive --human-readable --summarize",
+    "explanation": "Calculates total object count and cumulative storage size.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ describe vpcs in current account",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws ec2 describe-vpcs --output table",
+    "explanation": "Lists VPC IDs, CIDR blocks, and states in a table.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

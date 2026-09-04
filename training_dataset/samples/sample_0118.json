@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/app"
+  },
+  "user": "@ show last 100 lines of logs from container web-app and follow",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker logs -f --tail 100 web-app",
+    "explanation": "Attaches to stdout/stderr of web-app starting with last 100 lines.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

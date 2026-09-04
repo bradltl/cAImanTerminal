@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ grep for pattern error case insensitive in app.log",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "grep -i \"error\" app.log",
+    "explanation": "Searches for 'error' ignoring case in app.log.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

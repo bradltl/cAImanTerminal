@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ restart virtual machine web-01 in resource group prod-rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az vm restart --resource-group prod-rg --name web-01",
+    "explanation": "Reboots Azure VM web-01.",
+    "risk": "caution",
+    "warning": "Reboots virtual machine web-01.",
+    "tool_request": null
+  }
+}

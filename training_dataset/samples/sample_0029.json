@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ test latency and packet loss to 1.1.1.1 with 5 pings",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "ping -c 5 1.1.1.1",
+    "explanation": "Transmits 5 ICMP echo requests to 1.1.1.1.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  }
+}

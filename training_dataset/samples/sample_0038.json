@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ show open listening ports with lsof",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo lsof -i -P -n | grep LISTEN",
+    "explanation": "Lists processes listening on network ports with numeric port translation.",
+    "risk": "elevated",
+    "warning": "Requires sudo to view sockets across all user processes.",
+    "tool_request": null
+  }
+}

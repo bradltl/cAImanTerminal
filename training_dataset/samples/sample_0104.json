@@ -1,0 +1,17 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ pop the most recent stash",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git stash pop",
+    "explanation": "Applies and drops the top entry in the stash list.",
+    "risk": "caution",
+    "warning": "Applies stashed modifications back to the working directory.",
+    "tool_request": null
+  }
+}
