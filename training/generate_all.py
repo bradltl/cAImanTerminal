@@ -197,7 +197,7 @@ def build_extended_examples():
     # --- Extended Developer: Git, GitHub, Containers (40 items) ---
     dev_specs = [
         ("git", "discard all unstaged modifications across working directory", "git restore .", "caution", "Discards unstaged modifications in current repository.", "Overwrites and permanently discards uncommitted file modifications."),
-        ("git", "unstage file src/index.ts keeping working tree changes", "git restore --staged src/index.ts", "normal", "Removes src/index.ts from staging index without losing changes.", None),
+        ("git", "unstage file src/index.ts keeping working tree changes", "git restore --staged src/index.ts", "caution", "Removes src/index.ts from staging index without losing changes.", "Modifies staging index for src/index.ts."),
         ("git", "amend last commit with currently staged changes without changing message", "git commit --amend --no-edit", "caution", "Amends previous commit with newly staged changes.", "Rewrites the most recent commit hash."),
         ("git", "show commits that are in feature branch but not in main", "git log main..feature/auth-flow --oneline", "normal", "Lists commits present on feature branch that have not been merged to main.", None),
         ("git", "find which commit introduced bug in file config.py", "git blame -L 10,25 config.py", "normal", "Shows author and commit hash for lines 10 through 25 of config.py.", None),

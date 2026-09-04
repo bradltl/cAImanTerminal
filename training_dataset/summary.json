@@ -10,8 +10,8 @@
     "explain": 9
   },
   "risk_distribution": {
-    "normal": 206,
-    "caution": 66,
+    "normal": 205,
+    "caution": 67,
     "elevated": 38,
     "none": 45
   },

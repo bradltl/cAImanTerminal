@@ -49,7 +49,7 @@ def get_bash_linux_data(system_prompt):
         "user": "@ find files containing TODO and print file names",
         "assistant": {
             "action": "suggest_command",
-            "command": "grep -rnwl \"TODO\" .",
+            "command": "grep -rwl \"TODO\" .",
             "explanation": "Recursively searches current directory for files containing 'TODO' and lists only filenames.",
             "risk": "normal",
             "warning": None,

@@ -10,8 +10,8 @@
     "action": "suggest_command",
     "command": "git restore --staged src/index.ts",
     "explanation": "Removes src/index.ts from staging index without losing changes.",
-    "risk": "normal",
-    "warning": null,
+    "risk": "caution",
+    "warning": "Modifies staging index for src/index.ts.",
     "tool_request": null
   }
 }
