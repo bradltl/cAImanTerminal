@@ -22,6 +22,18 @@ models:
     chat_format: "chatml"
     description: "Ultra-compact 0.5B candidate (~398MB) for low-memory environments"
 
+  qwen2.5-0.5b-sft:
+    name: "Qwen 2.5 0.5B (SFT Fine-Tuned)"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "models/qwen2.5-0.5b-instruct-sft.gguf"
+    sha256: "dddcff451267f34bbd34ad3a92c40a1b29a7cd04285a082a0ea2a04f9527e629"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Cayman Terminal fine-tuned Qwen 2.5 0.5B SFT model (~506MB)"
+
   qwen3-0.6b:
     name: "Qwen3 0.6B"
     architecture: "qwen"

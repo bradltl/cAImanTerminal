@@ -28,3 +28,6 @@ venv/
 results/*.json
 results/*.html
 training/candidates/*.json
+tools/llama.cpp/
+checkpoints/
+output/
