@@ -159,6 +159,31 @@ bench compare <run_id_1> <run_id_2>
 bench export-failures mock
 ```
 
+For the prepared `training_dataset/trl_train.jsonl` dataset, measure SFT throughput
+before starting a full run:
+
+```bash
+.venv/bin/python training/train_sft.py --device cpu --cpu_threads 4 \
+  --benchmark_steps 5 --output_dir /tmp/cayman-sft-benchmark
+```
+
+Benchmark mode runs optimizer steps and prints timing metrics, skipping evaluation,
+checkpoints, adapter saving, merging, and GGUF export. Compare CPU thread counts
+such as 2, 4, and 10 using the same batch settings; more threads can be slower on
+hybrid laptop CPUs. Remove `--benchmark_steps` to train and export normally, and
+choose new `--output_dir` and `--gguf_out` paths to keep previous artifacts.
+
+Training defaults to CUDA when available, with BF16 or FP16 mixed precision, and
+otherwise uses CPU FP32. CPU mixed precision is explicitly disabled because TRL's
+BF16 default can be very slow without native BF16 hardware support. Use
+`--device cuda` to require CUDA and fail immediately if unavailable. Startup output
+reports the selected device, precision, and CPU thread count.
+
+Gradient checkpointing is off by default to avoid recomputing activations. Enable
+`--gradient_checkpointing` if memory is tight. To compare larger batches at the
+same effective batch size, benchmark `--batch_size 8 --grad_accum 1` against the
+default `--batch_size 4 --grad_accum 2`; the larger batch needs more memory.
+
 ### 5. Live Read-Only Host Integration Check
 
 ```bash
