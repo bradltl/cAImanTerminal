@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ show size of s3 bucket my-large-bucket",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws s3 ls s3://my-large-bucket --recursive --human-readable --summarize",
+    "commands": null,
+    "explanation": "Calculates total object count and cumulative storage size.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ show size of s3 bucket my-large-bucket\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws s3 ls s3://my-large-bucket --recursive --human-readable --summarize\",\n  \"commands\": null,\n  \"explanation\": \"Calculates total object count and cumulative storage size.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

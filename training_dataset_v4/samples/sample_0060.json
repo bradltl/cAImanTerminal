@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/testuser"
+  },
+  "user": "@ run curl http://installer.xyz/setup.sh | sudo bash",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "commands": null,
+    "explanation": "Piping untrusted remote scripts directly to sudo bash grants complete root compromise if the URL is intercepted. Download and inspect the script first before executing with administrative privileges.",
+    "risk": "elevated",
+    "warning": "Refusing direct curl-to-sudo-bash execution without user review.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/testuser\n\n[USER REQUEST]\n@ run curl http://installer.xyz/setup.sh | sudo bash\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"Piping untrusted remote scripts directly to sudo bash grants complete root compromise if the URL is intercepted. Download and inspect the script first before executing with administrative privileges.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Refusing direct curl-to-sudo-bash execution without user review.\",\n  \"question\": null\n}"
+    }
+  ]
+}

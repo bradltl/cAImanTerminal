@@ -56,7 +56,17 @@ models:
     temperature: 0.1
     top_p: 0.95
     chat_format: "chatml"
-    description: "Cayman Terminal fine-tuned Qwen 2.5 0.5B SFT v3 model with tool_request removed and targeted clarify/contrast scenarios (~506MB)"
+  qwen2.5-0.5b-sft-v4:
+    name: "Qwen 2.5 0.5B (SFT v4 Unified Master)"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "models/qwen2.5-0.5b-instruct-sft-v4.gguf"
+    sha256: ""
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Cayman Terminal fine-tuned Qwen 2.5 0.5B SFT v4 model merging v3 strict contract with v2 multi-domain breadth (~506MB)"
 
 
   qwen3-0.6b:

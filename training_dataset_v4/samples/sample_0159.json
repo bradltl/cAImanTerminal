@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ check status of ci tests on pull request 42",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr checks 42",
+    "commands": null,
+    "explanation": "Reports CI/CD check run statuses for pull request #42.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ check status of ci tests on pull request 42\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gh pr checks 42\",\n  \"commands\": null,\n  \"explanation\": \"Reports CI/CD check run statuses for pull request #42.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

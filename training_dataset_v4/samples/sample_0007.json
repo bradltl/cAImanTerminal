@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ get credentials for gke cluster prod-k8s in zone us-central1-c",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud container clusters get-credentials prod-k8s --zone=us-central1-c",
+    "commands": null,
+    "explanation": "Configures local kubectl to target Google Kubernetes Engine cluster.",
+    "risk": "caution",
+    "warning": "Updates local kubeconfig context.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ get credentials for gke cluster prod-k8s in zone us-central1-c\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gcloud container clusters get-credentials prod-k8s --zone=us-central1-c\",\n  \"commands\": null,\n  \"explanation\": \"Configures local kubectl to target Google Kubernetes Engine cluster.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Updates local kubeconfig context.\",\n  \"question\": null\n}"
+    }
+  ]
+}

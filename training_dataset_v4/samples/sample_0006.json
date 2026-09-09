@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/backup"
+  },
+  "user": "@ extract archive.tar.gz into /opt/app",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo tar -xzf archive.tar.gz -C /opt/app",
+    "commands": null,
+    "explanation": "Extracts gzip compressed tar archive into /opt/app with root permissions.",
+    "risk": "elevated",
+    "warning": "Requires sudo to write to /opt/app.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/backup\n\n[USER REQUEST]\n@ extract archive.tar.gz into /opt/app\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo tar -xzf archive.tar.gz -C /opt/app\",\n  \"commands\": null,\n  \"explanation\": \"Extracts gzip compressed tar archive into /opt/app with root permissions.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to write to /opt/app.\",\n  \"question\": null\n}"
+    }
+  ]
+}

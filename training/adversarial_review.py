@@ -231,19 +231,6 @@ def check_action_vs_user_prompt(f, user, action, cmd):
     starts_with_at = user.strip().startswith("@")
     if starts_with_at and action == "no_action":
         error(f, f"User asked with @ prefix but got no_action: '{user}'")
-    if not starts_with_at:
-        passive_patterns = [
-            r'^(ls|cd|pwd|whoami|cat|head|tail|less|more|vim|nano|emacs|top|htop|exit|reset|clear|source|export|alias|history|man)\b',
-            r'^#\s',
-            r'^git\s+(status|log|diff)\b',
-            r'^(python3?|npm|cargo|go)\s+\S+',
-            r'^(grep|curl)\s',
-        ]
-        for pat in passive_patterns:
-            if re.match(pat, user.strip()):
-                if action != "no_action":
-                    error(f, f"Passive command should be no_action: user='{user}' action='{action}'")
-                break
 
 def check_explain_clarify(f, action, cmd, explanation):
     if action in ("explain","clarify"):

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ explain 2>&1 in bash",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "commands": null,
+    "explanation": "`2>&1` redirects file descriptor 2 (standard error, stderr) to file descriptor 1 (standard output, stdout). This ensures error messages are written to the same destination or pipe as regular output.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ explain 2>&1 in bash\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"explain\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"`2>&1` redirects file descriptor 2 (standard error, stderr) to file descriptor 1 (standard output, stdout). This ensures error messages are written to the same destination or pipe as regular output.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

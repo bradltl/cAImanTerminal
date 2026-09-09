@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/azure"
+  },
+  "user": "@ get aks cluster credentials for my-aks in rg-prod",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az aks get-credentials --resource-group rg-prod --name my-aks",
+    "commands": null,
+    "explanation": "Merges credentials for Azure Kubernetes Service cluster into local kubeconfig.",
+    "risk": "caution",
+    "warning": "Updates local ~/.kube/config to target my-aks.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/azure\n\n[USER REQUEST]\n@ get aks cluster credentials for my-aks in rg-prod\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"az aks get-credentials --resource-group rg-prod --name my-aks\",\n  \"commands\": null,\n  \"explanation\": \"Merges credentials for Azure Kubernetes Service cluster into local kubeconfig.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Updates local ~/.kube/config to target my-aks.\",\n  \"question\": null\n}"
+    }
+  ]
+}

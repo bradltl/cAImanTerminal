@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ replace tabs with 4 spaces in file script.sh",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "expand -t 4 script.sh > script_expanded.sh",
+    "commands": null,
+    "explanation": "Converts tab characters to 4 spaces, saving to new file.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ replace tabs with 4 spaces in file script.sh\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"expand -t 4 script.sh > script_expanded.sh\",\n  \"commands\": null,\n  \"explanation\": \"Converts tab characters to 4 spaces, saving to new file.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

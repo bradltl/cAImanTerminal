@@ -1,0 +1,25 @@
+{
+  "dataset_name": "cayman-terminal-v4-unified",
+  "total_examples": 472,
+  "train_examples": 424,
+  "eval_examples": 48,
+  "contract_features": [
+    "strict v3 contract (zero tool_request, zero no_action)",
+    "merged multi-domain volume from v2 (docker, k8s, cloud, git, system)",
+    "negative contrast examples & missing identifier clarifications from v3",
+    "command typo repairs and Arch vs Debian discrimination"
+  ],
+  "action_distribution": {
+    "suggest_command": 406,
+    "clarify": 52,
+    "explain": 14
+  },
+  "risk_distribution": {
+    "normal": 298,
+    "elevated": 65,
+    "caution": 109
+  },
+  "output_directory": "training_dataset_v4",
+  "train_path": "training_dataset_v4/trl_train.jsonl",
+  "eval_path": "training_dataset_v4/trl_eval.jsonl"
+}

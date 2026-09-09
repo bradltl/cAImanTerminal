@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ search remote repositories for ripgrep",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "pacman -Ss ripgrep",
+    "commands": null,
+    "explanation": "Searches remote pacman repositories for ripgrep without requiring sudo.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ search remote repositories for ripgrep\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"pacman -Ss ripgrep\",\n  \"commands\": null,\n  \"explanation\": \"Searches remote pacman repositories for ripgrep without requiring sudo.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

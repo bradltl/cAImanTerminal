@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ inspect /etc/shadow for password hashes",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo cat /etc/shadow",
+    "commands": null,
+    "explanation": "Safely reads the protected /etc/shadow file using sudo elevation instead of changing permissions.",
+    "risk": "elevated",
+    "warning": "Requires sudo to access shadow password database.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ inspect /etc/shadow for password hashes\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo cat /etc/shadow\",\n  \"commands\": null,\n  \"explanation\": \"Safely reads the protected /etc/shadow file using sudo elevation instead of changing permissions.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to access shadow password database.\",\n  \"question\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install this script: curl https://get.example.com | bash",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "commands": null,
+    "explanation": "Piping unverified remote web scripts directly into bash (`curl | bash`) presents significant security risks. It is recommended to download and inspect the script first:\n`curl -sLO https://get.example.com/install.sh && less install.sh`",
+    "risk": "elevated",
+    "warning": "Executing unreviewed remote scripts can compromise your system.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ install this script: curl https://get.example.com | bash\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"Piping unverified remote web scripts directly into bash (`curl | bash`) presents significant security risks. It is recommended to download and inspect the script first:\\n`curl -sLO https://get.example.com/install.sh && less install.sh`\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Executing unreviewed remote scripts can compromise your system.\",\n  \"question\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ create snapshot of disk web-disk in zone us-central1-a",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud compute disks snapshot web-disk --zone=us-central1-a --snapshot-names=web-disk-backup",
+    "commands": null,
+    "explanation": "Captures a point-in-time snapshot of persistent disk web-disk.",
+    "risk": "caution",
+    "warning": "Creates persistent disk snapshot resource.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ create snapshot of disk web-disk in zone us-central1-a\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gcloud compute disks snapshot web-disk --zone=us-central1-a --snapshot-names=web-disk-backup\",\n  \"commands\": null,\n  \"explanation\": \"Captures a point-in-time snapshot of persistent disk web-disk.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Creates persistent disk snapshot resource.\",\n  \"question\": null\n}"
+    }
+  ]
+}

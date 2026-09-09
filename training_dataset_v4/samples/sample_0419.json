@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ stash current work with a message",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git stash push -m \"wip-feature\"",
+    "commands": null,
+    "explanation": "Saves modified tracked files to git stash with a descriptive message.",
+    "risk": "caution",
+    "warning": "Reverts working tree to HEAD, stashing uncommitted modifications.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ stash current work with a message\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git stash push -m \\\"wip-feature\\\"\",\n  \"commands\": null,\n  \"explanation\": \"Saves modified tracked files to git stash with a descriptive message.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Reverts working tree to HEAD, stashing uncommitted modifications.\",\n  \"question\": null\n}"
+    }
+  ]
+}

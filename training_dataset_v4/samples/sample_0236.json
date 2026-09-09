@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ test write throughput to disk using dd",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "dd if=/dev/zero of=testfile bs=1M count=1000 conv=fdatasync",
+    "commands": null,
+    "explanation": "Writes 1GB file to benchmark sequential storage write speed.",
+    "risk": "elevated",
+    "warning": "Uses dd block copying utility.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ test write throughput to disk using dd\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"dd if=/dev/zero of=testfile bs=1M count=1000 conv=fdatasync\",\n  \"commands\": null,\n  \"explanation\": \"Writes 1GB file to benchmark sequential storage write speed.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Uses dd block copying utility.\",\n  \"question\": null\n}"
+    }
+  ]
+}

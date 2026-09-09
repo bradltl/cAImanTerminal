@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ flush local dns cache using systemd-resolved",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo resolvectl flush-caches",
+    "commands": null,
+    "explanation": "Flushes DNS cache stored by systemd-resolved service.",
+    "risk": "elevated",
+    "warning": "Requires sudo to flush system DNS cache.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ flush local dns cache using systemd-resolved\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo resolvectl flush-caches\",\n  \"commands\": null,\n  \"explanation\": \"Flushes DNS cache stored by systemd-resolved service.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to flush system DNS cache.\",\n  \"question\": null\n}"
+    }
+  ]
+}

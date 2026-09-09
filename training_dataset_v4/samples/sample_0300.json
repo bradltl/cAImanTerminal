@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/backup"
+  },
+  "user": "@ compress my project folder into a zstd tar archive",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "tar --zstd -cf project.tar.zst -C /home/brad project",
+    "commands": null,
+    "explanation": "Creates a zstd-compressed tar archive of the project folder.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/backup\n\n[USER REQUEST]\n@ compress my project folder into a zstd tar archive\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"tar --zstd -cf project.tar.zst -C /home/brad project\",\n  \"commands\": null,\n  \"explanation\": \"Creates a zstd-compressed tar archive of the project folder.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}
