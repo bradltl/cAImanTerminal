@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ clean cached package versions keeping only the latest 2",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo paccache -rk2",
+    "commands": null,
+    "explanation": "Trims /var/cache/pacman/pkg to retain only the 2 most recent package releases.",
+    "risk": "elevated",
+    "warning": "Requires sudo; deletes older package tarballs from pacman cache.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ clean cached package versions keeping only the latest 2\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo paccache -rk2\",\n  \"commands\": null,\n  \"explanation\": \"Trims /var/cache/pacman/pkg to retain only the 2 most recent package releases.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; deletes older package tarballs from pacman cache.\",\n  \"question\": null\n}"
+    }
+  ]
+}

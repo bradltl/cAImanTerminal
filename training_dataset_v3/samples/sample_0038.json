@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/data"
+  },
+  "user": "@ create folder \"Financial Reports/Q1 2026\"",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "mkdir -p \"Financial Reports/Q1 2026\"",
+    "commands": null,
+    "explanation": "Creates directory structure containing whitespace in path names.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/data\n\n[USER REQUEST]\n@ create folder \"Financial Reports/Q1 2026\"\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"mkdir -p \\\"Financial Reports/Q1 2026\\\"\",\n  \"commands\": null,\n  \"explanation\": \"Creates directory structure containing whitespace in path names.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

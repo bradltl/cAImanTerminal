@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ download file from s3",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "commands": null,
+    "explanation": "S3 bucket URI and destination path are needed (e.g. `aws s3 cp s3://bucket/file.txt ./`).",
+    "risk": "normal",
+    "warning": null,
+    "question": "What is the S3 object path (s3://bucket/key) and destination folder?"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ download file from s3\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"S3 bucket URI and destination path are needed (e.g. `aws s3 cp s3://bucket/file.txt ./`).\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": \"What is the S3 object path (s3://bucket/key) and destination folder?\"\n}"
+    }
+  ]
+}

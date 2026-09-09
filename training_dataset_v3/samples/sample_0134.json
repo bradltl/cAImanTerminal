@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ remove apache and its unneeded configuration files and dependencies",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo pacman -Rns apache",
+    "commands": null,
+    "explanation": "Completely removes apache, its unneeded dependencies, and backup config files.",
+    "risk": "elevated",
+    "warning": "Requires sudo; removes apache and configuration.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ remove apache and its unneeded configuration files and dependencies\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo pacman -Rns apache\",\n  \"commands\": null,\n  \"explanation\": \"Completely removes apache, its unneeded dependencies, and backup config files.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; removes apache and configuration.\",\n  \"question\": null\n}"
+    }
+  ]
+}

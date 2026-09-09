@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ upgrade all packages on ubuntu",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo apt upgrade -y",
+    "commands": null,
+    "explanation": "Upgrades all installed Debian/Ubuntu packages to latest versions.",
+    "risk": "elevated",
+    "warning": "Requires sudo; upgrades system packages.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: ubuntu (debian)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ upgrade all packages on ubuntu\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo apt upgrade -y\",\n  \"commands\": null,\n  \"explanation\": \"Upgrades all installed Debian/Ubuntu packages to latest versions.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; upgrades system packages.\",\n  \"question\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "fedora",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install development tools group on fedora",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo dnf groupinstall -y \"Development Tools\"",
+    "commands": null,
+    "explanation": "Installs the Development Tools package group.",
+    "risk": "elevated",
+    "warning": "Requires sudo; installs build packages.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: fedora (fedora)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ install development tools group on fedora\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo dnf groupinstall -y \\\"Development Tools\\\"\",\n  \"commands\": null,\n  \"explanation\": \"Installs the Development Tools package group.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; installs build packages.\",\n  \"question\": null\n}"
+    }
+  ]
+}

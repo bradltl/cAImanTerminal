@@ -1,0 +1,39 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ continue",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "ps aux --sort=-%mem | head -n 11",
+    "commands": null,
+    "explanation": "RAM and swap are nearly exhausted; listing top 10 memory consuming processes.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "history": [
+    {
+      "command": "free -h",
+      "exit_code": 0,
+      "output": "Mem: 31Gi total, 29Gi used, 1.2Gi free\nSwap: 8.0Gi total, 7.8Gi used, 200Mi free"
+    }
+  ],
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[RECENT TERMINAL HISTORY]\n$ free -h\nMem: 31Gi total, 29Gi used, 1.2Gi free\nSwap: 8.0Gi total, 7.8Gi used, 200Mi free\n\n[USER REQUEST]\n@ continue\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"ps aux --sort=-%mem | head -n 11\",\n  \"commands\": null,\n  \"explanation\": \"RAM and swap are nearly exhausted; listing top 10 memory consuming processes.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

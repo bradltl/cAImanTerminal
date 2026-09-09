@@ -1,0 +1,26 @@
+{
+  "dataset_name": "cayman-terminal-v3",
+  "total_examples": 211,
+  "train_examples": 189,
+  "eval_examples": 22,
+  "contract_changes": [
+    "tool_request removed from assistant response schema",
+    "passive no_action removed (owned by host eligibility gate)",
+    "mandatory clarify questions without hallucinating identifiers",
+    "negative contrast examples added"
+  ],
+  "action_distribution": {
+    "clarify": 19,
+    "suggest_command": 188,
+    "explain": 4
+  },
+  "risk_distribution": {
+    "caution": 52,
+    "elevated": 39,
+    "normal": 120
+  },
+  "output_directory": "training_dataset_v3",
+  "jsonl_path": "training_dataset_v3/dataset.jsonl",
+  "train_path": "training_dataset_v3/trl_train.jsonl",
+  "eval_path": "training_dataset_v3/trl_eval.jsonl"
+}

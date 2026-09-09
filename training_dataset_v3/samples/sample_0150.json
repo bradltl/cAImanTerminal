@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ show package version and dependencies for nginx on debian",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "apt show nginx",
+    "commands": null,
+    "explanation": "Displays details, dependencies, and version information for nginx.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: ubuntu (debian)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ show package version and dependencies for nginx on debian\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"apt show nginx\",\n  \"commands\": null,\n  \"explanation\": \"Displays details, dependencies, and version information for nginx.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

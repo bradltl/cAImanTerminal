@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ checkout pull request 42",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr checkout 42",
+    "commands": null,
+    "explanation": "Fetches and checks out the branch for pull request #42 using GitHub CLI.",
+    "risk": "caution",
+    "warning": "Switches working directory to PR branch.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ checkout pull request 42\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gh pr checkout 42\",\n  \"commands\": null,\n  \"explanation\": \"Fetches and checks out the branch for pull request #42 using GitHub CLI.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Switches working directory to PR branch.\",\n  \"question\": null\n}"
+    }
+  ]
+}

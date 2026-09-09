@@ -1,0 +1,39 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ continue",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "ping -c 3 192.168.50.1",
+    "commands": null,
+    "explanation": "Tests network reachability to the default gateway 192.168.50.1.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "history": [
+    {
+      "command": "ip route show",
+      "exit_code": 0,
+      "output": "default via 192.168.50.1 dev eth0 proto dhcp src 192.168.50.124 metric 100\n192.168.50.0/24 dev eth0 proto kernel scope link src 192.168.50.124 metric 100"
+    }
+  ],
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[RECENT TERMINAL HISTORY]\n$ ip route show\ndefault via 192.168.50.1 dev eth0 proto dhcp src 192.168.50.124 metric 100\n192.168.50.0/24 dev eth0 proto kernel scope link src 192.168.50.124 metric 100\n\n[USER REQUEST]\n@ continue\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"ping -c 3 192.168.50.1\",\n  \"commands\": null,\n  \"explanation\": \"Tests network reachability to the default gateway 192.168.50.1.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

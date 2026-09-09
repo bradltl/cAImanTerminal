@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/app"
+  },
+  "user": "@ clean unused docker images networks and build cache",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker system prune -f",
+    "commands": null,
+    "explanation": "Removes stopped containers, dangling images, and unused networks.",
+    "risk": "caution",
+    "warning": "Deletes dangling images and build cache to reclaim disk.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/app\n\n[USER REQUEST]\n@ clean unused docker images networks and build cache\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"docker system prune -f\",\n  \"commands\": null,\n  \"explanation\": \"Removes stopped containers, dangling images, and unused networks.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deletes dangling images and build cache to reclaim disk.\",\n  \"question\": null\n}"
+    }
+  ]
+}

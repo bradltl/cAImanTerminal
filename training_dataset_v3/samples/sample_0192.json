@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ delete merged local branch feature/old-task",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git branch -d feature/old-task",
+    "commands": null,
+    "explanation": "Deletes the local branch feature/old-task (safe delete, requires branch to be merged).",
+    "risk": "caution",
+    "warning": "Deletes local branch feature/old-task.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ delete merged local branch feature/old-task\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git branch -d feature/old-task\",\n  \"commands\": null,\n  \"explanation\": \"Deletes the local branch feature/old-task (safe delete, requires branch to be merged).\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deletes local branch feature/old-task.\",\n  \"question\": null\n}"
+    }
+  ]
+}

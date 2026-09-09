@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ force kill process 4567",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kill -9 4567",
+    "commands": null,
+    "explanation": "Sends SIGKILL (unconditional termination) to PID 4567.",
+    "risk": "caution",
+    "warning": "Immediately terminates PID 4567 without cleanup.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ force kill process 4567\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"kill -9 4567\",\n  \"commands\": null,\n  \"explanation\": \"Sends SIGKILL (unconditional termination) to PID 4567.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Immediately terminates PID 4567 without cleanup.\",\n  \"question\": null\n}"
+    }
+  ]
+}
