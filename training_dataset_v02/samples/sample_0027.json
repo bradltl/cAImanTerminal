@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/var/www"
+  },
+  "user": "@ recursively change owner of html folder to www-data",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo chown -R www-data:www-data /var/www/html",
+    "explanation": "Recursively transfers ownership of /var/www/html to user and group www-data.",
+    "risk": "elevated",
+    "warning": "Requires sudo; alters file ownership across the directory.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /var/www\n\n[USER REQUEST]\n@ recursively change owner of html folder to www-data\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo chown -R www-data:www-data /var/www/html\",\n  \"explanation\": \"Recursively transfers ownership of /var/www/html to user and group www-data.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; alters file ownership across the directory.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

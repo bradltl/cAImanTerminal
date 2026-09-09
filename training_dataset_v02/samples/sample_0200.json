@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ how do I update all packages on my system?",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo pacman -Syu --noconfirm",
+    "explanation": "Synchronizes repositories and non-interactively upgrades all installed Arch packages.",
+    "risk": "elevated",
+    "warning": "Requires sudo; upgrades system packages.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ how do I update all packages on my system?\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo pacman -Syu --noconfirm\",\n  \"explanation\": \"Synchronizes repositories and non-interactively upgrades all installed Arch packages.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; upgrades system packages.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

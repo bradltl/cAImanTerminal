@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/data"
+  },
+  "user": "@ archive directory \"Client Data\" into tar file",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "tar -czf \"Client Data.tar.gz\" \"Client Data\"",
+    "explanation": "Creates compressed archive of directory containing whitespace in name.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/data\n\n[USER REQUEST]\n@ archive directory \"Client Data\" into tar file\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"tar -czf \\\"Client Data.tar.gz\\\" \\\"Client Data\\\"\",\n  \"explanation\": \"Creates compressed archive of directory containing whitespace in name.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

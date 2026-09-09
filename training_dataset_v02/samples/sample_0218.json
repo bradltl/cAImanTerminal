@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ create pull request using commit history",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr create --fill",
+    "explanation": "Opens a new pull request using commit titles and descriptions.",
+    "risk": "caution",
+    "warning": "Submits a new pull request to the remote repository.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ create pull request using commit history\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gh pr create --fill\",\n  \"explanation\": \"Opens a new pull request using commit titles and descriptions.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Submits a new pull request to the remote repository.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

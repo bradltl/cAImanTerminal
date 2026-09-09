@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ update kubeconfig for eks cluster",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Which EKS cluster and region would you like to target? (e.g. `aws eks update-kubeconfig --name <cluster> --region <region>`).",
+    "risk": "caution",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ update kubeconfig for eks cluster\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Which EKS cluster and region would you like to target? (e.g. `aws eks update-kubeconfig --name <cluster> --region <region>`).\",\n  \"risk\": \"caution\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

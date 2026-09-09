@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install google-chrome using paru",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "paru -S google-chrome",
+    "explanation": "Fetches PKGBUILD, reviews, and installs google-chrome from the AUR via paru.",
+    "risk": "caution",
+    "warning": "Installs third-party package from the AUR.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ install google-chrome using paru\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"paru -S google-chrome\",\n  \"explanation\": \"Fetches PKGBUILD, reviews, and installs google-chrome from the AUR via paru.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Installs third-party package from the AUR.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

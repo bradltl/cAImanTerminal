@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "fedora",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ update all fedora packages using dnf",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo dnf upgrade --refresh -y",
+    "explanation": "Refreshes repo metadata and upgrades installed RPM packages.",
+    "risk": "elevated",
+    "warning": "Requires sudo; upgrades system packages.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: fedora (fedora)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ update all fedora packages using dnf\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo dnf upgrade --refresh -y\",\n  \"explanation\": \"Refreshes repo metadata and upgrades installed RPM packages.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; upgrades system packages.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

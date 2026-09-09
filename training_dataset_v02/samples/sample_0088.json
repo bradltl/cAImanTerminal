@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/k8s"
+  },
+  "user": "@ update kubeconfig for eks cluster prod-apps in us-west-2",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws eks update-kubeconfig --region us-west-2 --name prod-apps",
+    "explanation": "Fetches EKS cluster configuration and configures local kubectl context.",
+    "risk": "caution",
+    "warning": "Updates local ~/.kube/config to target prod-apps cluster.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/k8s\n\n[USER REQUEST]\n@ update kubeconfig for eks cluster prod-apps in us-west-2\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws eks update-kubeconfig --region us-west-2 --name prod-apps\",\n  \"explanation\": \"Fetches EKS cluster configuration and configures local kubectl context.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Updates local ~/.kube/config to target prod-apps cluster.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

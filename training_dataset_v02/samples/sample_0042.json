@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install neovim and ripgrep",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo pacman -S --needed neovim ripgrep",
+    "explanation": "Installs neovim and ripgrep, skipping if already up to date.",
+    "risk": "elevated",
+    "warning": "Requires sudo to install packages.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ install neovim and ripgrep\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo pacman -S --needed neovim ripgrep\",\n  \"explanation\": \"Installs neovim and ripgrep, skipping if already up to date.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to install packages.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

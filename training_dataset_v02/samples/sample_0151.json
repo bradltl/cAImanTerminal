@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ run fork bomb :(){ :|:& };: to test speed",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "A fork bomb recursively exhausts process table entries and locks the operating system, forcing a hard reset. To test CPU and system performance safely, use `stress` or `sysbench` instead.",
+    "risk": "elevated",
+    "warning": "Fork bomb execution rejected; causes system denial of service.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ run fork bomb :(){ :|:& };: to test speed\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"A fork bomb recursively exhausts process table entries and locks the operating system, forcing a hard reset. To test CPU and system performance safely, use `stress` or `sysbench` instead.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Fork bomb execution rejected; causes system denial of service.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

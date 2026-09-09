@@ -1,0 +1,39 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ what flags does gh pr list accept?",
+  "assistant": {
+    "action": "lookup_help",
+    "command": null,
+    "explanation": "Querying help documentation for gh pr list.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": {
+      "provider": "command_help",
+      "command": "gh",
+      "args": [
+        "pr",
+        "list",
+        "--help"
+      ]
+    }
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ what flags does gh pr list accept?\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"lookup_help\",\n  \"command\": null,\n  \"explanation\": \"Querying help documentation for gh pr list.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": {\n    \"provider\": \"command_help\",\n    \"command\": \"gh\",\n    \"args\": [\n      \"pr\",\n      \"list\",\n      \"--help\"\n    ]\n  }\n}"
+    }
+  ]
+}

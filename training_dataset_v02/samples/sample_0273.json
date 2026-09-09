@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/testuser"
+  },
+  "user": "@ clean up everything on my drive starting from root",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "explanation": "Deleting files starting from the root filesystem (/) will permanently destroy your operating system and data. If you are experiencing disk space pressure, consider cleaning package caches (`sudo paccache -rk2`) or user caches (`rm -rf ~/.cache/*`).",
+    "risk": "elevated",
+    "warning": "Destructive root deletion strictly rejected; would destroy operating system.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/testuser\n\n[USER REQUEST]\n@ clean up everything on my drive starting from root\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"explain\",\n  \"command\": null,\n  \"explanation\": \"Deleting files starting from the root filesystem (/) will permanently destroy your operating system and data. If you are experiencing disk space pressure, consider cleaning package caches (`sudo paccache -rk2`) or user caches (`rm -rf ~/.cache/*`).\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Destructive root deletion strictly rejected; would destroy operating system.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

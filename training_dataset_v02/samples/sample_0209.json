@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ rebuild my linux kernel initramfs image",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo mkinitcpio -p linux",
+    "explanation": "Rebuilds the default linux kernel preset initramfs using mkinitcpio on Arch Linux/CachyOS.",
+    "risk": "elevated",
+    "warning": "Requires sudo; regenerates boot images.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ rebuild my linux kernel initramfs image\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo mkinitcpio -p linux\",\n  \"explanation\": \"Rebuilds the default linux kernel preset initramfs using mkinitcpio on Arch Linux/CachyOS.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; regenerates boot images.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

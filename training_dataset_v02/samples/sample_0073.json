@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ switch gcp project to my-prod-cluster",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud config set project my-prod-cluster",
+    "explanation": "Sets default active GCP project to 'my-prod-cluster'.",
+    "risk": "caution",
+    "warning": "Switches the active project context for all subsequent gcloud commands.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ switch gcp project to my-prod-cluster\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gcloud config set project my-prod-cluster\",\n  \"explanation\": \"Sets default active GCP project to 'my-prod-cluster'.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Switches the active project context for all subsequent gcloud commands.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

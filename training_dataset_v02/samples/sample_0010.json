@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/backup"
+  },
+  "user": "@ extract archive.tar.gz into /opt/app",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo tar -xzf archive.tar.gz -C /opt/app",
+    "explanation": "Extracts gzip compressed tar archive into /opt/app with root permissions.",
+    "risk": "elevated",
+    "warning": "Requires sudo to write to /opt/app.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/backup\n\n[USER REQUEST]\n@ extract archive.tar.gz into /opt/app\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo tar -xzf archive.tar.gz -C /opt/app\",\n  \"explanation\": \"Extracts gzip compressed tar archive into /opt/app with root permissions.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to write to /opt/app.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

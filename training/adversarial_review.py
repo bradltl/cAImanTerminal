@@ -308,11 +308,13 @@ def check_duplicate_user_prompts(all_samples):
     prompt_files = {}
     for f, ex in all_samples:
         user = ex.get("user","")
-        prompt_counter[user] += 1
-        prompt_files.setdefault(user, []).append(f)
-    for prompt, count in prompt_counter.items():
+        hist = json.dumps(ex.get("history", [])) if user.strip().startswith("@ continue") else ""
+        key = f"{user} | hist:{hist}" if hist else user
+        prompt_counter[key] += 1
+        prompt_files.setdefault(key, []).append(f)
+    for prompt_key, count in prompt_counter.items():
         if count > 1:
-            error(prompt_files[prompt][0], f"Duplicate user prompt '{prompt}' in: {', '.join(prompt_files[prompt])}")
+            error(prompt_files[prompt_key][0], f"Duplicate user prompt '{prompt_key}' in: {', '.join(prompt_files[prompt_key])}")
 
 def main():
     sample_files = sorted(SAMPLES_DIR.glob("*.json"))

@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install google-chrome from aur with yay",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "yay -S google-chrome",
+    "explanation": "Builds and installs google-chrome from the Arch User Repository using yay without sudo.",
+    "risk": "caution",
+    "warning": "Builds and installs third-party software from the AUR.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ install google-chrome from aur with yay\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"yay -S google-chrome\",\n  \"explanation\": \"Builds and installs google-chrome from the Arch User Repository using yay without sudo.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Builds and installs third-party software from the AUR.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

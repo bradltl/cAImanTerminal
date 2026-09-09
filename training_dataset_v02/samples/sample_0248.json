@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ configure kubectl credentials for aks cluster my-aks in prod-rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az aks get-credentials --resource-group prod-rg --name my-aks",
+    "explanation": "Merges Azure Kubernetes Service cluster credentials into local kubeconfig.",
+    "risk": "caution",
+    "warning": "Updates local kubeconfig context.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ configure kubectl credentials for aks cluster my-aks in prod-rg\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"az aks get-credentials --resource-group prod-rg --name my-aks\",\n  \"explanation\": \"Merges Azure Kubernetes Service cluster credentials into local kubeconfig.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Updates local kubeconfig context.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

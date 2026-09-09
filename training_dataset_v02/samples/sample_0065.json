@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ purge apache2 and all its config files",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo apt purge -y apache2",
+    "explanation": "Removes apache2 and deletes all related configuration files.",
+    "risk": "elevated",
+    "warning": "Requires sudo; permanently deletes package configs.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: ubuntu (debian)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ purge apache2 and all its config files\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo apt purge -y apache2\",\n  \"explanation\": \"Removes apache2 and deletes all related configuration files.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; permanently deletes package configs.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

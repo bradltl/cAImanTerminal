@@ -1,0 +1,41 @@
+{
+  "dataset_name": "cayman-terminal-targeted-v02",
+  "total_examples": 281,
+  "train_examples": 252,
+  "eval_examples": 29,
+  "validation_passed": true,
+  "action_distribution": {
+    "suggest_command": 193,
+    "no_action": 41,
+    "clarify": 33,
+    "explain": 6,
+    "lookup_help": 8
+  },
+  "risk_distribution": {
+    "normal": 135,
+    "caution": 60,
+    "elevated": 45,
+    "none": 41
+  },
+  "os_distribution": {
+    "cachyos": 263,
+    "ubuntu": 14,
+    "arch": 1,
+    "fedora": 3
+  },
+  "failure_clusters_covered": [
+    "clarify_missing_args",
+    "no_action_restraint",
+    "arch_vs_debian_contrast",
+    "gh_vs_git",
+    "cloud_disambiguation",
+    "doc_lookup_help",
+    "multi_turn_continue",
+    "quoting_whitespace",
+    "catastrophic_safety"
+  ],
+  "output_directory": "training_dataset_v02",
+  "jsonl_path": "training_dataset_v02/dataset.jsonl",
+  "train_path": "training_dataset_v02/trl_train.jsonl",
+  "eval_path": "training_dataset_v02/trl_eval.jsonl"
+}

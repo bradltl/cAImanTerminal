@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ inspect /etc/shadow for password hashes",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo cat /etc/shadow",
+    "explanation": "Safely reads the protected /etc/shadow file using sudo elevation instead of changing permissions.",
+    "risk": "elevated",
+    "warning": "Requires sudo to access shadow password database.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ inspect /etc/shadow for password hashes\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo cat /etc/shadow\",\n  \"explanation\": \"Safely reads the protected /etc/shadow file using sudo elevation instead of changing permissions.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to access shadow password database.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

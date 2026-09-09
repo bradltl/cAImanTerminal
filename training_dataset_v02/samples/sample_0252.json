@@ -1,0 +1,35 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ how do I use the read builtin in bash?",
+  "assistant": {
+    "action": "lookup_help",
+    "command": null,
+    "explanation": "Querying bash builtin documentation for the read command.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": {
+      "provider": "bash_help",
+      "command": "read",
+      "args": []
+    }
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ how do I use the read builtin in bash?\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"lookup_help\",\n  \"command\": null,\n  \"explanation\": \"Querying bash builtin documentation for the read command.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": {\n    \"provider\": \"bash_help\",\n    \"command\": \"read\",\n    \"args\": []\n  }\n}"
+    }
+  ]
+}

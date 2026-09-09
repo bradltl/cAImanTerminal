@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ stash current uncommitted work with message",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git stash push -m \"wip-search\"",
+    "explanation": "Saves uncommitted modifications into stash.",
+    "risk": "caution",
+    "warning": "Stashes uncommitted changes.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ stash current uncommitted work with message\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git stash push -m \\\"wip-search\\\"\",\n  \"explanation\": \"Saves uncommitted modifications into stash.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Stashes uncommitted changes.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "arch",
+    "shell": "bash",
+    "cwd": "/var/log/nginx"
+  },
+  "user": "@ get top 10 requesting IP addresses from access.log",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "awk '{print $1}' access.log | sort | uniq -c | sort -nr | head -n 10",
+    "explanation": "Extracts the client IP column, aggregates counts, and displays the top 10.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: arch (arch)\nShell: bash\nCWD: /var/log/nginx\n\n[USER REQUEST]\n@ get top 10 requesting IP addresses from access.log\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"awk '{print $1}' access.log | sort | uniq -c | sort -nr | head -n 10\",\n  \"explanation\": \"Extracts the client IP column, aggregates counts, and displays the top 10.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

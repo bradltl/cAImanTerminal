@@ -40,8 +40,29 @@ def main():
     parser.add_argument("--lora_r", type=int, default=16)
     parser.add_argument("--lora_alpha", type=int, default=32)
     parser.add_argument("--max_length", type=int, default=512)
+    parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto",
+                        help="Use CUDA when available, otherwise CPU; cuda fails if unavailable.")
+    parser.add_argument("--cpu_threads", type=int, default=None,
+                        help="PyTorch CPU compute threads; benchmark several values on hybrid CPUs.")
+    parser.add_argument("--gradient_checkpointing", action="store_true",
+                        help="Recompute activations to save memory at the cost of training speed.")
+    parser.add_argument("--benchmark_steps", type=int, default=0,
+                        help="Run this many optimizer steps without evaluation, saving, or export.")
     parser.add_argument("--gguf_out", type=str, default="models/qwen2.5-0.5b-instruct-sft.gguf")
     args = parser.parse_args()
+
+    if args.cpu_threads is not None and args.cpu_threads < 1:
+        parser.error("--cpu_threads must be at least 1")
+    if args.benchmark_steps < 0:
+        parser.error("--benchmark_steps must be nonnegative")
+    if args.device == "cuda" and not torch.cuda.is_available():
+        parser.error("CUDA was requested but is unavailable. Check the GPU, driver, and PyTorch build.")
+    use_cuda = args.device != "cpu" and torch.cuda.is_available()
+    # TRL defaults to BF16 even on CPUs that emulate it extremely slowly.
+    use_bf16 = use_cuda and torch.cuda.is_bf16_supported()
+    use_fp16 = use_cuda and not use_bf16
+    if args.cpu_threads is not None:
+        torch.set_num_threads(args.cpu_threads)
 
     print(f"=== Cayman Terminal SFT Training Pipeline ===")
     print(f"Base Model:     {args.model_id}")
@@ -50,11 +71,17 @@ def main():
     print(f"Output Dir:     {args.output_dir}")
     print(f"Target GGUF:    {args.gguf_out}")
     print(f"Hyperparams:    epochs={args.epochs}, lr={args.lr}, batch_size={args.batch_size}, grad_accum={args.grad_accum}, r={args.lora_r}")
+    print(f"Device:         {torch.cuda.get_device_name() if use_cuda else 'CPU (no GPU training)'}")
+    print(f"Precision:      {'BF16' if use_bf16 else 'FP16' if use_fp16 else 'FP32'}")
+    print(f"CPU threads:    {torch.get_num_threads()}")
+    print(f"Checkpointing:  {args.gradient_checkpointing}")
+    if args.benchmark_steps:
+        print(f"Benchmark:      {args.benchmark_steps} optimizer steps; no evaluation, saving, or export")
 
     # 1. Load Dataset
     print("\n[1/5] Loading datasets...")
     data_files = {"train": args.train_file}
-    if os.path.exists(args.eval_file):
+    if not args.benchmark_steps and os.path.exists(args.eval_file):
         data_files["eval"] = args.eval_file
     ds = load_dataset("json", data_files=data_files)
     train_ds = ds["train"]
@@ -71,9 +98,12 @@ def main():
 
     model = AutoModelForCausalLM.from_pretrained(
         args.model_id,
-        dtype=torch.float32,
+        # FP16 autocast keeps FP32 weights for gradient scaling; BF16 needs no scaler.
+        dtype=torch.bfloat16 if use_bf16 else torch.float32,
         low_cpu_mem_usage=True,
+        attn_implementation="sdpa",
     )
+    model.config.use_cache = False
 
     # 3. Setup LoRA Config
     lora_config = LoraConfig(
@@ -96,20 +126,26 @@ def main():
     # 4. Configure SFTTrainer
     training_args = SFTConfig(
         output_dir=args.output_dir,
-        use_cpu=True,
+        use_cpu=not use_cuda,
+        bf16=use_bf16,
+        fp16=use_fp16,
+        gradient_checkpointing=args.gradient_checkpointing,
+        optim="adamw_torch_fused" if use_cuda else "adamw_torch",
         learning_rate=args.lr,
         num_train_epochs=args.epochs,
+        max_steps=args.benchmark_steps if args.benchmark_steps else -1,
         per_device_train_batch_size=args.batch_size,
         gradient_accumulation_steps=args.grad_accum,
         max_length=args.max_length,
-        logging_steps=10,
+        logging_steps=1 if args.benchmark_steps else 10,
         eval_strategy="epoch" if eval_ds else "no",
-        save_strategy="epoch",
+        save_strategy="no" if args.benchmark_steps else "epoch",
         save_total_limit=1,
         warmup_steps=10,
         lr_scheduler_type="cosine",
         report_to="none",
         dataloader_num_workers=0,
+        dataloader_pin_memory=use_cuda,
     )
 
     trainer = SFTTrainer(
@@ -118,14 +154,19 @@ def main():
         train_dataset=train_ds,
         eval_dataset=eval_ds,
         peft_config=lora_config,
+        processing_class=tokenizer,
     )
 
+    print(f"  Trainer device: {trainer.args.device}; model device: {next(trainer.model.parameters()).device}")
     print("\n[3/5] Starting SFT training loop...")
     start_time = time.time()
     train_result = trainer.train()
     elapsed = time.time() - start_time
     print(f"  Training finished in {elapsed:.1f}s!")
     print(f"  Train metrics: {train_result.metrics}")
+    if args.benchmark_steps:
+        print("\nBenchmark complete. Adapter, merged model, and GGUF were not saved.")
+        return
 
     # Save adapter
     adapter_dir = os.path.join(args.output_dir, "adapter")

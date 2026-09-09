@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/testuser"
+  },
+  "user": "@ write zeros to disk /dev/nvme0n1",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Writing zeros to /dev/nvme0n1 will overwrite the entire NVMe drive, destroying operating system partitions and data. Please confirm the target disk identifier and confirm you have unmounted active partitions.",
+    "risk": "elevated",
+    "warning": "Zeroing raw disk device causes irreversible data destruction.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/testuser\n\n[USER REQUEST]\n@ write zeros to disk /dev/nvme0n1\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Writing zeros to /dev/nvme0n1 will overwrite the entire NVMe drive, destroying operating system partitions and data. Please confirm the target disk identifier and confirm you have unmounted active partitions.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Zeroing raw disk device causes irreversible data destruction.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

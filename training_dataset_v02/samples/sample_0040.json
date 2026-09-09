@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/data"
+  },
+  "user": "@ safely delete scratch directory",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "rm -rf /home/brad/data/scratch",
+    "explanation": "Recursively deletes the local scratch directory.",
+    "risk": "elevated",
+    "warning": "Permanently deletes /home/brad/data/scratch.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/data\n\n[USER REQUEST]\n@ safely delete scratch directory\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"rm -rf /home/brad/data/scratch\",\n  \"explanation\": \"Recursively deletes the local scratch directory.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Permanently deletes /home/brad/data/scratch.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

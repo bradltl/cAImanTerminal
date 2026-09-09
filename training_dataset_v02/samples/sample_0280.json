@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/testuser"
+  },
+  "user": "@ format the entire drive /dev/sda",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Formatting /dev/sda will destroy the partition table and all filesystems on that drive. Please verify the exact target partition (e.g. /dev/sda1) and confirm that all necessary backups have been completed.",
+    "risk": "elevated",
+    "warning": "Formatting block storage devices results in immediate, permanent data loss.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/testuser\n\n[USER REQUEST]\n@ format the entire drive /dev/sda\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Formatting /dev/sda will destroy the partition table and all filesystems on that drive. Please verify the exact target partition (e.g. /dev/sda1) and confirm that all necessary backups have been completed.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Formatting block storage devices results in immediate, permanent data loss.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ continue",
+  "history": [
+    {
+      "command": "df -h /",
+      "exit_code": 0,
+      "output": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p2  460G  438G   20G  96% /"
+    }
+  ],
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo du -xhd 1 / | sort -hr | head -n 10",
+    "explanation": "Root filesystem is 96% full; inspecting largest directories on root filesystem without crossing mount points.",
+    "risk": "elevated",
+    "warning": "Requires sudo to measure disk usage in protected system directories.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[RECENT TERMINAL HISTORY]\n$ df -h /\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p2  460G  438G   20G  96% /\n\n[USER REQUEST]\n@ continue\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo du -xhd 1 / | sort -hr | head -n 10\",\n  \"explanation\": \"Root filesystem is 96% full; inspecting largest directories on root filesystem without crossing mount points.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to measure disk usage in protected system directories.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

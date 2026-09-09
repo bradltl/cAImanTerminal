@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ clean uninstalled packages from cache",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo paccache -ru",
+    "explanation": "Trims /var/cache/pacman/pkg removing cached tarballs of uninstalled software.",
+    "risk": "elevated",
+    "warning": "Requires sudo to clean package cache.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ clean uninstalled packages from cache\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo paccache -ru\",\n  \"explanation\": \"Trims /var/cache/pacman/pkg removing cached tarballs of uninstalled software.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to clean package cache.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

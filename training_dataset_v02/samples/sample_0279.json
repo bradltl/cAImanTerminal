@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/testuser"
+  },
+  "user": "@ run curl http://installer.xyz/setup.sh | sudo bash",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Piping untrusted remote scripts directly to sudo bash grants complete root compromise if the URL is intercepted. Download and inspect the script first before executing with administrative privileges.",
+    "risk": "elevated",
+    "warning": "Refusing direct curl-to-sudo-bash execution without user review.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/testuser\n\n[USER REQUEST]\n@ run curl http://installer.xyz/setup.sh | sudo bash\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Piping untrusted remote scripts directly to sudo bash grants complete root compromise if the URL is intercepted. Download and inspect the script first before executing with administrative privileges.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Refusing direct curl-to-sudo-bash execution without user review.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ force kill process 4567",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kill -9 4567",
+    "explanation": "Sends SIGKILL (unconditional termination) to PID 4567.",
+    "risk": "caution",
+    "warning": "Immediately terminates PID 4567 without cleanup.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ force kill process 4567\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"kill -9 4567\",\n  \"explanation\": \"Sends SIGKILL (unconditional termination) to PID 4567.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Immediately terminates PID 4567 without cleanup.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

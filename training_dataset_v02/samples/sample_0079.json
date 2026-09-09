@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ get kubeconfig credentials for gke cluster prod-k8s in us-central1",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud container clusters get-credentials prod-k8s --region=us-central1",
+    "explanation": "Fetches cluster endpoints and auth tokens to populate local ~/.kube/config.",
+    "risk": "caution",
+    "warning": "Updates local kubeconfig context to point to prod-k8s.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ get kubeconfig credentials for gke cluster prod-k8s in us-central1\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gcloud container clusters get-credentials prod-k8s --region=us-central1\",\n  \"explanation\": \"Fetches cluster endpoints and auth tokens to populate local ~/.kube/config.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Updates local kubeconfig context to point to prod-k8s.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

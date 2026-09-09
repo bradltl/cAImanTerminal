@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/dist"
+  },
+  "user": "@ sync my dist folder to s3 bucket my-site-assets with deletion",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws s3 sync ./dist s3://my-site-assets/ --delete",
+    "explanation": "Synchronizes local directory to S3 bucket, deleting files in S3 no longer present locally.",
+    "risk": "caution",
+    "warning": "Deletes destination S3 files that do not exist in ./dist.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/dist\n\n[USER REQUEST]\n@ sync my dist folder to s3 bucket my-site-assets with deletion\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws s3 sync ./dist s3://my-site-assets/ --delete\",\n  \"explanation\": \"Synchronizes local directory to S3 bucket, deleting files in S3 no longer present locally.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deletes destination S3 files that do not exist in ./dist.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

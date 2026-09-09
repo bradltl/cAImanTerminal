@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ restart nginx service",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo systemctl restart nginx",
+    "explanation": "Restarts the nginx daemon via systemctl.",
+    "risk": "elevated",
+    "warning": "Requires sudo; briefly disrupts active connections.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ restart nginx service\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo systemctl restart nginx\",\n  \"explanation\": \"Restarts the nginx daemon via systemctl.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; briefly disrupts active connections.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}
