@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ ssh into compute instance",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Please provide the VM instance name and zone. For example: `gcloud compute ssh <instance-name> --zone=<zone>`.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ ssh into compute instance\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Please provide the VM instance name and zone. For example: `gcloud compute ssh <instance-name> --zone=<zone>`.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

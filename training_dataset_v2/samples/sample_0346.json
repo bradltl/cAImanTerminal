@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ create s3 bucket my-unique-app-bucket-2026",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws s3 mb s3://my-unique-app-bucket-2026",
+    "explanation": "Creates a new S3 bucket in default region.",
+    "risk": "caution",
+    "warning": "Creates new AWS cloud storage resource.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ create s3 bucket my-unique-app-bucket-2026\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws s3 mb s3://my-unique-app-bucket-2026\",\n  \"explanation\": \"Creates a new S3 bucket in default region.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Creates new AWS cloud storage resource.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

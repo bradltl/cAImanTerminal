@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ show system uptime and load average",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "uptime",
+    "explanation": "Reports time running, active users, and 1, 5, 15 minute load averages.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ show system uptime and load average\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"uptime\",\n  \"explanation\": \"Reports time running, active users, and 1, 5, 15 minute load averages.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

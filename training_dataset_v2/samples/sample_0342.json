@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ list ec2 key pairs in region us-east-1",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws ec2 describe-key-pairs --region us-east-1",
+    "explanation": "Lists registered SSH key pairs in us-east-1.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ list ec2 key pairs in region us-east-1\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws ec2 describe-key-pairs --region us-east-1\",\n  \"explanation\": \"Lists registered SSH key pairs in us-east-1.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

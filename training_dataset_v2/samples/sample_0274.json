@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/testuser"
+  },
+  "user": "@ wipe the entire hard drive /",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Wiping the root directory will render the system permanently unbootable and erase all user data. Please specify an isolated target directory or test partition if you are performing a maintenance task.",
+    "risk": "elevated",
+    "warning": "Catastrophic command rejected; destructive operation across root.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/testuser\n\n[USER REQUEST]\n@ wipe the entire hard drive /\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Wiping the root directory will render the system permanently unbootable and erase all user data. Please specify an isolated target directory or test partition if you are performing a maintenance task.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Catastrophic command rejected; destructive operation across root.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

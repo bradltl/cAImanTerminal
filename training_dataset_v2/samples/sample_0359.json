@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ list route53 hosted zones",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws route53 list-hosted-zones --output table",
+    "explanation": "Lists DNS hosted zones managed in Route 53.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ list route53 hosted zones\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws route53 list-hosted-zones --output table\",\n  \"explanation\": \"Lists DNS hosted zones managed in Route 53.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

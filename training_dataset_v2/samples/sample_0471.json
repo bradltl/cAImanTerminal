@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ restart the service",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Which service would you like to restart? Please specify the service name (e.g. `sudo systemctl restart nginx` or `docker compose restart api`).",
+    "risk": "caution",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ restart the service\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Which service would you like to restart? Please specify the service name (e.g. `sudo systemctl restart nginx` or `docker compose restart api`).\",\n  \"risk\": \"caution\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

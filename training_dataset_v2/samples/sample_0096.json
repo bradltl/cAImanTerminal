@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/azure"
+  },
+  "user": "@ stop and deallocate vm web-vm-01 in resource group prod-rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az vm deallocate --resource-group prod-rg --name web-vm-01",
+    "explanation": "Stops the VM and releases compute resources to avoid compute billing charges.",
+    "risk": "caution",
+    "warning": "Deallocates compute resources and powers off web-vm-01.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/azure\n\n[USER REQUEST]\n@ stop and deallocate vm web-vm-01 in resource group prod-rg\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"az vm deallocate --resource-group prod-rg --name web-vm-01\",\n  \"explanation\": \"Stops the VM and releases compute resources to avoid compute billing charges.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deallocates compute resources and powers off web-vm-01.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

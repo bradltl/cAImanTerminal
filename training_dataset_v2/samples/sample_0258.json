@@ -1,0 +1,38 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ continue",
+  "history": [
+    {
+      "command": "free -h -t",
+      "exit_code": 0,
+      "output": "Mem: 31Gi total, 29Gi used, 1.1Gi free\nSwap: 8.0Gi total, 7.8Gi used, 200Mi free\nTotal: 39Gi total, 36.8Gi used"
+    }
+  ],
+  "assistant": {
+    "action": "suggest_command",
+    "command": "ps aux --sort=-%mem | head -n 11",
+    "explanation": "RAM and swap are nearly exhausted; listing top 10 memory consuming processes.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[RECENT TERMINAL HISTORY]\n$ free -h -t\nMem: 31Gi total, 29Gi used, 1.1Gi free\nSwap: 8.0Gi total, 7.8Gi used, 200Mi free\nTotal: 39Gi total, 36.8Gi used\n\n[USER REQUEST]\n@ continue\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"ps aux --sort=-%mem | head -n 11\",\n  \"explanation\": \"RAM and swap are nearly exhausted; listing top 10 memory consuming processes.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

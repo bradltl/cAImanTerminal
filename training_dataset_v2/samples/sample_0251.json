@@ -1,0 +1,37 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ what options does find have for modification time?",
+  "assistant": {
+    "action": "lookup_help",
+    "command": null,
+    "explanation": "Consulting manual documentation for find time filters.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": {
+      "provider": "man",
+      "command": "find",
+      "args": [
+        "--help"
+      ]
+    }
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ what options does find have for modification time?\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"lookup_help\",\n  \"command\": null,\n  \"explanation\": \"Consulting manual documentation for find time filters.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": {\n    \"provider\": \"man\",\n    \"command\": \"find\",\n    \"args\": [\n      \"--help\"\n    ]\n  }\n}"
+    }
+  ]
+}

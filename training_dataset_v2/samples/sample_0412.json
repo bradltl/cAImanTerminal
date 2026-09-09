@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ create an annotated release tag v1.0.0",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git tag -a v1.0.0 -m \"Release v1.0.0\"",
+    "explanation": "Creates signed annotated Git tag pointing to current commit.",
+    "risk": "caution",
+    "warning": "Creates a new Git tag ref.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ create an annotated release tag v1.0.0\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git tag -a v1.0.0 -m \\\"Release v1.0.0\\\"\",\n  \"explanation\": \"Creates signed annotated Git tag pointing to current commit.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Creates a new Git tag ref.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ continue git rebase after resolving conflicts",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git rebase --continue",
+    "explanation": "Advances rebase process after staging conflict resolutions.",
+    "risk": "caution",
+    "warning": "Applies remaining rebased commits.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ continue git rebase after resolving conflicts\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git rebase --continue\",\n  \"explanation\": \"Advances rebase process after staging conflict resolutions.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Applies remaining rebased commits.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

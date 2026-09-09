@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ explain 2>&1 in bash",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "explanation": "`2>&1` redirects file descriptor 2 (standard error, stderr) to file descriptor 1 (standard output, stdout). This ensures error messages are written to the same destination or pipe as regular output.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ explain 2>&1 in bash\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"explain\",\n  \"command\": null,\n  \"explanation\": \"`2>&1` redirects file descriptor 2 (standard error, stderr) to file descriptor 1 (standard output, stdout). This ensures error messages are written to the same destination or pipe as regular output.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

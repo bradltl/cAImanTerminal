@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ abort ongoing git rebase",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git rebase --abort",
+    "explanation": "Aborts in-progress rebase and restores original branch state.",
+    "risk": "caution",
+    "warning": "Discards in-progress rebase state.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ abort ongoing git rebase\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git rebase --abort\",\n  \"explanation\": \"Aborts in-progress rebase and restores original branch state.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Discards in-progress rebase state.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

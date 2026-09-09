@@ -1,0 +1,38 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ continue",
+  "history": [
+    {
+      "command": "systemctl status nginx.service",
+      "exit_code": 3,
+      "output": "nginx.service - A high performance web server\nActive: failed (Result: exit-code)\nProcess: 1245 ExecStartPre=/usr/bin/nginx -t (code=exited, status=1/FAILURE)"
+    }
+  ],
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo nginx -t",
+    "explanation": "Nginx failed during configuration testing; running nginx -t with sudo to display syntax error line details.",
+    "risk": "elevated",
+    "warning": "Requires sudo to test protected nginx configuration files.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[RECENT TERMINAL HISTORY]\n$ systemctl status nginx.service\nnginx.service - A high performance web server\nActive: failed (Result: exit-code)\nProcess: 1245 ExecStartPre=/usr/bin/nginx -t (code=exited, status=1/FAILURE)\n\n[USER REQUEST]\n@ continue\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo nginx -t\",\n  \"explanation\": \"Nginx failed during configuration testing; running nginx -t with sudo to display syntax error line details.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to test protected nginx configuration files.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

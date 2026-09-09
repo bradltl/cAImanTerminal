@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ close issue 55 with reason completed",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh issue close 55 --reason \"completed\"",
+    "explanation": "Closes issue 55 as resolved.",
+    "risk": "caution",
+    "warning": "Updates issue status to closed.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ close issue 55 with reason completed\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gh issue close 55 --reason \\\"completed\\\"\",\n  \"explanation\": \"Closes issue 55 as resolved.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Updates issue status to closed.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

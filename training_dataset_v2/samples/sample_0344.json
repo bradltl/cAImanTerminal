@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ list subnets in vpc vpc-0123456789abcdef0",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws ec2 describe-subnets --filters \"Name=vpc-id,Values=vpc-0123456789abcdef0\" --output table",
+    "explanation": "Lists subnets associated with specified VPC.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ list subnets in vpc vpc-0123456789abcdef0\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws ec2 describe-subnets --filters \\\"Name=vpc-id,Values=vpc-0123456789abcdef0\\\" --output table\",\n  \"explanation\": \"Lists subnets associated with specified VPC.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

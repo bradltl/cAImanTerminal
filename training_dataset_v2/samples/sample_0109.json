@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ checkout pull request 42",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr checkout 42",
+    "explanation": "Fetches and checks out the branch associated with PR #42.",
+    "risk": "caution",
+    "warning": "Switches the active Git working directory to the PR branch.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ checkout pull request 42\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gh pr checkout 42\",\n  \"explanation\": \"Fetches and checks out the branch associated with PR #42.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Switches the active Git working directory to the PR branch.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

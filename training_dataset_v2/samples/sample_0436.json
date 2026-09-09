@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ apply all kubernetes manifests in k8s directory",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kubectl apply -f ./k8s/",
+    "explanation": "Declares desired state from YAML manifests across cluster.",
+    "risk": "caution",
+    "warning": "Applies cluster resource configuration changes.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ apply all kubernetes manifests in k8s directory\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"kubectl apply -f ./k8s/\",\n  \"explanation\": \"Declares desired state from YAML manifests across cluster.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Applies cluster resource configuration changes.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

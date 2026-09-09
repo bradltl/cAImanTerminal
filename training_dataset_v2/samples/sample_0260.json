@@ -1,0 +1,38 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ continue",
+  "history": [
+    {
+      "command": "gh run list --status failure",
+      "exit_code": 0,
+      "output": "STATUS   TITLE      WORKFLOW   ID\nfailure  Build      CI         23891234\nsuccess  Release    Release    23891001"
+    }
+  ],
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh run rerun 23891234 --failed",
+    "explanation": "Reruns the failed jobs for workflow run 23891234 identified from run list.",
+    "risk": "caution",
+    "warning": "Triggers re-run of failed CI workflow jobs.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[RECENT TERMINAL HISTORY]\n$ gh run list --status failure\nSTATUS   TITLE      WORKFLOW   ID\nfailure  Build      CI         23891234\nsuccess  Release    Release    23891001\n\n[USER REQUEST]\n@ continue\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gh run rerun 23891234 --failed\",\n  \"explanation\": \"Reruns the failed jobs for workflow run 23891234 identified from run list.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Triggers re-run of failed CI workflow jobs.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find lines containing fatal in all log files under /var/log",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo grep -rn \"fatal\" /var/log/",
+    "explanation": "Recursively searches /var/log for 'fatal'.",
+    "risk": "elevated",
+    "warning": "Requires sudo to inspect protected log files.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ find lines containing fatal in all log files under /var/log\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo grep -rn \\\"fatal\\\" /var/log/\",\n  \"explanation\": \"Recursively searches /var/log for 'fatal'.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to inspect protected log files.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

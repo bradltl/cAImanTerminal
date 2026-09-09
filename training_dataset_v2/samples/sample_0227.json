@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ unstage file config.json",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git restore --staged config.json",
+    "explanation": "Removes config.json from staging index while keeping working tree edits.",
+    "risk": "caution",
+    "warning": "Modifies staging index.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ unstage file config.json\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git restore --staged config.json\",\n  \"explanation\": \"Removes config.json from staging index while keeping working tree edits.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Modifies staging index.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

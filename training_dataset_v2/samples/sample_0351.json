@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ list rds database instances with status and engine",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws rds describe-db-instances --query \"DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus,Endpoint.Address]\" --output table",
+    "explanation": "Lists RDS databases, engines, endpoints, and statuses.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ list rds database instances with status and engine\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws rds describe-db-instances --query \\\"DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus,Endpoint.Address]\\\" --output table\",\n  \"explanation\": \"Lists RDS databases, engines, endpoints, and statuses.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

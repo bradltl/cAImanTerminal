@@ -1,0 +1,23 @@
+{
+  "dataset_name": "cayman-terminal-v2-master",
+  "total_examples": 482,
+  "train_examples": 433,
+  "eval_examples": 49,
+  "action_distribution": {
+    "suggest_command": 352,
+    "no_action": 71,
+    "clarify": 39,
+    "explain": 12,
+    "lookup_help": 8
+  },
+  "risk_distribution": {
+    "normal": 260,
+    "caution": 94,
+    "elevated": 57,
+    "none": 71
+  },
+  "output_directory": "training_dataset_v2",
+  "jsonl_path": "training_dataset_v2/dataset.jsonl",
+  "train_path": "training_dataset_v2/trl_train.jsonl",
+  "eval_path": "training_dataset_v2/trl_eval.jsonl"
+}

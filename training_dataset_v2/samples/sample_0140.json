@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "cd ..",
+  "assistant": {
+    "action": "no_action",
+    "command": null,
+    "explanation": "User entered basic directory traversal command.",
+    "risk": null,
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[CURRENT TYPING BUFFER]\ncd ..\n\nObserve terminal context. If this is an incomplete command with an obvious completion, suggest it. If ambiguous, partial, or user is simply typing, respond with \"no_action\".\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"no_action\",\n  \"command\": null,\n  \"explanation\": \"User entered basic directory traversal command.\",\n  \"risk\": null,\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

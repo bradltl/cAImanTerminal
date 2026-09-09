@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ remove apache and its unneeded configuration files and dependencies",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo pacman -Rns apache",
+    "explanation": "Completely removes apache, its unneeded dependencies, and backup config files.",
+    "risk": "elevated",
+    "warning": "Requires sudo; removes apache and configuration.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ remove apache and its unneeded configuration files and dependencies\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo pacman -Rns apache\",\n  \"explanation\": \"Completely removes apache, its unneeded dependencies, and backup config files.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; removes apache and configuration.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

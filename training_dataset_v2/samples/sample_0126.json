@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/k8s"
+  },
+  "user": "@ restart deployment api-server in namespace prod",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kubectl rollout restart deployment/api-server -n prod",
+    "explanation": "Triggers a rolling restart of all pods backing deployment api-server.",
+    "risk": "caution",
+    "warning": "Initiates rolling replacement of active production pods.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/k8s\n\n[USER REQUEST]\n@ restart deployment api-server in namespace prod\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"kubectl rollout restart deployment/api-server -n prod\",\n  \"explanation\": \"Triggers a rolling restart of all pods backing deployment api-server.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Initiates rolling replacement of active production pods.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

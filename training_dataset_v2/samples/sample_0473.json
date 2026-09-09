@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ rollback the deployment",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Which deployment would you like to roll back? (e.g. Kubernetes deployment: `kubectl rollout undo deployment/<name>`, or Cloud Run revision: `gcloud run services update-traffic <service> --to-revisions=<rev>=100`).",
+    "risk": "caution",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ rollback the deployment\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Which deployment would you like to roll back? (e.g. Kubernetes deployment: `kubectl rollout undo deployment/<name>`, or Cloud Run revision: `gcloud run services update-traffic <service> --to-revisions=<rev>=100`).\",\n  \"risk\": \"caution\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

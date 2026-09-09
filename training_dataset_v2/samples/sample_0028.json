@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ add my user to the docker group",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo usermod -aG docker $USER",
+    "explanation": "Appends current user to the docker group to permit rootless socket access.",
+    "risk": "elevated",
+    "warning": "Requires sudo; takes effect on next login.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ add my user to the docker group\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo usermod -aG docker $USER\",\n  \"explanation\": \"Appends current user to the docker group to permit rootless socket access.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; takes effect on next login.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

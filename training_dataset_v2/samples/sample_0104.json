@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ pop the most recent stash",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git stash pop",
+    "explanation": "Applies and drops the top entry in the stash list.",
+    "risk": "caution",
+    "warning": "Applies stashed modifications back to the working directory.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ pop the most recent stash\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git stash pop\",\n  \"explanation\": \"Applies and drops the top entry in the stash list.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Applies stashed modifications back to the working directory.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

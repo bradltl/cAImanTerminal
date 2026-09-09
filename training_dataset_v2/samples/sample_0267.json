@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/data"
+  },
+  "user": "@ remove directory \"My Project Backups\"",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "rm -rf \"My Project Backups\"",
+    "explanation": "Recursively deletes directory \"My Project Backups\" with safe quotes protecting whitespace.",
+    "risk": "elevated",
+    "warning": "Permanently deletes specified directory.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/data\n\n[USER REQUEST]\n@ remove directory \"My Project Backups\"\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"rm -rf \\\"My Project Backups\\\"\",\n  \"explanation\": \"Recursively deletes directory \\\"My Project Backups\\\" with safe quotes protecting whitespace.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Permanently deletes specified directory.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

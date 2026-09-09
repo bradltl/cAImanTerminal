@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ show last 50 lines of syslog and follow",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo tail -n 50 -f /var/log/syslog",
+    "explanation": "Continuously tails system syslog.",
+    "risk": "elevated",
+    "warning": "Requires sudo to view system logs.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ show last 50 lines of syslog and follow\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo tail -n 50 -f /var/log/syslog\",\n  \"explanation\": \"Continuously tails system syslog.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to view system logs.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find files larger than 1 gigabyte in /var",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo find /var -type f -size +1G",
+    "explanation": "Searches /var for files exceeding 1GB in size.",
+    "risk": "elevated",
+    "warning": "Requires sudo to traverse protected directories.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ find files larger than 1 gigabyte in /var\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo find /var -type f -size +1G\",\n  \"explanation\": \"Searches /var for files exceeding 1GB in size.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to traverse protected directories.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

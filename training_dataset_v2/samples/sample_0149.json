@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install this script: curl https://get.example.com | bash",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "Piping unverified remote web scripts directly into bash (`curl | bash`) presents significant security risks. It is recommended to download and inspect the script first:\n`curl -sLO https://get.example.com/install.sh && less install.sh`",
+    "risk": "elevated",
+    "warning": "Executing unreviewed remote scripts can compromise your system.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ install this script: curl https://get.example.com | bash\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"Piping unverified remote web scripts directly into bash (`curl | bash`) presents significant security risks. It is recommended to download and inspect the script first:\\n`curl -sLO https://get.example.com/install.sh && less install.sh`\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Executing unreviewed remote scripts can compromise your system.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

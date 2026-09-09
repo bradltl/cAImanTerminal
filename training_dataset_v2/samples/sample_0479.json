@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ what is a file descriptor in linux",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "explanation": "A file descriptor is an integer handle representing an open file, socket, or pipe managed by the Linux kernel (standard descriptors: 0=stdin, 1=stdout, 2=stderr).",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ what is a file descriptor in linux\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"explain\",\n  \"command\": null,\n  \"explanation\": \"A file descriptor is an integer handle representing an open file, socket, or pipe managed by the Linux kernel (standard descriptors: 0=stdin, 1=stdout, 2=stderr).\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": null\n}"
+    }
+  ]
+}

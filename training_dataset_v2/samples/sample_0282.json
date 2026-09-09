@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find files ending in .bak and delete them",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find . -type f -name \"*.bak\" -delete",
+    "explanation": "Deletes all matching .bak files in current directory.",
+    "risk": "caution",
+    "warning": "Deletes .bak files immediately.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ find files ending in .bak and delete them\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"find . -type f -name \\\"*.bak\\\" -delete\",\n  \"explanation\": \"Deletes all matching .bak files in current directory.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deletes .bak files immediately.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

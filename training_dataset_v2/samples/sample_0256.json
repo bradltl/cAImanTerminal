@@ -1,0 +1,38 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ which package provides the dracut command?",
+  "assistant": {
+    "action": "lookup_help",
+    "command": null,
+    "explanation": "Looking up package ownership in pacman database.",
+    "risk": "normal",
+    "warning": null,
+    "tool_request": {
+      "provider": "package_info",
+      "command": "pacman",
+      "args": [
+        "-F",
+        "dracut"
+      ]
+    }
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ which package provides the dracut command?\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"lookup_help\",\n  \"command\": null,\n  \"explanation\": \"Looking up package ownership in pacman database.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"tool_request\": {\n    \"provider\": \"package_info\",\n    \"command\": \"pacman\",\n    \"args\": [\n      \"-F\",\n      \"dracut\"\n    ]\n  }\n}"
+    }
+  ]
+}

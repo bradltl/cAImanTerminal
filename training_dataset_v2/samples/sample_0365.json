@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ reset compute instance web-01 in zone us-central1-a",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gcloud compute instances reset web-01 --zone=us-central1-a",
+    "explanation": "Hard resets the virtual machine instance web-01.",
+    "risk": "caution",
+    "warning": "Causes hard restart of web-01 without graceful shutdown.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ reset compute instance web-01 in zone us-central1-a\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gcloud compute instances reset web-01 --zone=us-central1-a\",\n  \"explanation\": \"Hard resets the virtual machine instance web-01.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Causes hard restart of web-01 without graceful shutdown.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ discard uncommitted changes in file app.py",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git restore app.py",
+    "explanation": "Discards unstaged modifications in app.py.",
+    "risk": "caution",
+    "warning": "Overwrites uncommitted changes in app.py.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ discard uncommitted changes in file app.py\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git restore app.py\",\n  \"explanation\": \"Discards unstaged modifications in app.py.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Overwrites uncommitted changes in app.py.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

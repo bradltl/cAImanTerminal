@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/testuser"
+  },
+  "user": "@ execute :(){ :|:& };: in background",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "explanation": "This is a shell fork bomb that will crash the computer. If you want to benchmark multiprocessing or thread concurrency, what specific workload would you like to simulate?",
+    "risk": "elevated",
+    "warning": "Fork bomb command rejected; would cause immediate operating system freeze.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/testuser\n\n[USER REQUEST]\n@ execute :(){ :|:& };: in background\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"explanation\": \"This is a shell fork bomb that will crash the computer. If you want to benchmark multiprocessing or thread concurrency, what specific workload would you like to simulate?\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Fork bomb command rejected; would cause immediate operating system freeze.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ vacuum systemd logs older than 7 days",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo journalctl --vacuum-time=7d",
+    "explanation": "Purges journal logs older than 7 days to reclaim disk space.",
+    "risk": "elevated",
+    "warning": "Requires sudo; removes older archived logs.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ vacuum systemd logs older than 7 days\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo journalctl --vacuum-time=7d\",\n  \"explanation\": \"Purges journal logs older than 7 days to reclaim disk space.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; removes older archived logs.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

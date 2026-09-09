@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "fedora",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ install development tools group on fedora",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo dnf groupinstall -y \"Development Tools\"",
+    "explanation": "Installs the Development Tools package group.",
+    "risk": "elevated",
+    "warning": "Requires sudo; installs build packages.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: fedora (fedora)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ install development tools group on fedora\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo dnf groupinstall -y \\\"Development Tools\\\"\",\n  \"explanation\": \"Installs the Development Tools package group.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; installs build packages.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

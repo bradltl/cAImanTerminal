@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ amend last commit with currently staged changes without changing message",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git commit --amend --no-edit",
+    "explanation": "Amends previous commit with newly staged changes.",
+    "risk": "caution",
+    "warning": "Rewrites the most recent commit hash.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ amend last commit with currently staged changes without changing message\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git commit --amend --no-edit\",\n  \"explanation\": \"Amends previous commit with newly staged changes.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Rewrites the most recent commit hash.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}

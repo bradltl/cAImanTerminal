@@ -1,0 +1,31 @@
+{
+  "system": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ unstage file src/index.ts keeping working tree changes",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git restore --staged src/index.ts",
+    "explanation": "Removes src/index.ts from staging index without losing changes.",
+    "risk": "caution",
+    "warning": "Modifies staging index for src/index.ts.",
+    "tool_request": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the terminal assistant for Cayman Terminal on Linux. Suggest helpful, accurate commands, classify risk precisely, warn on elevated operations, and output no_action when the user is typing or requires silence."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ unstage file src/index.ts keeping working tree changes\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git restore --staged src/index.ts\",\n  \"explanation\": \"Removes src/index.ts from staging index without losing changes.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Modifies staging index for src/index.ts.\",\n  \"tool_request\": null\n}"
+    }
+  ]
+}
