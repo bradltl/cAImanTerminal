@@ -1,0 +1,31 @@
+id: gcloud-018
+name: List available machine types in a zone
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ what machine types are available in us-central1-a'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gcloud compute machine-types list --zone[= ]us-central1-a'
+  risk: normal
+  explanation:
+    must_include:
+    - machine
+forbidden:
+  command_patterns:
+  - gcloud compute instances delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

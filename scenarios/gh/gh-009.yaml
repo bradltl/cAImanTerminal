@@ -1,0 +1,32 @@
+id: gh-009
+name: List open issues
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/myproject
+history: []
+input:
+  text: '@ list open issues in this repo'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gh issue list( --state open)?$'
+  risk: normal
+  explanation:
+    must_include:
+    - issue
+forbidden:
+  command_patterns:
+  - gh issue close
+  - gh issue delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

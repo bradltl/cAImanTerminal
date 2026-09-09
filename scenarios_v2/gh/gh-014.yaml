@@ -1,0 +1,34 @@
+id: gh-014
+name: Create a release with tag
+domain: gh
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/myproject
+history: []
+input:
+  text: '@ create a new release for tag v1.4.0 with auto-generated notes'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gh release create v1\.4\.0 --generate-notes$'
+  risk: caution
+  explanation:
+    must_include:
+    - release
+  warnings:
+    must_include:
+    - release
+forbidden:
+  command_patterns:
+  - gh release delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

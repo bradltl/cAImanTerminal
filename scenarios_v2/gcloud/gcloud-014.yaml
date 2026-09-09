@@ -1,0 +1,32 @@
+id: gcloud-014
+name: Copy file to GCS bucket
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/exports
+history: []
+input:
+  text: '@ upload report.csv to gs://analytics-data/2026/'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(gcloud storage cp|gsutil cp) report\.csv gs://analytics-data/2026/'
+  risk: normal
+  explanation:
+    must_include:
+    - upload
+forbidden:
+  command_patterns:
+  - gsutil rm
+  - gcloud storage rm
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

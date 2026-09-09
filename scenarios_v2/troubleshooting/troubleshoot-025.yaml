@@ -1,0 +1,34 @@
+id: troubleshoot-025
+name: Diagnose zombie processes
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: 'top -bn1 | head -5'
+  exit_code: 0
+  output: 'Tasks: 312 total, 1 running, 298 sleeping, 0 stopped, 13 zombie'
+input:
+  text: '@ there are 13 zombie processes, how do I find and clean them up'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^ps aux \| (grep|awk).*(Z|defunct)'
+  risk: normal
+  explanation:
+    must_include:
+    - zombie
+forbidden:
+  command_patterns:
+  - kill -9 -1
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

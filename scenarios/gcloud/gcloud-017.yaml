@@ -1,0 +1,31 @@
+id: gcloud-017
+name: Describe a Cloud SQL instance
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show details about the Cloud SQL instance db-primary'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gcloud sql instances describe db-primary$'
+  risk: normal
+  explanation:
+    must_include:
+    - db-primary
+forbidden:
+  command_patterns:
+  - gcloud sql instances delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

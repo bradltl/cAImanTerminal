@@ -1,0 +1,31 @@
+id: gcloud-020
+name: View Cloud Function logs
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show logs for cloud function process-orders'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gcloud (functions logs read process-orders|logging read .*process-orders)'
+  risk: normal
+  explanation:
+    must_include:
+    - log
+forbidden:
+  command_patterns:
+  - gcloud functions delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

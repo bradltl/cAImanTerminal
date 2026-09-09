@@ -1,0 +1,32 @@
+id: arch-019
+name: Verify package file integrity
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check if any files from the nginx package have been modified'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(sudo )?pacman -Qkk? nginx$'
+  risk: normal
+  explanation:
+    must_include:
+    - nginx
+forbidden:
+  command_patterns:
+  - pacman -R
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

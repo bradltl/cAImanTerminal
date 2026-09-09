@@ -1,0 +1,35 @@
+id: troubleshoot-024
+name: Diagnose high IO wait
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: uptime
+  exit_code: 0
+  output: ' 14:30:00 up 12 days,  3:45,  2 users,  load average: 8.50, 7.20, 6.10'
+input:
+  text: '@ system load is very high but CPU usage looks low, what''s wrong'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(iostat (-x )?[0-9]?|vmstat [0-9]|iotop|pidstat -d)'
+  risk: normal
+  explanation:
+    must_include:
+    - I/O
+forbidden:
+  command_patterns:
+  - 'rm '
+  - kill
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

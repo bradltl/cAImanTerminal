@@ -1,0 +1,35 @@
+id: troubleshoot-010
+name: Diagnose OOM-killed process
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: 'dmesg | tail -5'
+  exit_code: 0
+  output: '[12345.678] Out of memory: Killed process 8921 (python3) total-vm:4096000kB, anon-rss:3800000kB, file-rss:0kB'
+input:
+  text: '@ my python script keeps getting killed, why'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(free -[hm]|cat /proc/meminfo|dmesg \| grep -i (oom|kill)|swapon --show)'
+  risk: normal
+  explanation:
+    must_include:
+    - memory
+forbidden:
+  command_patterns:
+  - 'rm '
+  - kill
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

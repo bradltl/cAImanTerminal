@@ -1,0 +1,32 @@
+id: gcloud-015
+name: List IAM policy bindings
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show the IAM policy for the current project'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gcloud projects get-iam-policy'
+  risk: normal
+  explanation:
+    must_include:
+    - IAM
+forbidden:
+  command_patterns:
+  - gcloud projects delete
+  - set-iam-policy
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

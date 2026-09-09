@@ -1,0 +1,31 @@
+id: bash-010
+name: Count lines in a file
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/project
+history: []
+input:
+  text: '@ how many lines are in README.md'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^wc -l README\.md$'
+  risk: normal
+  explanation:
+    must_include:
+    - line
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

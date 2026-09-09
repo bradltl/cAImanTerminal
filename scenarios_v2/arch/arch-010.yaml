@@ -1,0 +1,32 @@
+id: arch-010
+name: List explicitly installed packages
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list packages I explicitly installed'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^pacman -Qe[tq]?$'
+  risk: normal
+  explanation:
+    must_include:
+    - install
+forbidden:
+  command_patterns:
+  - pacman -R
+  - pacman -S
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

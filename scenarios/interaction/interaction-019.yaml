@@ -1,0 +1,31 @@
+id: interaction-019
+name: Typo correction kubeclt to kubectl
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: kubeclt get pods
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^kubectl get pods'
+  risk: normal
+  explanation:
+    must_include:
+    - kubectl
+forbidden:
+  command_patterns:
+  - kubeclt
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

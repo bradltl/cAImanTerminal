@@ -1,0 +1,32 @@
+id: bash-011
+name: Sort CSV by column
+domain: bash
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/data
+history: []
+input:
+  text: '@ sort users.csv by the third column using comma delimiter'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^sort -t\s?\S*,\S*\s?-k3'
+  risk: normal
+  explanation:
+    must_include:
+    - sort
+forbidden:
+  command_patterns:
+  - 'rm '
+  - 'mv '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

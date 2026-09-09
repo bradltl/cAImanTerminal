@@ -1,0 +1,31 @@
+id: gh-015
+name: List gists
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list my gists'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gh gist list$'
+  risk: normal
+  explanation:
+    must_include:
+    - gist
+forbidden:
+  command_patterns:
+  - gh gist delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

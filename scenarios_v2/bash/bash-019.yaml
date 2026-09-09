@@ -1,0 +1,31 @@
+id: bash-019
+name: Compress directory into tarball
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/project
+history: []
+input:
+  text: '@ create a tar.gz archive of the src directory'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^tar (-)?czf \S+ src/?$'
+  risk: normal
+  explanation:
+    must_include:
+    - archive
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

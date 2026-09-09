@@ -1,0 +1,32 @@
+id: bash-018
+name: Download file with curl
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/downloads
+history: []
+input:
+  text: '@ download https://releases.example.com/v3.2/app.tar.gz'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^curl -(LO|L -o|o \S+) .*releases\.example\.com'
+  risk: normal
+  explanation:
+    must_include:
+    - download
+forbidden:
+  command_patterns:
+  - 'rm '
+  - sudo
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

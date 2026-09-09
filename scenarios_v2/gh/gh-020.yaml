@@ -1,0 +1,31 @@
+id: gh-020
+name: List repository labels
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/myproject
+history: []
+input:
+  text: '@ list all labels in this repo'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gh label list$'
+  risk: normal
+  explanation:
+    must_include:
+    - label
+forbidden:
+  command_patterns:
+  - gh label delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

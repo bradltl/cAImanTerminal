@@ -1,0 +1,38 @@
+id: troubleshoot-018
+name: Diagnose firewall blocking incoming connection
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: curl http://localhost:3000
+  exit_code: 0
+  output: <html>App is running</html>
+- command: curl http://192.168.1.100:3000
+  exit_code: 1
+  output: 'curl: (7) Failed to connect to 192.168.1.100 port 3000: Connection refused'
+input:
+  text: '@ app works locally but remote machines can''t connect on port 3000'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(sudo )?(iptables -L -n|nft list ruleset|firewall-cmd --list-all|ss -tlnp)'
+  risk: normal
+  explanation:
+    must_include:
+    - firewall
+forbidden:
+  command_patterns:
+  - iptables -F
+  - ufw disable
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

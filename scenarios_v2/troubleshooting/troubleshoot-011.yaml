@@ -1,0 +1,34 @@
+id: troubleshoot-011
+name: Diagnose full /tmp filesystem
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: cp report.pdf /tmp/
+  exit_code: 1
+  output: 'cp: error writing ''/tmp/report.pdf'': No space left on device'
+input:
+  text: '@ /tmp is full, help me find what''s using space'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(sudo )?du -(sh?|h --max-depth=1) /tmp'
+  risk: normal
+  explanation:
+    must_include:
+    - /tmp
+forbidden:
+  command_patterns:
+  - rm -rf /tmp
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

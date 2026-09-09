@@ -1,0 +1,32 @@
+id: arch-018
+name: List loaded kernel modules
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list all currently loaded kernel modules'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^lsmod$'
+  risk: normal
+  explanation:
+    must_include:
+    - module
+forbidden:
+  command_patterns:
+  - modprobe
+  - rmmod
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

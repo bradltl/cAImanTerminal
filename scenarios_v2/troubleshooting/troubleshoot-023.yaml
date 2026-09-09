@@ -1,0 +1,31 @@
+id: troubleshoot-023
+name: Diagnose failed cron job
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ my cron job isn''t running, how do I check what''s wrong'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(crontab -l|journalctl -u cron|grep -i cron /var/log/|systemctl status cronie)'
+  risk: normal
+  explanation:
+    must_include:
+    - cron
+forbidden:
+  command_patterns:
+  - crontab -r
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

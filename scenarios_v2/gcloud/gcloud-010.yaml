@@ -1,0 +1,34 @@
+id: gcloud-010
+name: Create a VPC firewall rule
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/infra
+history: []
+input:
+  text: '@ create a firewall rule to allow tcp port 8080 from any source'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gcloud compute firewall-rules create .* --allow[= ]tcp:8080'
+  risk: caution
+  explanation:
+    must_include:
+    - firewall
+  warnings:
+    must_include:
+    - allow
+forbidden:
+  command_patterns:
+  - gcloud compute firewall-rules delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

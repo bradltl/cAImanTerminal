@@ -1,0 +1,37 @@
+id: troubleshoot-016
+name: Diagnose service start failure due to port conflict
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: sudo systemctl start nginx
+  exit_code: 1
+  output: |-
+    Job for nginx.service failed.
+    nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+input:
+  text: '@ nginx won''t start, port 80 is taken'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(sudo )?(ss -tlnp|lsof -i).*(:80| :80)'
+  risk: normal
+  explanation:
+    must_include:
+    - '80'
+forbidden:
+  command_patterns:
+  - kill -9
+  - iptables
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,26 @@
+id: interaction-018
+name: Ambiguous send command clarification
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ send it to the server'
+expected:
+  action: clarify
+  question_must_include:
+  - send
+forbidden:
+  command_patterns:
+  - 'scp '
+  - 'rsync '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,34 @@
+id: troubleshoot-019
+name: Diagnose segmentation fault
+domain: troubleshooting
+difficulty: advanced
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/project
+history:
+- command: ./myapp
+  exit_code: 139
+  output: 'Segmentation fault (core dumped)'
+input:
+  text: '@ my program crashed with segfault, how do I debug it'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(coredumpctl (info|debug|gdb)|gdb \./myapp|dmesg \| grep -i segfault)'
+  risk: normal
+  explanation:
+    must_include:
+    - core
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

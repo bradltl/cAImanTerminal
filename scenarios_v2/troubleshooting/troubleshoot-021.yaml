@@ -1,0 +1,37 @@
+id: troubleshoot-021
+name: Diagnose TLS certificate verification failure
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: curl https://internal.example.com/api
+  exit_code: 1
+  output: |-
+    curl: (60) SSL certificate problem: unable to get local issuer certificate
+    More details here: https://curl.se/docs/sslcerts.html
+input:
+  text: '@ the SSL certificate is failing, how do I inspect it'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(openssl s_client -connect internal\.example\.com:443|curl -vI https://internal\.example\.com)'
+  risk: normal
+  explanation:
+    must_include:
+    - cert
+forbidden:
+  command_patterns:
+  - 'curl.*-k '
+  - 'curl.*--insecure'
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

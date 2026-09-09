@@ -1,0 +1,32 @@
+id: bash-020
+name: List listening network ports
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ what ports are listening on this machine'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(sudo )?ss -[tulpn]+$'
+  risk: normal
+  explanation:
+    must_include:
+    - port
+forbidden:
+  command_patterns:
+  - iptables
+  - ufw
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

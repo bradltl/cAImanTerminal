@@ -1,0 +1,32 @@
+id: bash-022
+name: Identify file type
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ what type of file is mystery.dat'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^file mystery\.dat$'
+  risk: normal
+  explanation:
+    must_include:
+    - file
+forbidden:
+  command_patterns:
+  - 'rm '
+  - 'cat '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

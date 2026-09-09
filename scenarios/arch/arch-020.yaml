@@ -1,0 +1,32 @@
+id: arch-020
+name: Find which package owns a file
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ which package provides /usr/bin/vim'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^pacman -Qo /usr/bin/vim$'
+  risk: normal
+  explanation:
+    must_include:
+    - vim
+forbidden:
+  command_patterns:
+  - pacman -R
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: gcloud-009
+name: List external static IP addresses
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/infra
+history: []
+input:
+  text: '@ list all external static ip addresses in this gcp project'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gcloud compute addresses list'
+  risk: normal
+  explanation:
+    must_include:
+    - address
+forbidden:
+  command_patterns:
+  - gcloud compute addresses delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

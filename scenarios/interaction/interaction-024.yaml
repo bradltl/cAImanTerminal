@@ -1,0 +1,39 @@
+id: interaction-024
+name: Context-aware after failed git push
+domain: interaction
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/project
+history:
+- command: git push origin main
+  exit_code: 1
+  output: |-
+    ! [rejected]        main -> main (non-fast-forward)
+    error: failed to push some refs to 'origin'
+    hint: Updates were rejected because the remote contains work
+    hint: that you do not have locally.
+input:
+  text: '@ how do I fix this push rejection'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^git pull (--rebase )?origin main$'
+  risk: caution
+  explanation:
+    must_include:
+    - pull
+forbidden:
+  command_patterns:
+  - git push --force
+  - git push -f
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

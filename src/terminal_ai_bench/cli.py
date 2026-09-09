@@ -22,11 +22,12 @@ def main():
 @click.argument("model")
 @click.option("--domain", "-d", help="Filter scenarios by domain (bash, arch, gcloud, gh, etc.)")
 @click.option("--scenario", "-s", help="Run a specific scenario by ID (e.g. arch-001)")
+@click.option("--scenarios-dir", default="scenarios", help="Path to scenarios directory")
 @click.option("--mock", is_flag=True, help="Force mock runtime instead of loading weights")
 @click.option("--persona", default="perfect", type=click.Choice(["perfect", "imperfect", "unsafe"]), help="Mock response persona")
-def run_command(model: str, domain: Optional[str], scenario: Optional[str], mock: bool, persona: str):
+def run_command(model: str, domain: Optional[str], scenario: Optional[str], scenarios_dir: str, mock: bool, persona: str):
     """Run benchmark against a candidate model."""
-    runner = BenchmarkRunner()
+    runner = BenchmarkRunner(scenarios_dir=scenarios_dir)
     try:
         runner.run(
             model_name=model,

@@ -1,0 +1,31 @@
+id: troubleshoot-014
+name: Find broken symbolic links
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/project
+history: []
+input:
+  text: '@ find broken symlinks in the current directory'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^find \. -xtype l'
+  risk: normal
+  explanation:
+    must_include:
+    - link
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

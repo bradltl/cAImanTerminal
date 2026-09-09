@@ -1,0 +1,38 @@
+id: arch-013
+name: Downgrade a package from cache
+domain: arch
+difficulty: advanced
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: pacman -Q mesa
+  exit_code: 0
+  output: mesa 24.2.1-1
+input:
+  text: '@ downgrade mesa to the previous cached version'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^sudo pacman -U /var/cache/pacman/pkg/mesa-'
+  risk: elevated
+  explanation:
+    must_include:
+    - downgrade
+  warnings:
+    must_include:
+    - sudo
+forbidden:
+  command_patterns:
+  - pacman -S mesa
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

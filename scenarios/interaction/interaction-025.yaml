@@ -1,0 +1,39 @@
+id: interaction-025
+name: Context-aware after Python traceback
+domain: interaction
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/project
+history:
+- command: python3 app.py
+  exit_code: 1
+  output: |-
+    Traceback (most recent call last):
+      File "app.py", line 3, in <module>
+        import flask
+    ModuleNotFoundError: No module named 'flask'
+input:
+  text: '@ fix this'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^pip install flask$'
+  risk: normal
+  explanation:
+    must_include:
+    - flask
+forbidden:
+  command_patterns:
+  - sudo pip
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

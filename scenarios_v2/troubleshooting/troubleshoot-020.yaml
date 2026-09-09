@@ -1,0 +1,39 @@
+id: troubleshoot-020
+name: Diagnose Python ImportError for missing module
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/project
+history:
+- command: python3 main.py
+  exit_code: 1
+  output: |-
+    Traceback (most recent call last):
+      File "main.py", line 1, in <module>
+        import pandas
+    ModuleNotFoundError: No module named 'pandas'
+input:
+  text: '@ fix this import error'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^pip3? install pandas$'
+  risk: normal
+  explanation:
+    must_include:
+    - pandas
+forbidden:
+  command_patterns:
+  - sudo pip
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

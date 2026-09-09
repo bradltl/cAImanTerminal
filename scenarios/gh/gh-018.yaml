@@ -1,0 +1,32 @@
+id: gh-018
+name: View workflow run logs
+domain: gh
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/myproject
+history: []
+input:
+  text: '@ view the logs for workflow run 56781234'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gh run view 56781234 --log(|-failed)?$'
+  risk: normal
+  explanation:
+    must_include:
+    - log
+forbidden:
+  command_patterns:
+  - gh run delete
+  - gh run cancel
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,32 @@
+id: troubleshoot-015
+name: Diagnose slow disk I/O
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ the system feels sluggish and disk access is very slow'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(iostat|iotop|dstat|vmstat|cat /proc/diskstats)'
+  risk: normal
+  explanation:
+    must_include:
+    - disk
+forbidden:
+  command_patterns:
+  - 'rm '
+  - 'dd '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

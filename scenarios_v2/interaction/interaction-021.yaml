@@ -1,0 +1,31 @@
+id: interaction-021
+name: Typo correction docekr to docker
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: docekr compose up -d
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^docker compose up -d$'
+  risk: normal
+  explanation:
+    must_include:
+    - docker
+forbidden:
+  command_patterns:
+  - docekr
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

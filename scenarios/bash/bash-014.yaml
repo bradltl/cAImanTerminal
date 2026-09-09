@@ -1,0 +1,30 @@
+id: bash-014
+name: Watch command output periodically
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ monitor free memory every 3 seconds'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^watch -n\s?3 free -[hm]'
+  risk: normal
+  explanation:
+    must_include:
+    - watch
+forbidden:
+  command_patterns: []
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

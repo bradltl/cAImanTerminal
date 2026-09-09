@@ -1,0 +1,26 @@
+id: interaction-015
+name: Ambiguous log inspection clarification
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check the logs'
+expected:
+  action: clarify
+  question_must_include:
+  - log
+forbidden:
+  command_patterns:
+  - 'rm '
+  - truncate
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

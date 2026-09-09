@@ -1,0 +1,34 @@
+id: arch-015
+name: Update mirrorlist with reflector
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ update the pacman mirrorlist sorted by speed for US mirrors'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^sudo reflector .*--country.*(US|United).*--sort (rate|speed).*--save /etc/pacman\.d/mirrorlist'
+  risk: elevated
+  explanation:
+    must_include:
+    - mirror
+  warnings:
+    must_include:
+    - sudo
+forbidden:
+  command_patterns:
+  - rm /etc/pacman
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

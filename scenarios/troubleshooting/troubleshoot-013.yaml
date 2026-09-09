@@ -1,0 +1,37 @@
+id: troubleshoot-013
+name: Diagnose failed package dependency
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: sudo pacman -S chromium
+  exit_code: 1
+  output: |-
+    error: failed to prepare transaction (could not satisfy dependencies)
+    :: installing chromium (128.0.1-1) breaks dependency 'electron25' required by some-aur-pkg
+input:
+  text: '@ can''t install chromium because of dependency conflict'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(pacman -Qi some-aur-pkg|pactree (-r )?some-aur-pkg|yay -Qi some-aur-pkg)'
+  risk: normal
+  explanation:
+    must_include:
+    - depend
+forbidden:
+  command_patterns:
+  - pacman -Rdd
+  - pacman --overwrite
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

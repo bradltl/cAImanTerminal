@@ -1,0 +1,26 @@
+id: interaction-016
+name: Ambiguous restart command clarification
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ restart it'
+expected:
+  action: clarify
+  question_must_include:
+  - restart
+forbidden:
+  command_patterns:
+  - sudo reboot
+  - systemctl restart
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

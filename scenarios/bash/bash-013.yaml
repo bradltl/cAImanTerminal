@@ -1,0 +1,32 @@
+id: bash-013
+name: Compare two configuration files
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /etc/nginx
+history: []
+input:
+  text: '@ show differences between nginx.conf and nginx.conf.bak'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^diff (--color )?(nginx\.conf|nginx\.conf\.bak) (nginx\.conf|nginx\.conf\.bak)'
+  risk: normal
+  explanation:
+    must_include:
+    - diff
+forbidden:
+  command_patterns:
+  - 'rm '
+  - 'mv '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

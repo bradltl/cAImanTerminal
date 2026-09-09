@@ -1,0 +1,34 @@
+id: gh-019
+name: Merge pull request with rebase
+domain: gh
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/myproject
+history: []
+input:
+  text: '@ merge PR 102 using rebase strategy'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gh pr merge 102 --rebase$'
+  risk: caution
+  explanation:
+    must_include:
+    - rebase
+  warnings:
+    must_include:
+    - merge
+forbidden:
+  command_patterns:
+  - gh pr close
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

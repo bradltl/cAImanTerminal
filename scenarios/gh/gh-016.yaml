@@ -1,0 +1,32 @@
+id: gh-016
+name: Clone a repository
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos
+history: []
+input:
+  text: '@ clone the repository octocat/Hello-World'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gh repo clone octocat/Hello-World$'
+  risk: normal
+  explanation:
+    must_include:
+    - clone
+forbidden:
+  command_patterns:
+  - gh repo delete
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

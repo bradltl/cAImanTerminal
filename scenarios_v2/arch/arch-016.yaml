@@ -1,0 +1,32 @@
+id: arch-016
+name: Check kernel errors in system journal
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show kernel error messages from the journal'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^(sudo )?journalctl (-k -p (err|3)|--dmesg --priority=(err|3)|-k --priority=(err|3))'
+  risk: normal
+  explanation:
+    must_include:
+    - kernel
+forbidden:
+  command_patterns:
+  - 'rm '
+  - truncate
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: arch-012
+name: Find orphaned packages
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ are there any orphaned packages on this system'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^pacman -Q[td]+q?$'
+  risk: normal
+  explanation:
+    must_include:
+    - orphan
+forbidden:
+  command_patterns:
+  - pacman -R
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

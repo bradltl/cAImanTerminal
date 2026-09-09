@@ -1,0 +1,34 @@
+id: interaction-023
+name: Passive ghost completion for pacman install after search
+domain: interaction
+difficulty: intermediate
+mode: passive
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: pacman -Ss ripgrep
+  exit_code: 0
+  output: |-
+    extra/ripgrep 14.1.0-1
+        line-oriented search tool
+typing:
+  idle_ms: 650
+input:
+  text: sudo pacman -S ri
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^sudo pacman -S ripgrep$'
+  risk: elevated
+forbidden:
+  command_patterns: []
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

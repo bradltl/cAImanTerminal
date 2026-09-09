@@ -1,0 +1,31 @@
+id: bash-015
+name: Create a symbolic link
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/project
+history: []
+input:
+  text: '@ create a symlink called latest pointing to v2.1 directory'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^ln -s[f]? v2\.1 latest$'
+  risk: caution
+  explanation:
+    must_include:
+    - link
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

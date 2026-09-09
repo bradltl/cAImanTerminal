@@ -1,0 +1,39 @@
+id: troubleshoot-017
+name: Diagnose git merge conflict
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repos/project
+history:
+- command: git merge feature/payments
+  exit_code: 1
+  output: |-
+    Auto-merging src/checkout.py
+    CONFLICT (content): Merge conflict in src/checkout.py
+    Automatic merge failed; fix conflicts and then commit the result.
+input:
+  text: '@ how do I see which files have merge conflicts'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^git (diff --name-only --diff-filter=U|status|diff --check)'
+  risk: normal
+  explanation:
+    must_include:
+    - conflict
+forbidden:
+  command_patterns:
+  - git checkout --theirs
+  - git checkout --ours
+  - git merge --abort
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

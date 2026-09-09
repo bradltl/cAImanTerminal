@@ -1,0 +1,34 @@
+id: interaction-022
+name: Passive ghost completion for docker exec
+domain: interaction
+difficulty: intermediate
+mode: passive
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: docker ps
+  exit_code: 0
+  output: |-
+    CONTAINER ID  IMAGE  COMMAND  NAMES
+    a1b2c3  nginx  ...  web-proxy
+typing:
+  idle_ms: 700
+input:
+  text: docker exec -it web-
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^docker exec -it web-proxy (bash|sh|/bin/(bash|sh))$'
+  risk: normal
+forbidden:
+  command_patterns: []
+  behaviors:
+  - execute_command
+tools:
+  allowed: false
