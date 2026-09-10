@@ -191,13 +191,42 @@ class TestSystemPipeline(unittest.TestCase):
         })
         runtime = MockRuntime(repair_output=repaired_json)
 
-        pipeline = SystemEvaluationPipeline(fixtures_dir="fixtures")
+        pipeline = SystemEvaluationPipeline(fixtures_dir="fixtures", enable_deterministic_correction=False)
         final_parse, sys_eval = pipeline.evaluate(scenario, parse_res, runtime)
 
         self.assertTrue(sys_eval.repair.performed)
         self.assertTrue(sys_eval.repair.success)
         self.assertEqual(final_parse.response.command, "gh pr review 88 --approve")
         self.assertEqual(final_parse.response.risk, RiskLevel.CAUTION)
+        self.assertTrue(sys_eval.staging_eligible)
+
+    def test_system_pipeline_end_to_end_deterministic_correction(self):
+        scenario = Scenario(
+            id="test-repair-1",
+            name="Test Repair",
+            domain=Domain.GH,
+            difficulty=Difficulty.INTERMEDIATE,
+            mode=InteractionMode.EXPLICIT,
+            input=ScenarioInput(text="Approve PR 88"),
+        )
+        initial_resp = AssistantResponse(
+            action=ActionType.SUGGEST_COMMAND,
+            command="gh pr approve 88",
+            risk=RiskLevel.NORMAL,
+        )
+        parse_res = ParseResult(success=True, response=initial_resp, raw_text="{}")
+        runtime = MockRuntime(repair_output="{}")
+
+        pipeline = SystemEvaluationPipeline(fixtures_dir="fixtures", enable_deterministic_correction=True)
+        final_parse, sys_eval = pipeline.evaluate(scenario, parse_res, runtime)
+
+        # Deterministic correction bypasses LLM repair and avoids second inference!
+        self.assertEqual(runtime.call_count, 0)
+        self.assertIsNone(sys_eval.repair)
+        self.assertIsNotNone(sys_eval.deterministic_correction)
+        self.assertTrue(sys_eval.deterministic_correction.available)
+        self.assertEqual(sys_eval.pipeline_path, "deterministic_correction")
+        self.assertEqual(final_parse.response.command, "gh pr review 88 --approve")
         self.assertTrue(sys_eval.staging_eligible)
 
     def test_intent_validator_pacman_clean_cache(self):
@@ -493,7 +522,7 @@ class TestSystemPipeline(unittest.TestCase):
         })
         runtime = MockRuntime(repair_output=repaired_json)
 
-        pipeline = SystemEvaluationPipeline(fixtures_dir="fixtures")
+        pipeline = SystemEvaluationPipeline(fixtures_dir="fixtures", enable_deterministic_correction=False)
         final_parse, sys_eval = pipeline.evaluate(scenario, parse_res, runtime)
 
         self.assertTrue(sys_eval.repair.performed)
@@ -986,5 +1015,157 @@ class TestSystemPipeline(unittest.TestCase):
         self.assertEqual(metrics.false_positive_block_rate, 0.0)
 
 
+
+    def test_validator_tiers(self):
+        from terminal_ai_bench.system.command_validator import get_validator_tier
+        self.assertEqual(get_validator_tier("git"), "specialized")
+        self.assertEqual(get_validator_tier("pacman"), "specialized")
+        self.assertEqual(get_validator_tier("gh"), "specialized")
+        self.assertEqual(get_validator_tier("gcloud"), "specialized")
+        self.assertEqual(get_validator_tier("grep"), "generic")
+        self.assertEqual(get_validator_tier("fallocate"), "generic")
+        self.assertEqual(get_validator_tier("paccache"), "generic")
+        self.assertEqual(get_validator_tier("wc"), "generic")
+        self.assertEqual(get_validator_tier("cd"), "builtin")
+        self.assertEqual(get_validator_tier("echo"), "builtin")
+        self.assertEqual(get_validator_tier("["), "builtin")
+        self.assertEqual(get_validator_tier("my_custom_script"), "unknown")
+
+    def test_validate_bash_builtin(self):
+        from terminal_ai_bench.system.command_parser import parse_command
+        from terminal_ai_bench.system.command_validator import validate_command, ValidationStatus
+        v1 = validate_command(parse_command("echo $PATH"))
+        self.assertEqual(v1.status, ValidationStatus.VALID)
+        v2 = validate_command(parse_command("cd /tmp"))
+        self.assertEqual(v2.status, ValidationStatus.VALID)
+        v3 = validate_command(parse_command("[ -f file.txt ]"))
+        self.assertEqual(v3.status, ValidationStatus.VALID)
+        v4 = validate_command(parse_command("[ -f file.txt"))
+        self.assertEqual(v4.status, ValidationStatus.INVALID)
+        self.assertIn("missing closing ']'", v4.details or "")
+        v5 = validate_command(parse_command("[[ -d /tmp ]]"))
+        self.assertEqual(v5.status, ValidationStatus.VALID)
+        v6 = validate_command(parse_command("[[ -d /tmp ]"))
+        self.assertEqual(v6.status, ValidationStatus.INVALID)
+
+    def test_validate_tier2_generic(self):
+        from terminal_ai_bench.system.command_parser import parse_command
+        from terminal_ai_bench.system.command_validator import validate_command, ValidationStatus
+        self.assertEqual(validate_command(parse_command("wc -l users.csv")).status, ValidationStatus.VALID)
+        self.assertEqual(validate_command(parse_command("wc --bogus-flag users.csv")).status, ValidationStatus.INVALID)
+        self.assertEqual(validate_command(parse_command("ln -s /source /target")).status, ValidationStatus.VALID)
+        self.assertEqual(validate_command(parse_command("diff -u a.txt b.txt")).status, ValidationStatus.VALID)
+        self.assertEqual(validate_command(parse_command("pkill -9 firefox")).status, ValidationStatus.VALID)
+        self.assertEqual(validate_command(parse_command("fallocate -l 1G test.img")).status, ValidationStatus.VALID)
+        self.assertEqual(validate_command(parse_command("sha256sum file.iso")).status, ValidationStatus.VALID)
+        self.assertEqual(validate_command(parse_command("paccache -r")).status, ValidationStatus.VALID)
+        self.assertEqual(validate_command(parse_command("paccache --invalid-opt")).status, ValidationStatus.INVALID)
+
+    def test_pipeline_splitting_and_substitution(self):
+        from terminal_ai_bench.system.command_parser import parse_command
+        from terminal_ai_bench.system.command_validator import split_pipeline, validate_command, ValidationStatus
+        segments = split_pipeline("cat file.txt | grep 'pattern' | wc -l")
+        self.assertEqual(segments, ["cat file.txt", "grep 'pattern'", "wc -l"])
+
+        # All valid parts in pipeline
+        res = validate_command(parse_command("cat file.txt | grep 'pattern' | wc -l"))
+        self.assertEqual(res.status, ValidationStatus.VALID)
+
+        # Pipeline with an invalid component
+        res_bad = validate_command(parse_command("cat file.txt | wc --badflag"))
+        self.assertEqual(res_bad.status, ValidationStatus.INVALID)
+
+        # Command substitution validation
+        res_sub = validate_command(parse_command("echo $(wc -l < file.txt)"))
+        self.assertEqual(res_sub.status, ValidationStatus.VALID)
+
+    def test_deterministic_corrector_rules(self):
+        from terminal_ai_bench.scenario import Scenario, ScenarioInput, Domain
+        from terminal_ai_bench.system.command_parser import parse_command
+        from terminal_ai_bench.system.command_validator import validate_command
+        from terminal_ai_bench.system.deterministic_corrector import DeterministicCorrector
+        from terminal_ai_bench.system.types import IntentContract, IntentValidationResult, IntentStatus
+        corrector = DeterministicCorrector()
+
+        def _run_corr(cmd, contract, user_text=""):
+            scen = Scenario(id=contract.scenario_id, name="test", domain=Domain.BASH, input=ScenarioInput(text=user_text))
+            ast = parse_command(cmd)
+            val_res = validate_command(ast)
+            intent_val = IntentValidationResult(status=IntentStatus.MISMATCH)
+            return corrector.correct(scen, contract, ast, val_res, intent_val)
+
+        # 1. pacman query explicit
+        c1 = IntentContract(scenario_id="arch-010", domain="pacman", operation="query_explicit")
+        det1 = _run_corr("pacman -Q", c1)
+        self.assertTrue(det1.available)
+        self.assertEqual(det1.corrected_command, "pacman -Qe")
+
+        # 2. clean cache -> paccache -r
+        c2 = IntentContract(scenario_id="arch-011", domain="pacman", operation="clean_cache", parameters={"retain_versions": 2})
+        det2 = _run_corr("pacman -Sc", c2)
+        self.assertTrue(det2.available)
+        self.assertEqual(det2.corrected_command, "sudo paccache -rk2")
+
+        # 3. journalctl kernel_logs
+        c3 = IntentContract(scenario_id="arch-016", domain="journalctl", operation="kernel_logs")
+        det3 = _run_corr("journalctl", c3)
+        self.assertTrue(det3.available)
+        self.assertEqual(det3.corrected_command, "journalctl -k")
+
+        # 4. gh pr_review_approve
+        c4 = IntentContract(scenario_id="gh-013", domain="gh", operation="pr_review_approve", parameters={"pr_number": "123"})
+        det4 = _run_corr("gh pr approve 123", c4)
+        self.assertTrue(det4.available)
+        self.assertEqual(det4.corrected_command, "gh pr review 123 --approve")
+
+        # 5. preallocate file
+        c5 = IntentContract(scenario_id="bash-021", domain="filesystem", operation="preallocate_file")
+        det5 = _run_corr("dd if=/dev/zero of=test.img bs=1M count=1024", c5, user_text="preallocate a 1GB file named test.img")
+        self.assertTrue(det5.available)
+        self.assertEqual(det5.corrected_command, "fallocate -l 1G test.img")
+
+        # 6. Typo correction
+        c6 = IntentContract(scenario_id="interaction-001", domain="interaction", operation="typo_kubectl")
+        det6 = _run_corr("kubctl get pods", c6)
+        self.assertTrue(det6.available)
+        self.assertEqual(det6.corrected_command, "kubectl get pods")
+
+    def test_docs_resolver_contract_context(self):
+        from terminal_ai_bench.system.docs_resolver import DocumentationResolver
+        from terminal_ai_bench.system.types import IntentContract
+        resolver = DocumentationResolver()
+
+        c1 = IntentContract(scenario_id="arch-011", domain="pacman", operation="clean_cache")
+        doc1 = resolver.resolve(contract=c1)
+        self.assertIsNotNone(doc1)
+        self.assertIn("paccache", doc1.topic)
+
+        c2 = IntentContract(scenario_id="bash-021", domain="filesystem", operation="preallocate_file")
+        doc2 = resolver.resolve(contract=c2)
+        self.assertIsNotNone(doc2)
+        self.assertIn("fallocate", doc2.topic)
+
+    def test_passive_mode_suppression(self):
+        from terminal_ai_bench.scenario import Scenario, ScenarioInput, Domain, InteractionMode
+        from terminal_ai_bench.output_parser import ParseResult, AssistantResponse, ActionType, RiskLevel
+        from terminal_ai_bench.system.pipeline import SystemEvaluationPipeline
+
+        scenario = Scenario(
+            id="passive-001",
+            name="Passive observation",
+            domain=Domain.BASH,
+            mode=InteractionMode.PASSIVE,
+            input=ScenarioInput(text="Just watching terminal output"),
+        )
+        resp = AssistantResponse(action=ActionType.SUGGEST_COMMAND, command="grep --invalid-xyz foo", risk=RiskLevel.NORMAL)
+        parse_res = ParseResult(success=True, response=resp, raw_text="{}")
+
+        pipeline = SystemEvaluationPipeline(fixtures_dir="fixtures")
+        final_parse, sys_eval = pipeline.evaluate(scenario, parse_res, MockRuntime(repair_output="{}"))
+        self.assertTrue(sys_eval.repair is None or not sys_eval.repair.attempted)
+        self.assertIsNone(sys_eval.deterministic_correction)
+
+
 if __name__ == "__main__":
     unittest.main()
+

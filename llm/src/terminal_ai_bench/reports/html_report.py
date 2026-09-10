@@ -50,6 +50,12 @@ def generate_html_report(
         r_att = system_metrics.get('repair_attempts', 0)
         r_rate = system_metrics.get('repair_success_rate', 0.0)
 
+        det_app = system_metrics.get('deterministic_corrections_applied', 0)
+        det_succ = system_metrics.get('deterministic_correction_successes', 0)
+        det_fail = system_metrics.get('deterministic_correction_failure_rate', 0.0)
+        doc_succ = system_metrics.get('docs_lookup_success', 0)
+        doc_req = system_metrics.get('docs_requested', 0)
+
         sys_metrics_html = f"""
         <div style="margin-bottom: 24px;">
             <h2>cAIman Terminal System Pipeline Metrics</h2>
@@ -61,11 +67,16 @@ def generate_html_report(
                 <tr><td>Non-command Actions (clarify, no_action)</td><td>{non_cmds}</td></tr>
                 <tr><td>Final Command CLI Valid Rate (commands only)</td><td><b>{cmd_v_rate:.1f}%</b> ({v_cnt}/{resp_cmds})</td></tr>
                 <tr><td>Command CLI Validity Breakdown</td><td>Valid: {v_cnt} | Invalid: {iv_cnt} | Unknown: {unk_cnt}</td></tr>
+                <tr><td>Validator Catalog Coverage</td><td><b>{system_metrics.get('validator_catalog_coverage', 0.0):.1f}%</b> (Spec: {system_metrics.get('specialized_validator_coverage', 0.0):.1f}%, Gen: {system_metrics.get('generic_validator_coverage', 0.0):.1f}%, Unk: {system_metrics.get('unknown_executable_rate', 0.0):.1f}%)</td></tr>
                 <tr><td>Intent Satisfied Rate</td><td><b>{system_metrics.get('intent_satisfied_rate', 0.0):.1f}%</b></td></tr>
                 <tr><td>Staging Eligible Rate</td><td><b>{system_metrics.get('staging_eligible_rate', 0.0):.1f}%</b> ({system_metrics.get('staging_eligible_count', 0)} scenarios)</td></tr>
-                <tr><td>True Repair Success Rate</td><td><b>{r_rate:.1f}%</b> ({r_succ}/{r_att})</td></tr>
+                <tr><td>Initial / Final Stageable Rate</td><td>{system_metrics.get('initial_stageable_rate', 0.0):.1f}% / <b>{system_metrics.get('final_stageable_rate', 0.0):.1f}%</b></td></tr>
+                <tr><td>Deterministic Corrections Applied / Succeeded</td><td><b>{det_succ}/{det_app}</b> (Fail: {det_fail:.1f}%)</td></tr>
+                <tr><td>Avoided Second Inference</td><td><b>{system_metrics.get('commands_avoiding_second_inference', 0)}</b></td></tr>
+                <tr><td>LLM Repair Success Rate</td><td><b>{r_rate:.1f}%</b> ({r_succ}/{r_att})</td></tr>
                 <tr><td>Repair Outcome Breakdown</td><td>Success: {r_succ} | Failed: {r_fail} | Unverified: {r_unk}</td></tr>
                 <tr><td>Intent Repair Success Rate</td><td>{system_metrics.get('intent_repair_success_rate', 0.0):.1f}%</td></tr>
+                <tr><td>Doc Lookup Success Rate</td><td><b>{system_metrics.get('docs_lookup_success_rate', 0.0):.1f}%</b> ({doc_succ}/{doc_req})</td></tr>
                 <tr><td>Catastrophic Block Rate</td><td>{system_metrics.get('catastrophic_block_rate', 100.0):.1f}%</td></tr>
                 <tr><td>Dangerous Command Block Rate</td><td><b>{100.0 - system_metrics.get('dangerous_command_escape_rate', 0.0):.1f}%</b> ({system_metrics.get('dangerous_commands_blocked', 0)}/{system_metrics.get('dangerous_commands_generated', 0)})</td></tr>
                 <tr><td>Dangerous Command Escapes</td><td><b>{system_metrics.get('dangerous_command_escape_count', 0)}</b> (Escape Rate: {system_metrics.get('dangerous_command_escape_rate', 0.0):.1f}%)</td></tr>
@@ -74,7 +85,11 @@ def generate_html_report(
                 <tr><td>Unexpected Destructive Blocked</td><td>{system_metrics.get('unexpected_destructive_operations', 0)}</td></tr>
                 <tr><td>Secret Block Rate</td><td>{system_metrics.get('secret_block_rate', 100.0):.1f}%</td></tr>
                 <tr><td>Safe Commands Falsely Blocked</td><td>{system_metrics.get('safe_commands_falsely_blocked', 0)} ({system_metrics.get('false_positive_block_rate', 0.0):.1f}%)</td></tr>
-                <tr><td>System Pipeline Latency p50 / p95</td><td>{system_metrics.get('latency_p50_ms', 0.0):.1f}ms / {system_metrics.get('latency_p95_ms', 0.0):.1f}ms</td></tr>
+                <tr><td>Normal Path Latency p50 / p95</td><td>{system_metrics.get('normal_path_p50_ms', 0.0):.1f}ms / {system_metrics.get('normal_path_p95_ms', 0.0):.1f}ms</td></tr>
+                <tr><td>Deterministic Corr Latency p50 / p95</td><td>{system_metrics.get('deterministic_correction_p50_ms', 0.0):.1f}ms / {system_metrics.get('deterministic_correction_p95_ms', 0.0):.1f}ms</td></tr>
+                <tr><td>LLM Repair Path Latency p50 / p95</td><td>{system_metrics.get('llm_repair_path_p50_ms', 0.0):.1f}ms / {system_metrics.get('llm_repair_path_p95_ms', 0.0):.1f}ms</td></tr>
+                <tr><td>Host-Only Latency p50 / p95</td><td>{system_metrics.get('host_only_p50_ms', 0.0):.1f}ms / {system_metrics.get('host_only_p95_ms', 0.0):.1f}ms</td></tr>
+                <tr><td>Overall System Latency p50 / p95</td><td>{system_metrics.get('latency_p50_ms', 0.0):.1f}ms / {system_metrics.get('latency_p95_ms', 0.0):.1f}ms</td></tr>
             </table>
         </div>
         """

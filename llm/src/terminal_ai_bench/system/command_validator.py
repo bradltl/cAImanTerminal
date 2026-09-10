@@ -416,8 +416,72 @@ def validate_docker(ast: CommandAST) -> ValidationResult:
     return ValidationResult(status=ValidationStatus.VALID, executable="docker", subcommand=[sub])
 
 
-def validate_coreutils(ast: CommandAST) -> ValidationResult:
-    exe = ast.executable
+# ── 6. TIER DEFINITIONS AND CATALOG SPECIFICATIONS ──────────────────
+
+TIER_1_SPECIALIZED: Set[str] = {"gh", "gcloud", "git", "pacman", "systemctl", "docker"}
+
+BASH_BUILTINS: Set[str] = {
+    "echo", "printf", "cd", "pwd", "export", "unset", "source", "alias",
+    "unalias", "type", "read", "exit", "return", "set", "shopt", "test",
+    "[", "[[", "true", "false", "history", "help", "exec", "eval", "trap",
+    ":", ".", "builtin", "command", "declare", "typeset", "local"
+}
+
+TIER_2_GENERIC: Set[str] = {
+    "ls", "cp", "mv", "rm", "wc", "ln", "diff", "sort", "watch", "sha256sum",
+    "pkill", "killall", "paccache", "ss", "lsof", "ip", "curl", "wget", "find",
+    "cat", "grep", "fallocate", "kill", "tar", "sed", "awk", "df", "du", "file",
+    "reflector", "mkinitcpio", "head", "tail", "touch", "chmod", "chown",
+    "uname", "free", "ps", "uptime", "dmesg", "ping", "traceroute", "top",
+    "htop", "tree", "hostname", "which", "whoami", "id", "env", "printenv",
+    "tee", "cut", "tr", "uniq", "xargs", "gzip", "gunzip", "bzip2", "xz",
+    "zip", "unzip", "ssh", "scp", "rsync", "journalctl", "netstat", "ncdu",
+    "iostat", "vmstat", "iotop", "iptables", "ufw", "nft", "crontab", "locale",
+    "localectl", "coredumpctl", "pip", "python", "python3", "openssl", "ssh-keygen",
+    "mysql", "visudo", "swapoff", "lsmod"
+}
+
+
+def get_validator_tier(executable: Optional[str]) -> str:
+    """Returns the catalog tier for an executable: 'specialized', 'generic', 'builtin', or 'unknown'."""
+    if not executable:
+        return "unknown"
+    exe = executable.lower()
+    if exe in TIER_1_SPECIALIZED:
+        return "specialized"
+    elif exe in BASH_BUILTINS:
+        return "builtin"
+    elif exe in TIER_2_GENERIC:
+        return "generic"
+    return "unknown"
+
+
+def validate_bash_builtin(ast: CommandAST) -> ValidationResult:
+    """Validates Bash builtin syntax and balance."""
+    exe = ast.executable or ""
+    if exe == "[":
+        if not ast.arguments or ast.arguments[-1] != "]":
+            return ValidationResult(
+                status=ValidationStatus.INVALID,
+                reason="missing_operand",
+                executable="[",
+                details="test '[' command missing closing ']'",
+            )
+    elif exe == "[[":
+        if not ast.arguments or ast.arguments[-1] != "]]":
+            return ValidationResult(
+                status=ValidationStatus.INVALID,
+                reason="missing_operand",
+                executable="[[",
+                details="test '[[' command missing closing ']]'",
+            )
+    return ValidationResult(status=ValidationStatus.VALID, executable=exe)
+
+
+def validate_tier2_generic(ast: CommandAST) -> ValidationResult:
+    """Tier 2 validator for generic Linux utilities with flag and argument checks."""
+    exe = ast.executable or ""
+
     # Flag validation for grep
     if exe == "grep":
         for f in ast.flags:
@@ -431,7 +495,7 @@ def validate_coreutils(ast: CommandAST) -> ValidationResult:
                     suggested_fix=ast.raw_command.replace(f, "-r"),
                 )
 
-    if exe == "kill":
+    elif exe == "kill":
         if not ast.arguments and not ast.command_substitutions:
             return ValidationResult(
                 status=ValidationStatus.INVALID,
@@ -441,7 +505,7 @@ def validate_coreutils(ast: CommandAST) -> ValidationResult:
                 help_topic="kill",
             )
 
-    if exe == "fallocate":
+    elif exe == "fallocate":
         if not any(f in ("-l", "--length") for f in ast.flags) or not ast.arguments:
             return ValidationResult(
                 status=ValidationStatus.INVALID,
@@ -451,13 +515,165 @@ def validate_coreutils(ast: CommandAST) -> ValidationResult:
                 help_topic="fallocate",
             )
 
+    elif exe == "ln":
+        if not ast.arguments:
+            return ValidationResult(
+                status=ValidationStatus.INVALID,
+                reason="missing_operand",
+                executable="ln",
+                details="ln requires target operand.",
+                help_topic="ln",
+            )
+
+    elif exe == "pkill":
+        if not ast.arguments and not any(f.startswith("-") for f in ast.flags):
+            return ValidationResult(
+                status=ValidationStatus.INVALID,
+                reason="missing_operand",
+                executable="pkill",
+                details="pkill requires a pattern or process name operand.",
+                help_topic="pkill",
+            )
+
+    elif exe == "watch":
+        if not ast.arguments:
+            return ValidationResult(
+                status=ValidationStatus.INVALID,
+                reason="missing_operand",
+                executable="watch",
+                details="watch requires a command to execute.",
+                help_topic="watch",
+            )
+
+    elif exe == "sha256sum":
+        for f in ast.flags:
+            if f not in ("-c", "--check", "-b", "--binary", "-t", "--text", "--tag", "--quiet", "--status"):
+                return ValidationResult(
+                    status=ValidationStatus.INVALID,
+                    reason="invalid_option",
+                    executable="sha256sum",
+                    details=f"Unknown option '{f}' for sha256sum.",
+                    help_topic="sha256sum",
+                )
+
+    elif exe == "paccache":
+        for f in ast.flags:
+            valid_paccache = (
+                bool(re.match(r"^-[rkuvcmdfq0-9]+$", f))
+                or f in ("--remove", "--keep", "--uninstalled", "--clean", "--help", "--version")
+            )
+            if not valid_paccache:
+                return ValidationResult(
+                    status=ValidationStatus.INVALID,
+                    reason="invalid_option",
+                    executable="paccache",
+                    details=f"Invalid option '{f}' for paccache.",
+                    help_topic="paccache",
+                )
+    elif exe == "wc":
+        for f in ast.flags:
+            valid_wc = (
+                bool(re.match(r"^-[cmlLw]+$", f))
+                or f in ("--bytes", "--chars", "--lines", "--max-line-length", "--words", "--help", "--version")
+                or f.startswith("--files0-from=")
+            )
+            if not valid_wc:
+                return ValidationResult(
+                    status=ValidationStatus.INVALID,
+                    reason="invalid_option",
+                    executable="wc",
+                    details=f"Invalid option '{f}' for wc.",
+                    help_topic="wc",
+                )
+
     return ValidationResult(status=ValidationStatus.VALID, executable=exe)
+
+
+# Compatibility alias
+validate_coreutils = validate_tier2_generic
+
+
+def split_pipeline(cmd_str: str) -> List[str]:
+    """Split shell pipeline by '|' outside quotes and subshells."""
+    stages = []
+    current: List[str] = []
+    in_single = False
+    in_double = False
+    paren_depth = 0
+    idx = 0
+    while idx < len(cmd_str):
+        c = cmd_str[idx]
+        if c == "'" and not in_double:
+            in_single = not in_single
+            current.append(c)
+        elif c == '"' and not in_single:
+            in_double = not in_double
+            current.append(c)
+        elif c == '(' and not in_single:
+            paren_depth += 1
+            current.append(c)
+        elif c == ')' and not in_single and paren_depth > 0:
+            paren_depth -= 1
+            current.append(c)
+        elif c == '|' and not in_single and not in_double and paren_depth == 0:
+            if idx + 1 < len(cmd_str) and cmd_str[idx + 1] in ('|', '&'):
+                current.append(cmd_str[idx : idx + 2])
+                idx += 1
+            else:
+                stages.append("".join(current).strip())
+                current = []
+        else:
+            current.append(c)
+        idx += 1
+    if current:
+        rem = "".join(current).strip()
+        if rem:
+            stages.append(rem)
+    return stages if len(stages) > 1 else [cmd_str.strip()]
+
+
+def _validate_single_command(ast: CommandAST) -> ValidationResult:
+    """Validate a single command without pipeline splitting."""
+    exe = ast.executable
+    if not exe:
+        return ValidationResult(
+            status=ValidationStatus.INVALID,
+            reason="empty_command",
+            details="Command has no executable.",
+        )
+
+    tier = get_validator_tier(exe)
+    if tier == "specialized":
+        if exe == "gh":
+            return validate_gh(ast)
+        elif exe == "gcloud":
+            return validate_gcloud(ast)
+        elif exe == "git":
+            return validate_git(ast)
+        elif exe == "pacman":
+            return validate_pacman(ast)
+        elif exe == "systemctl":
+            return validate_systemctl(ast)
+        elif exe == "docker":
+            return validate_docker(ast)
+    elif tier == "builtin":
+        return validate_bash_builtin(ast)
+    elif tier == "generic":
+        return validate_tier2_generic(ast)
+
+    return ValidationResult(
+        status=ValidationStatus.UNKNOWN,
+        reason="untracked_executable",
+        executable=exe,
+        details=f"Executable '{exe}' is not in the deterministic validation catalog.",
+    )
 
 
 def validate_command(ast: CommandAST) -> ValidationResult:
     """
     Deterministic validator for candidate CLI commands.
-    Returns VALID, INVALID, or UNKNOWN with structured diagnostics.
+    Supports Tier 1 (specialized), Tier 2 (generic), Bash builtins, multi-stage pipelines,
+    and command substitutions.
     """
     if ast.syntax_error:
         return ValidationResult(
@@ -467,35 +683,41 @@ def validate_command(ast: CommandAST) -> ValidationResult:
             details=ast.syntax_error,
         )
 
-    exe = ast.executable
-    if not exe:
+    raw = ast.raw_command.strip()
+    if not raw:
         return ValidationResult(
             status=ValidationStatus.INVALID,
             reason="empty_command",
             details="Command has no executable.",
         )
 
-    if exe == "gh":
-        return validate_gh(ast)
-    elif exe == "gcloud":
-        return validate_gcloud(ast)
-    elif exe == "git":
-        return validate_git(ast)
-    elif exe == "pacman":
-        return validate_pacman(ast)
-    elif exe in ("systemctl", "journalctl"):
-        if exe == "systemctl":
-            return validate_systemctl(ast)
-        return ValidationResult(status=ValidationStatus.VALID, executable=exe)
-    elif exe == "docker":
-        return validate_docker(ast)
-    elif exe in ("grep", "kill", "fallocate", "find", "cat", "ls", "tar", "sed", "awk", "diff", "ss", "df", "du", "pkill", "file", "sha256sum", "paccache", "reflector"):
-        return validate_coreutils(ast)
+    # Multi-stage pipeline validation
+    if ast.pipelines:
+        from .command_parser import parse_command
+        stages = split_pipeline(raw)
+        if len(stages) > 1:
+            has_unknown = False
+            unknown_res = None
+            for stage in stages:
+                s_ast = parse_command(stage)
+                s_res = _validate_single_command(s_ast)
+                if s_res.status == ValidationStatus.INVALID:
+                    return s_res
+                if s_res.status == ValidationStatus.UNKNOWN:
+                    has_unknown = True
+                    if not unknown_res:
+                        unknown_res = s_res
+            if has_unknown and unknown_res:
+                return unknown_res
+            return ValidationResult(status=ValidationStatus.VALID, executable=ast.executable)
 
-    # For unknown utilities, return UNKNOWN (never guess)
-    return ValidationResult(
-        status=ValidationStatus.UNKNOWN,
-        reason="untracked_executable",
-        executable=exe,
-        details=f"Executable '{exe}' is not in the deterministic validation catalog.",
-    )
+    # Command substitution validation
+    if ast.command_substitutions:
+        from .command_parser import parse_command
+        for sub in ast.command_substitutions:
+            sub_ast = parse_command(sub)
+            sub_res = validate_command(sub_ast)
+            if sub_res.status == ValidationStatus.INVALID:
+                return sub_res
+
+    return _validate_single_command(ast)

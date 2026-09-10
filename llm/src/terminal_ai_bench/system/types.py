@@ -203,40 +203,68 @@ class SecretCheckResult:
 
 
 @dataclass
+class DeterministicCorrection:
+    available: bool = False
+    original_command: Optional[str] = None
+    corrected_command: Optional[str] = None
+    source: Optional[str] = None
+    reason: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "available": self.available,
+            "original_command": self.original_command,
+            "corrected_command": self.corrected_command,
+            "source": self.source,
+            "reason": self.reason,
+        }
+
+
+@dataclass
 class SystemEvaluation:
     initial_command: Optional[str] = None
+    initial_dangerous_command: Optional[str] = None
     initial_validation: Optional[ValidationResult] = None
     intent_contract: Optional[IntentContract] = None
     initial_intent_validation: Optional[IntentValidationResult] = None
     documentation_lookup: Optional[DocLookupResult] = None
     repair: Optional[RepairResult] = None
+    deterministic_correction: Optional[DeterministicCorrection] = None
     final_validation: Optional[ValidationResult] = None
     final_intent_validation: Optional[IntentValidationResult] = None
     risk: str = "normal"
     safety: Optional[SafetyCheckResult] = None
+    initial_safety: Optional[SafetyCheckResult] = None
+    final_safety: Optional[SafetyCheckResult] = None
     secret_check: Optional[SecretCheckResult] = None
     final_command: Optional[str] = None
     final_action: str = "suggest_command"
     final_response: Optional[Any] = None
     staging_eligible: bool = False
+    pipeline_path: str = "normal"  # "normal", "deterministic_correction", "llm_repair", "clarify", "blocked"
     latencies: Dict[str, float] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "initial_command": self.initial_command,
+            "initial_dangerous_command": self.initial_dangerous_command,
             "initial_validation": self.initial_validation.to_dict() if self.initial_validation else None,
             "intent_contract": self.intent_contract.to_dict() if self.intent_contract else None,
             "initial_intent_validation": self.initial_intent_validation.to_dict() if self.initial_intent_validation else None,
             "documentation_lookup": self.documentation_lookup.to_dict() if self.documentation_lookup else None,
             "repair": self.repair.to_dict() if self.repair else None,
+            "deterministic_correction": self.deterministic_correction.to_dict() if self.deterministic_correction else None,
             "final_validation": self.final_validation.to_dict() if self.final_validation else None,
             "final_intent_validation": self.final_intent_validation.to_dict() if self.final_intent_validation else None,
             "risk": self.risk,
             "safety": self.safety.to_dict() if self.safety else None,
+            "initial_safety": self.initial_safety.to_dict() if self.initial_safety else None,
+            "final_safety": self.final_safety.to_dict() if self.final_safety else None,
             "secret_check": self.secret_check.to_dict() if self.secret_check else None,
             "final_command": self.final_command,
             "final_action": self.final_action,
             "staging_eligible": self.staging_eligible,
+            "pipeline_path": self.pipeline_path,
             "latencies": {k: round(v, 1) for k, v in self.latencies.items()},
         }
 
@@ -298,6 +326,45 @@ class SystemMetrics:
     safe_commands_falsely_blocked: int = 0
     false_positive_block_rate: float = 0.0
     final_usable_rate: float = 0.0
+    initial_stageable_rate: float = 0.0
+    final_stageable_rate: float = 0.0
+    deterministic_correction_candidates: int = 0
+    deterministic_corrections_applied: int = 0
+    deterministic_correction_successes: int = 0
+    deterministic_correction_failure_rate: float = 0.0
+    llm_repair_candidates: int = 0
+    llm_repair_attempts: int = 0
+    llm_repair_successes: int = 0
+    llm_repair_success_rate: float = 0.0
+    commands_avoiding_second_inference: int = 0
+    second_inference_count: int = 0
+    validator_catalog_coverage: float = 0.0
+    specialized_validator_coverage: float = 0.0
+    generic_validator_coverage: float = 0.0
+    bash_builtin_validation_count: int = 0
+    unknown_executable_rate: float = 0.0
+    docs_requested: int = 0
+    docs_available: int = 0
+    docs_lookup_success: int = 0
+    docs_lookup_failure: int = 0
+    docs_skipped_exact_correction: int = 0
+    docs_skipped_safety_block: int = 0
+    docs_skipped_missing_operand: int = 0
+    docs_skipped_non_command: int = 0
+    docs_skipped_no_fixture: int = 0
+    docs_available_rate: float = 0.0
+    docs_lookup_success_rate: float = 0.0
+    dangerous_initial_candidates: int = 0
+    dangerous_post_repair_candidates: int = 0
+    dangerous_staged_commands: int = 0
+    normal_path_p50_ms: float = 0.0
+    normal_path_p95_ms: float = 0.0
+    deterministic_correction_p50_ms: float = 0.0
+    deterministic_correction_p95_ms: float = 0.0
+    llm_repair_path_p50_ms: float = 0.0
+    llm_repair_path_p95_ms: float = 0.0
+    host_only_p50_ms: float = 0.0
+    host_only_p95_ms: float = 0.0
     latency_p50_ms: float = 0.0
     latency_p95_ms: float = 0.0
 
@@ -318,6 +385,8 @@ class SystemMetrics:
             "staging_eligible_count": self.staging_eligible_count,
             "staging_eligible_rate": round(self.staging_eligible_rate, 1),
             "staging_eligible_command_rate": round(self.staging_eligible_command_rate, 1),
+            "initial_stageable_rate": round(self.initial_stageable_rate, 1),
+            "final_stageable_rate": round(self.final_stageable_rate, 1),
             "intent_contract_coverage": round(self.intent_contract_coverage, 1),
             "intent_satisfied_initial": self.intent_satisfied_initial,
             "intent_partial_initial": self.intent_partial_initial,
@@ -339,7 +408,33 @@ class SystemMetrics:
             "unverified_repairs": self.unverified_repairs,
             "repair_success_rate": round(self.repair_success_rate, 1),
             "overall_repair_success_rate": round(self.overall_repair_success_rate, 1),
+            "deterministic_correction_candidates": self.deterministic_correction_candidates,
+            "deterministic_corrections_applied": self.deterministic_corrections_applied,
+            "deterministic_correction_successes": self.deterministic_correction_successes,
+            "deterministic_correction_failure_rate": round(self.deterministic_correction_failure_rate, 1),
+            "llm_repair_candidates": self.llm_repair_candidates,
+            "llm_repair_attempts": self.llm_repair_attempts,
+            "llm_repair_successes": self.llm_repair_successes,
+            "llm_repair_success_rate": round(self.llm_repair_success_rate, 1),
+            "commands_avoiding_second_inference": self.commands_avoiding_second_inference,
+            "second_inference_count": self.second_inference_count,
+            "validator_catalog_coverage": round(self.validator_catalog_coverage, 1),
+            "specialized_validator_coverage": round(self.specialized_validator_coverage, 1),
+            "generic_validator_coverage": round(self.generic_validator_coverage, 1),
+            "bash_builtin_validation_count": self.bash_builtin_validation_count,
+            "unknown_executable_rate": round(self.unknown_executable_rate, 1),
             "doc_lookup_rate": round(self.doc_lookup_rate, 1),
+            "docs_requested": self.docs_requested,
+            "docs_available": self.docs_available,
+            "docs_lookup_success": self.docs_lookup_success,
+            "docs_lookup_failure": self.docs_lookup_failure,
+            "docs_skipped_exact_correction": self.docs_skipped_exact_correction,
+            "docs_skipped_safety_block": self.docs_skipped_safety_block,
+            "docs_skipped_missing_operand": self.docs_skipped_missing_operand,
+            "docs_skipped_non_command": self.docs_skipped_non_command,
+            "docs_skipped_no_fixture": self.docs_skipped_no_fixture,
+            "docs_available_rate": round(self.docs_available_rate, 1),
+            "docs_lookup_success_rate": round(self.docs_lookup_success_rate, 1),
             "catastrophic_generated": self.catastrophic_generated,
             "catastrophic_blocked": self.catastrophic_blocked,
             "catastrophic_block_rate": round(self.catastrophic_block_rate, 1),
@@ -347,6 +442,9 @@ class SystemMetrics:
             "dangerous_commands_blocked": self.dangerous_commands_blocked,
             "dangerous_command_escape_count": self.dangerous_command_escape_count,
             "dangerous_command_escape_rate": round(self.dangerous_command_escape_rate, 1),
+            "dangerous_initial_candidates": self.dangerous_initial_candidates,
+            "dangerous_post_repair_candidates": self.dangerous_post_repair_candidates,
+            "dangerous_staged_commands": self.dangerous_staged_commands,
             "block_device_mutations_generated": self.block_device_mutations_generated,
             "block_device_mutations_blocked": self.block_device_mutations_blocked,
             "firewall_destructive_generated": self.firewall_destructive_generated,
@@ -358,6 +456,14 @@ class SystemMetrics:
             "safe_commands_falsely_blocked": self.safe_commands_falsely_blocked,
             "false_positive_block_rate": round(self.false_positive_block_rate, 1),
             "final_usable_rate": round(self.final_usable_rate, 1),
+            "normal_path_p50_ms": round(self.normal_path_p50_ms, 1),
+            "normal_path_p95_ms": round(self.normal_path_p95_ms, 1),
+            "deterministic_correction_p50_ms": round(self.deterministic_correction_p50_ms, 1),
+            "deterministic_correction_p95_ms": round(self.deterministic_correction_p95_ms, 1),
+            "llm_repair_path_p50_ms": round(self.llm_repair_path_p50_ms, 1),
+            "llm_repair_path_p95_ms": round(self.llm_repair_path_p95_ms, 1),
+            "host_only_p50_ms": round(self.host_only_p50_ms, 1),
+            "host_only_p95_ms": round(self.host_only_p95_ms, 1),
             "latency_p50_ms": round(self.latency_p50_ms, 1),
             "latency_p95_ms": round(self.latency_p95_ms, 1),
         }

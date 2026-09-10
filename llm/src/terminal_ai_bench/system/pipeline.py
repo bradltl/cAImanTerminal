@@ -6,9 +6,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from ..output_parser import ActionType, AssistantResponse, ParseResult, RiskLevel
-from ..scenario import Scenario
+from ..scenario import InteractionMode, Scenario
 from .command_parser import parse_command
-from .command_validator import validate_command
+from .command_validator import get_validator_tier, validate_command
+from .deterministic_corrector import DeterministicCorrector
 from .docs_resolver import DocumentationResolver
 from .intent_extractor import extract_intent
 from .intent_validator import IntentContractValidator
@@ -18,6 +19,7 @@ from .safety_validator import SafetyValidator
 from .secret_validator import SecretValidator
 from .types import (
     CommandAST,
+    DeterministicCorrection,
     DocLookupResult,
     IntentContract,
     IntentStatus,
@@ -121,14 +123,17 @@ class SystemEvaluationPipeline:
         fixtures_dir: Path | str = "fixtures",
         system_prompt: Optional[str] = None,
         contracts_by_id: Optional[Dict[str, IntentContract]] = None,
+        enable_deterministic_correction: bool = True,
     ):
         self.fixtures_dir = Path(fixtures_dir)
         self.docs_resolver = DocumentationResolver(fixtures_dir=self.fixtures_dir)
+        self.deterministic_corrector = DeterministicCorrector()
         self.repair_engine = CommandRepairEngine(system_prompt=system_prompt)
         self.intent_validator = IntentContractValidator()
         self.safety_validator = SafetyValidator()
         self.secret_validator = SecretValidator()
         self.contracts_by_id = contracts_by_id
+        self.enable_deterministic_correction = enable_deterministic_correction
 
     def evaluate(
         self,
@@ -213,6 +218,7 @@ class SystemEvaluationPipeline:
             system_eval.final_action = initial_response.action.value
             system_eval.final_response = initial_response
             system_eval.staging_eligible = False
+            system_eval.pipeline_path = "normal"
             latencies["total_system_ms"] = sum(latencies.values())
             verify_pipeline_invariants(scenario, system_eval)
             return initial_parse_res, system_eval
@@ -242,6 +248,7 @@ class SystemEvaluationPipeline:
             ast, intent_contract=contract, user_intent=user_intent_text
         )
         latencies["safety_validator_ms"] = (time.perf_counter() - t0) * 1000.0
+        system_eval.initial_safety = initial_safety
         system_eval.safety = initial_safety
 
         current_response = initial_response
@@ -251,7 +258,10 @@ class SystemEvaluationPipeline:
 
         if initial_safety.blocked:
             # Catastrophic / dangerous command generated: BLOCK IMMEDIATELY! Do NOT repair!
+            system_eval.initial_dangerous_command = cmd_str
+            system_eval.final_safety = initial_safety
             system_eval.risk = "blocked"
+            system_eval.pipeline_path = "blocked"
             current_response = AssistantResponse(
                 action=ActionType.EXPLAIN,
                 command=None,
@@ -262,59 +272,114 @@ class SystemEvaluationPipeline:
             reval_res = ValidationResult(status=ValidationStatus.NOT_APPLICABLE, reason="safety_blocked")
             needs_repair = False
         else:
-            # 5. If CLI invalid OR Intent unsatisfied (PARTIAL / MISMATCH): Local Docs Resolver -> LLM Repair -> Revalidate
+            system_eval.pipeline_path = "normal"
             needs_repair = (
                 val_res.status in (ValidationStatus.INVALID, ValidationStatus.UNKNOWN)
                 or intent_val_res.status in (IntentStatus.PARTIAL, IntentStatus.MISMATCH)
             )
 
         if needs_repair:
-            t0 = time.perf_counter()
-            doc_res = self.docs_resolver.resolve(validation=val_res, intent_validation=intent_val_res)
-            latencies["docs_resolver_ms"] = (time.perf_counter() - t0) * 1000.0
-            system_eval.documentation_lookup = doc_res
-
-            repair_res, repaired_val, repaired_resp = self.repair_engine.attempt_repair(
-                runtime=runtime,
-                user_intent=user_intent_text or "",
-                initial_command=cmd_str,
-                validation=val_res,
-                doc_lookup=doc_res,
-                intent_contract=contract,
-                intent_validation=intent_val_res,
+            is_passive = (
+                scenario.mode == InteractionMode.PASSIVE
+                or getattr(scenario.mode, "value", str(scenario.mode)) == "passive"
             )
-            system_eval.repair = repair_res
-            latencies["repair_ms"] = repair_res.latency_ms
+            if is_passive:
+                system_eval.pipeline_path = "passive_skip"
+            else:
+                correction_succeeded = False
+                if self.enable_deterministic_correction:
+                    # 1. Attempt deterministic exact correction first (bypasses LLM repair & avoids 2nd inference)
+                    t_corr_start = time.perf_counter()
+                    det_corr = self.deterministic_corrector.correct(
+                        scenario=scenario,
+                        contract=contract,
+                        ast=ast,
+                        val_res=val_res,
+                        intent_val_res=intent_val_res,
+                    )
+                    latencies["deterministic_correction_ms"] = (time.perf_counter() - t_corr_start) * 1000.0
+                    system_eval.deterministic_correction = det_corr
 
-            if repaired_resp:
-                current_response = repaired_resp
-                if repaired_resp.command and repaired_resp.command.strip():
-                    current_ast = parse_command(repaired_resp.command)
-                    reval_res = repaired_val or validate_command(current_ast)
-                    reval_intent = self.intent_validator.evaluate(current_ast, contract)
-                else:
-                    current_ast = parse_command("")
-                    reval_res = ValidationResult(status=ValidationStatus.NOT_APPLICABLE, reason="non_command_action")
-                    if not contract.is_command_contract and contract.operation in (repaired_resp.action.value, "clarify", "no_action"):
-                        reval_intent = IntentValidationResult(
-                            status=IntentStatus.SATISFIED,
-                            domain=contract.domain,
-                            operation=contract.operation,
-                            details=f"Correctly produced non-command action '{repaired_resp.action.value}' as requested.",
+                    if det_corr.available and det_corr.corrected_command:
+                        corr_ast = parse_command(det_corr.corrected_command)
+                        corr_val = validate_command(corr_ast)
+                        corr_intent = self.intent_validator.evaluate(corr_ast, contract)
+                        corr_safety = self.safety_validator.evaluate(
+                            corr_ast, intent_contract=contract, user_intent=user_intent_text
                         )
-                    elif contract.is_command_contract:
-                        reval_intent = IntentValidationResult(
-                            status=IntentStatus.MISMATCH,
-                            domain=contract.domain,
-                            operation=contract.operation,
-                            details=f"Expected command for operation '{contract.operation}', but repaired response produced non-command action '{repaired_resp.action.value}'.",
-                        )
-                    else:
-                        reval_intent = IntentValidationResult(
-                            status=IntentStatus.UNKNOWN,
-                            domain=contract.domain,
-                            operation=contract.operation,
-                        )
+                        corr_secret = self.secret_validator.evaluate(corr_ast)
+
+                        if (
+                            corr_val.status == ValidationStatus.VALID
+                            and corr_intent.status == IntentStatus.SATISFIED
+                            and not corr_safety.blocked
+                            and not corr_secret.blocked
+                        ):
+                            correction_succeeded = True
+                            current_ast = corr_ast
+                            reval_res = corr_val
+                            reval_intent = corr_intent
+                            current_response = AssistantResponse(
+                                action=ActionType.SUGGEST_COMMAND,
+                                command=det_corr.corrected_command,
+                                explanation=f"Suggested command: {det_corr.reason or 'Deterministic CLI correction'}",
+                                risk=RiskLevel.NORMAL,
+                            )
+                            system_eval.pipeline_path = "deterministic_correction"
+
+                # 2. If deterministic correction was not available or didn't fully satisfy: LLM Repair
+                if not correction_succeeded:
+                    t0 = time.perf_counter()
+                    doc_res = self.docs_resolver.resolve(
+                        validation=val_res,
+                        intent_validation=intent_val_res,
+                        contract=contract,
+                    )
+                    latencies["docs_resolver_ms"] = (time.perf_counter() - t0) * 1000.0
+                    system_eval.documentation_lookup = doc_res
+
+                    repair_res, repaired_val, repaired_resp = self.repair_engine.attempt_repair(
+                        runtime=runtime,
+                        user_intent=user_intent_text or "",
+                        initial_command=cmd_str,
+                        validation=val_res,
+                        doc_lookup=doc_res,
+                        intent_contract=contract,
+                        intent_validation=intent_val_res,
+                    )
+                    system_eval.repair = repair_res
+                    latencies["repair_ms"] = repair_res.latency_ms
+                    system_eval.pipeline_path = "llm_repair"
+
+                    if repaired_resp:
+                        current_response = repaired_resp
+                        if repaired_resp.command and repaired_resp.command.strip():
+                            current_ast = parse_command(repaired_resp.command)
+                            reval_res = repaired_val or validate_command(current_ast)
+                            reval_intent = self.intent_validator.evaluate(current_ast, contract)
+                        else:
+                            current_ast = parse_command("")
+                            reval_res = ValidationResult(status=ValidationStatus.NOT_APPLICABLE, reason="non_command_action")
+                            if not contract.is_command_contract and contract.operation in (repaired_resp.action.value, "clarify", "no_action"):
+                                reval_intent = IntentValidationResult(
+                                    status=IntentStatus.SATISFIED,
+                                    domain=contract.domain,
+                                    operation=contract.operation,
+                                    details=f"Correctly produced non-command action '{repaired_resp.action.value}' as requested.",
+                                )
+                            elif contract.is_command_contract:
+                                reval_intent = IntentValidationResult(
+                                    status=IntentStatus.MISMATCH,
+                                    domain=contract.domain,
+                                    operation=contract.operation,
+                                    details=f"Expected command for operation '{contract.operation}', but repaired response produced non-command action '{repaired_resp.action.value}'.",
+                                )
+                            else:
+                                reval_intent = IntentValidationResult(
+                                    status=IntentStatus.UNKNOWN,
+                                    domain=contract.domain,
+                                    operation=contract.operation,
+                                )
 
         system_eval.final_validation = reval_res
         system_eval.final_intent_validation = reval_intent
@@ -352,11 +417,13 @@ class SystemEvaluationPipeline:
             current_ast, intent_contract=contract, user_intent=user_intent_text
         )
         latencies["safety_validator_ms"] = latencies.get("safety_validator_ms", 0.0) + ((time.perf_counter() - t0) * 1000.0)
+        system_eval.final_safety = safety_res
         system_eval.safety = safety_res
 
         if safety_res.blocked:
             # Dangerous/Catastrophic command BLOCKED!
             system_eval.risk = "blocked"
+            system_eval.pipeline_path = "blocked"
             current_response = AssistantResponse(
                 action=ActionType.EXPLAIN,
                 command=None,
@@ -709,6 +776,77 @@ def compute_system_metrics(
     p50_lat = total_lats[int(len(total_lats) * 0.5)] if total_lats else 0.0
     p95_lat = total_lats[min(len(total_lats) - 1, int(len(total_lats) * 0.95))] if total_lats else 0.0
 
+    # Initial and Final Stageable Rates
+    initial_stageable_count = sum(
+        1 for e in initial_cmd_evals
+        if e.initial_validation and e.initial_validation.status == ValidationStatus.VALID
+        and e.initial_intent_validation and e.initial_intent_validation.status == IntentStatus.SATISFIED
+        and not (e.initial_safety and e.initial_safety.blocked)
+    )
+    initial_stageable_rate = (initial_stageable_count / len(initial_cmd_evals) * 100.0) if initial_cmd_evals else 0.0
+    final_stageable_rate = staging_eligible_command_rate
+
+    # Deterministic Correction Tracking
+    det_candidates = sum(1 for e in evaluations if e.deterministic_correction is not None)
+    det_applied = sum(1 for e in evaluations if e.deterministic_correction and e.deterministic_correction.available)
+    det_success = sum(1 for e in evaluations if e.pipeline_path == "deterministic_correction" and e.staging_eligible)
+    det_fail_rate = ((det_applied - det_success) / det_applied * 100.0) if det_applied else 0.0
+
+    # LLM Repair Tracking
+    llm_candidates = sum(1 for e in evaluations if (e.repair and e.repair.attempted) or e.pipeline_path == "llm_repair")
+    llm_attempts = repair_attempts
+    llm_successes = true_repair_successes
+    llm_repair_success_rate = repair_success_rate
+    second_inference_count = llm_attempts
+    commands_avoiding_second_inference = det_success
+
+    # Validator Catalog Coverage
+    spec_cnt = sum(1 for e in initial_cmd_evals if e.initial_validation and get_validator_tier(e.initial_validation.executable) == "specialized")
+    gen_cnt = sum(1 for e in initial_cmd_evals if e.initial_validation and get_validator_tier(e.initial_validation.executable) == "generic")
+    builtin_cnt = sum(1 for e in initial_cmd_evals if e.initial_validation and get_validator_tier(e.initial_validation.executable) == "builtin")
+    unk_cnt = sum(1 for e in initial_cmd_evals if e.initial_validation and get_validator_tier(e.initial_validation.executable) == "unknown")
+    catalog_cov = ((spec_cnt + gen_cnt + builtin_cnt) / len(initial_cmd_evals) * 100.0) if initial_cmd_evals else 0.0
+    spec_cov = (spec_cnt / len(initial_cmd_evals) * 100.0) if initial_cmd_evals else 0.0
+    gen_cov = (gen_cnt / len(initial_cmd_evals) * 100.0) if initial_cmd_evals else 0.0
+    unk_rate = (unk_cnt / len(initial_cmd_evals) * 100.0) if initial_cmd_evals else 0.0
+
+    # Documentation Resolver Metrics
+    docs_req = sum(1 for e in evaluations if e.pipeline_path == "llm_repair" or (e.documentation_lookup and e.documentation_lookup.performed))
+    docs_avail = sum(1 for e in evaluations if e.documentation_lookup and e.documentation_lookup.content)
+    docs_succ = docs_avail
+    docs_fail = docs_req - docs_succ
+    docs_skip_exact = det_success
+    docs_skip_safety = sum(1 for e in evaluations if e.initial_safety and e.initial_safety.blocked)
+    docs_skip_operand = sum(1 for e in evaluations if e.final_action == "clarify" and not e.initial_command)
+    docs_skip_noncmd = non_command_action_count
+    docs_skip_nofix = 0
+    docs_avail_rate = (docs_avail / docs_req * 100.0) if docs_req else 100.0
+    docs_succ_rate = (docs_succ / docs_req * 100.0) if docs_req else 100.0
+
+    # Dangerous candidates breakdown
+    dang_initial = sum(1 for e in evaluations if e.initial_safety and e.initial_safety.blocked)
+    dang_post_repair = sum(1 for e in evaluations if e.repair and e.repair.repaired_command and e.final_safety and e.final_safety.blocked)
+    dang_staged = dangerous_escape_count
+
+    # Latency breakdowns by pipeline path
+    def _p50_p95(lats: List[float]) -> Tuple[float, float]:
+        if not lats:
+            return 0.0, 0.0
+        slats = sorted(lats)
+        p50 = slats[int(len(slats) * 0.5)]
+        p95 = slats[min(len(slats) - 1, int(len(slats) * 0.95))]
+        return p50, p95
+
+    normal_lats = [e.latencies.get("total_system_ms", 0.0) for e in evaluations if e.pipeline_path == "normal"]
+    det_lats = [e.latencies.get("total_system_ms", 0.0) for e in evaluations if e.pipeline_path == "deterministic_correction"]
+    llm_lats = [e.latencies.get("total_system_ms", 0.0) for e in evaluations if e.pipeline_path == "llm_repair"]
+    host_lats = [e.latencies.get("total_system_ms", 0.0) for e in evaluations if e.pipeline_path in ("normal", "deterministic_correction", "blocked", "passive_skip")]
+
+    norm_p50, norm_p95 = _p50_p95(normal_lats)
+    det_p50, det_p95 = _p50_p95(det_lats)
+    llm_p50, llm_p95 = _p50_p95(llm_lats)
+    host_p50, host_p95 = _p50_p95(host_lats)
+
     return SystemMetrics(
         raw_overall_score=raw_overall,
         system_overall_score=sys_overall,
@@ -725,6 +863,37 @@ def compute_system_metrics(
         staging_eligible_count=staging_eligible_count,
         staging_eligible_rate=staging_eligible_rate,
         staging_eligible_command_rate=staging_eligible_command_rate,
+        initial_stageable_rate=initial_stageable_rate,
+        final_stageable_rate=final_stageable_rate,
+        deterministic_correction_candidates=det_candidates,
+        deterministic_corrections_applied=det_applied,
+        deterministic_correction_successes=det_success,
+        deterministic_correction_failure_rate=det_fail_rate,
+        llm_repair_candidates=llm_candidates,
+        llm_repair_attempts=llm_attempts,
+        llm_repair_successes=llm_successes,
+        llm_repair_success_rate=llm_repair_success_rate,
+        commands_avoiding_second_inference=commands_avoiding_second_inference,
+        second_inference_count=second_inference_count,
+        validator_catalog_coverage=catalog_cov,
+        specialized_validator_coverage=spec_cov,
+        generic_validator_coverage=gen_cov,
+        bash_builtin_validation_count=builtin_cnt,
+        unknown_executable_rate=unk_rate,
+        docs_requested=docs_req,
+        docs_available=docs_avail,
+        docs_lookup_success=docs_succ,
+        docs_lookup_failure=docs_fail,
+        docs_skipped_exact_correction=docs_skip_exact,
+        docs_skipped_safety_block=docs_skip_safety,
+        docs_skipped_missing_operand=docs_skip_operand,
+        docs_skipped_non_command=docs_skip_noncmd,
+        docs_skipped_no_fixture=docs_skip_nofix,
+        docs_available_rate=docs_avail_rate,
+        docs_lookup_success_rate=docs_succ_rate,
+        dangerous_initial_candidates=dang_initial,
+        dangerous_post_repair_candidates=dang_post_repair,
+        dangerous_staged_commands=dang_staged,
         intent_contract_coverage=intent_coverage,
         intent_satisfied_initial=intent_satisfied_init,
         intent_partial_initial=intent_partial_init,
@@ -765,6 +934,14 @@ def compute_system_metrics(
         safe_commands_falsely_blocked=safe_falsely_blk,
         false_positive_block_rate=false_pos_rate,
         final_usable_rate=usable_rate,
+        normal_path_p50_ms=norm_p50,
+        normal_path_p95_ms=norm_p95,
+        deterministic_correction_p50_ms=det_p50,
+        deterministic_correction_p95_ms=det_p95,
+        llm_repair_path_p50_ms=llm_p50,
+        llm_repair_path_p95_ms=llm_p95,
+        host_only_p50_ms=host_p50,
+        host_only_p95_ms=host_p95,
         latency_p50_ms=p50_lat,
         latency_p95_ms=p95_lat,
     )

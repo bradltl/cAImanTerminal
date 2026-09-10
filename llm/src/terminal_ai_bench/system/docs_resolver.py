@@ -20,23 +20,59 @@ class DocumentationResolver:
         self,
         validation: Optional[ValidationResult] = None,
         intent_validation: Optional[IntentValidationResult] = None,
+        contract: Optional[IntentContract] = None,
     ) -> DocLookupResult:
         """Resolve minimal targeted documentation for an invalid or uncertain command or semantic mismatch."""
         topic = None
+        # 1. Determine desired topic from intent contract / intent validation first (what the user actually wanted)
         if intent_validation and intent_validation.help_topic:
             topic = intent_validation.help_topic
-        elif validation and validation.help_topic:
+        elif contract and contract.operation:
+            op_to_topic = {
+                "clean_cache": "paccache",
+                "preallocate_file": "fallocate",
+                "count_lines": "wc",
+                "create_symlink": "ln",
+                "kill_process_by_name": "pkill",
+                "compare_files": "diff",
+                "watch_command": "watch",
+                "checksum": "sha256sum",
+                "identify_file_type": "file",
+                "kernel_logs": "journalctl",
+                "current_boot": "journalctl",
+                "follow": "journalctl",
+                "list_failed": "systemctl",
+                "enable_and_start": "systemctl",
+                "pr_review_approve": "gh pr review",
+                "repo_fork": "gh repo fork",
+                "release_create": "gh release create",
+                "workflow_run_logs": "gh run view",
+                "pr_merge": "gh pr merge",
+                "stop_instance": "gcloud compute instances stop",
+                "list_addresses": "gcloud compute addresses list",
+                "create_firewall_rule": "gcloud compute firewall-rules create",
+            }
+            topic = op_to_topic.get(contract.operation)
+
+        if not topic and validation and validation.help_topic:
             topic = validation.help_topic
-        elif validation and validation.executable:
+        elif not topic and validation and validation.executable:
             topic = validation.executable
-        elif intent_validation and intent_validation.domain:
+        elif not topic and intent_validation and intent_validation.domain:
             topic = intent_validation.domain
+        elif not topic and contract and contract.domain:
+            topic = contract.domain
 
         if not topic:
             return DocLookupResult(performed=False)
 
         # 1. Search in fixtures
-        exe = (validation.executable if validation else None) or topic.split()[0]
+        if topic.startswith("gh "):
+            exe = "gh"
+        elif topic.startswith("gcloud "):
+            exe = "gcloud"
+        else:
+            exe = (validation.executable if validation else None) or topic.split()[0]
         subcmd = validation.subcommand if validation else []
         topic_parts = topic.split()
         sub_path = "-".join(topic_parts[1:]) if len(topic_parts) > 1 else ""
@@ -80,11 +116,9 @@ class DocumentationResolver:
     def _extract_minimal_snippet(self, raw_help: str, topic: str = "") -> str:
         """Keep only the smallest relevant usage/flags snippet (5-15 lines)."""
         lines = [line.rstrip() for line in raw_help.splitlines()]
-        # If short enough, return as-is
         if len(lines) <= 20:
             return "\n".join(lines)
 
-        # Look for relevant sections: USAGE, FLAGS/OPTIONS
         selected = []
         capture = False
         count = 0
@@ -138,25 +172,80 @@ class DocumentationResolver:
                 "OPTIONS\n  -k, --dmesg        Show kernel messages\n  -b, --boot[=ID]    Show messages from specific boot\n  -f, --follow       Follow the journal live\n  -u, --unit=UNIT    Show messages for specified unit\n",
                 "builtin:journalctl",
             )
-        elif e == "gh" and "review" in t:
+        elif "review" in t or (e == "gh" and "review" in t):
             return (
                 "NAME\n  gh pr review - Add a review to a pull request\n\n"
                 "USAGE\n  gh pr review [<number> | <url> | <branch>] [flags]\n\n"
                 "FLAGS\n  -a, --approve    Approve pull request\n  -r, --request-changes\n  -c, --comment\n",
                 "builtin:gh_pr_review",
             )
-        elif e == "gh" and "merge" in t:
+        elif "merge" in t or (e == "gh" and "merge" in t):
             return (
                 "NAME\n  gh pr merge - Merge a pull request\n\n"
                 "USAGE\n  gh pr merge [<number>] [flags]\n\n"
                 "FLAGS\n  --merge    Merge commits\n  --rebase   Rebase commits\n  --squash   Squash commits\n",
                 "builtin:gh_pr_merge",
             )
-        elif e == "gcloud" and "firewall" in t:
+        elif "fork" in t or (e == "gh" and "fork" in t):
+            return (
+                "NAME\n  gh repo fork - Create a fork of a repository\n\n"
+                "USAGE\n  gh repo fork [<repository>] [flags]\n\n"
+                "FLAGS\n  --clone   Clone the fork {true|false}\n",
+                "builtin:gh_repo_fork",
+            )
+        elif "release" in t or (e == "gh" and "release" in t):
+            return (
+                "NAME\n  gh release create - Create a new release\n\n"
+                "USAGE\n  gh release create <tag> [<files>...] [flags]\n\n"
+                "FLAGS\n  --generate-notes   Automatically generate name and notes for release\n",
+                "builtin:gh_release_create",
+            )
+        elif "view" in t or "run" in t or (e == "gh" and "run" in t):
+            return (
+                "NAME\n  gh run view - View a summary of a workflow run\n\n"
+                "USAGE\n  gh run view [<run-id>] [flags]\n\n"
+                "FLAGS\n  --log   View full log for the run\n",
+                "builtin:gh_run_view",
+            )
+        elif "firewall" in t or (e == "gcloud" and "firewall" in t):
             return (
                 "NAME\n  gcloud compute firewall-rules create\n\n"
                 "USAGE\n  gcloud compute firewall-rules create NAME --allow=PROTOCOL[:PORT] [--source-ranges=CIDR,...]\n",
                 "builtin:gcloud_firewall_rules",
+            )
+        elif "fallocate" in t or e == "fallocate" or "preallocate" in t:
+            return (
+                "NAME\n  fallocate - preallocate or deallocate space to a file\n\n"
+                "USAGE\n  fallocate -l <length> <filename>\n\n"
+                "OPTIONS\n  -l, --length <num>   length of the allocation (e.g. 1G, 100M)\n",
+                "builtin:fallocate",
+            )
+        elif "wc" in t or e == "wc" or "lines" in t:
+            return (
+                "NAME\n  wc - print newline, word, and byte counts\n\n"
+                "USAGE\n  wc [OPTION]... [FILE]...\n\n"
+                "OPTIONS\n  -l, --lines   print the newline counts\n",
+                "builtin:wc",
+            )
+        elif "diff" in t or e == "diff":
+            return (
+                "NAME\n  diff - compare files line by line\n\n"
+                "USAGE\n  diff -u <file1> <file2>\n\n"
+                "OPTIONS\n  -u, -U NUM, --unified[=NUM]   output unified context\n",
+                "builtin:diff",
+            )
+        elif "pkill" in t or e == "pkill":
+            return (
+                "NAME\n  pkill - signal processes based on name\n\n"
+                "USAGE\n  pkill [options] <pattern>\n\n"
+                "OPTIONS\n  -f, --full   match full process name\n",
+                "builtin:pkill",
+            )
+        elif "watch" in t or e == "watch":
+            return (
+                "NAME\n  watch - execute a program periodically\n\n"
+                "USAGE\n  watch -n <seconds> <command>\n",
+                "builtin:watch",
             )
         elif e == "pacman":
             return (

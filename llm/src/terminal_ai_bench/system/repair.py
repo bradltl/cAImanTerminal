@@ -69,6 +69,7 @@ def build_repair_prompt(
         f"Return the corrected cAIman Terminal response.\n"
         f"Do not change the user's intent.\n"
         f"Do not invent identifiers or arguments.\n"
+        f"If all necessary arguments and operands are present in the original candidate or user intent, output action suggest_command with the corrected command. Do NOT output action clarify unless required arguments are genuinely missing.\n"
         f"Respond in structured JSON according to the contract:<|im_end|>\n"
         f"<|im_start|>assistant\n"
     )
