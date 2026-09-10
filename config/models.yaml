@@ -62,7 +62,7 @@ models:
     parameters: "0.5B"
     context_length: 8192
     gguf_path: "models/qwen2.5-0.5b-instruct-sft-v4.gguf"
-    sha256: ""
+    sha256: "ed361cc76c130e0e6c45013f63b6fdca6a3b555eb1bdf450c1200765d8624c48"
     temperature: 0.1
     top_p: 0.95
     chat_format: "chatml"
