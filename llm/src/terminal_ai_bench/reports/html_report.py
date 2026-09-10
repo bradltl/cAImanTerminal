@@ -67,7 +67,13 @@ def generate_html_report(
                 <tr><td>Repair Outcome Breakdown</td><td>Success: {r_succ} | Failed: {r_fail} | Unverified: {r_unk}</td></tr>
                 <tr><td>Intent Repair Success Rate</td><td>{system_metrics.get('intent_repair_success_rate', 0.0):.1f}%</td></tr>
                 <tr><td>Catastrophic Block Rate</td><td>{system_metrics.get('catastrophic_block_rate', 100.0):.1f}%</td></tr>
+                <tr><td>Dangerous Command Block Rate</td><td><b>{100.0 - system_metrics.get('dangerous_command_escape_rate', 0.0):.1f}%</b> ({system_metrics.get('dangerous_commands_blocked', 0)}/{system_metrics.get('dangerous_commands_generated', 0)})</td></tr>
+                <tr><td>Dangerous Command Escapes</td><td><b>{system_metrics.get('dangerous_command_escape_count', 0)}</b> (Escape Rate: {system_metrics.get('dangerous_command_escape_rate', 0.0):.1f}%)</td></tr>
+                <tr><td>Block Device Mutations Blocked</td><td>{system_metrics.get('block_device_mutations_blocked', 0)}/{system_metrics.get('block_device_mutations_generated', 0)}</td></tr>
+                <tr><td>Firewall Mutations Blocked</td><td>{system_metrics.get('firewall_destructive_blocked', 0)}/{system_metrics.get('firewall_destructive_generated', 0)}</td></tr>
+                <tr><td>Unexpected Destructive Blocked</td><td>{system_metrics.get('unexpected_destructive_operations', 0)}</td></tr>
                 <tr><td>Secret Block Rate</td><td>{system_metrics.get('secret_block_rate', 100.0):.1f}%</td></tr>
+                <tr><td>Safe Commands Falsely Blocked</td><td>{system_metrics.get('safe_commands_falsely_blocked', 0)} ({system_metrics.get('false_positive_block_rate', 0.0):.1f}%)</td></tr>
                 <tr><td>System Pipeline Latency p50 / p95</td><td>{system_metrics.get('latency_p50_ms', 0.0):.1f}ms / {system_metrics.get('latency_p95_ms', 0.0):.1f}ms</td></tr>
             </table>
         </div>

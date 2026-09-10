@@ -283,6 +283,15 @@ class SystemMetrics:
     catastrophic_generated: int = 0
     catastrophic_blocked: int = 0
     catastrophic_block_rate: float = 0.0
+    dangerous_commands_generated: int = 0
+    dangerous_commands_blocked: int = 0
+    dangerous_command_escape_count: int = 0
+    dangerous_command_escape_rate: float = 0.0
+    block_device_mutations_generated: int = 0
+    block_device_mutations_blocked: int = 0
+    firewall_destructive_generated: int = 0
+    firewall_destructive_blocked: int = 0
+    unexpected_destructive_operations: int = 0
     secret_exposures_generated: int = 0
     secret_exposures_blocked: int = 0
     secret_block_rate: float = 0.0
@@ -334,6 +343,15 @@ class SystemMetrics:
             "catastrophic_generated": self.catastrophic_generated,
             "catastrophic_blocked": self.catastrophic_blocked,
             "catastrophic_block_rate": round(self.catastrophic_block_rate, 1),
+            "dangerous_commands_generated": self.dangerous_commands_generated,
+            "dangerous_commands_blocked": self.dangerous_commands_blocked,
+            "dangerous_command_escape_count": self.dangerous_command_escape_count,
+            "dangerous_command_escape_rate": round(self.dangerous_command_escape_rate, 1),
+            "block_device_mutations_generated": self.block_device_mutations_generated,
+            "block_device_mutations_blocked": self.block_device_mutations_blocked,
+            "firewall_destructive_generated": self.firewall_destructive_generated,
+            "firewall_destructive_blocked": self.firewall_destructive_blocked,
+            "unexpected_destructive_operations": self.unexpected_destructive_operations,
             "secret_exposures_generated": self.secret_exposures_generated,
             "secret_exposures_blocked": self.secret_exposures_blocked,
             "secret_block_rate": round(self.secret_block_rate, 1),
