@@ -35,8 +35,9 @@ The installer copies the debug desktop build, icon, desktop entry and manual to
 prevents a headless test build from breaking the installed launcher.
 
 Open **Menu → Settings** or press **Ctrl+,** for themes, font/scrollback, assistant
-behavior, local model/runtime options and host information. Theme applies on Save;
-other settings apply on relaunch. Model precedence is `--model`, saved choice,
+behavior, local model/runtime options and host information. Theme changes and disabling AI apply on Save;
+other settings apply on relaunch. Disabling AI hides its pane in every tab,
+including new tabs and windows launched with `--no-ai`. Model precedence is `--model`, saved choice,
 installed launcher fallback, then the source default. The executable is `caiman-terminal`; the installer supplies a legacy
 `cayman-terminal` forwarding alias. Desktop identity and the existing
 `cayman-terminal` settings directory stay stable, preserving pins and preferences.

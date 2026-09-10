@@ -47,8 +47,9 @@ Print an ASCII caiman and a short usage summary, then exit.
 .SH SETTINGS
 Open Settings from the tab-bar menu or press Ctrl+,.
 Appearance, assistant behavior, local model, inference limits and detected host
-information are grouped in one window. Theme applies on Save; other preferences
-apply after relaunching cAIman.
+information are grouped in one window. Theme changes and disabling AI apply on Save; other preferences
+apply after relaunching cAIman. Disabling AI hides its pane in all tabs.
+The --no-ai option also starts with the pane hidden.
 .PP
 Model selection precedence is explicit \-\-model, saved model_path,
 CAYMAN_DEFAULT_MODEL supplied by the launcher, then the bundled default (SFT v2).

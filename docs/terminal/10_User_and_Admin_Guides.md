@@ -115,7 +115,8 @@ Open the tab-bar menu → Settings, or press Ctrl+,.
   host adapter and command-help behavior. OS detection is automatic; choosing a
   different OS to bypass host validation is not supported.
 
-Save applies the theme immediately. Relaunch cAIman for other settings. Invalid
+Save applies the theme and disabling AI immediately. Disabling AI hides its pane
+in all tabs; `--no-ai` also starts with the pane hidden. Relaunch cAIman for other settings. Invalid
 values are shown in the window and do not replace the saved configuration.
 `--model` overrides the saved model for that launch. The installed launcher provides
 an absolute fallback model path, so saved model choices work from any directory.

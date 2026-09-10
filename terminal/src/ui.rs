@@ -426,7 +426,8 @@ fn new_tab(
     side.append(&pane_label);
     let pane = gtk::Revealer::builder()
         .child(&side)
-        .reveal_child(true)
+        .reveal_child(enabled && options.show_ai)
+        .visible(enabled && options.show_ai)
         .transition_type(gtk::RevealerTransitionType::None)
         .build();
     let split = gtk::Paned::new(gtk::Orientation::Horizontal);
@@ -740,7 +741,9 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                 match new_tab(&book, id, requests.clone(), enabled.get(), &options) {
                     Ok(tab) => {
                         apply_terminal_theme(&tab.borrow().terminal, selected.get());
-                        tab.borrow().pane.set_reveal_child(pane_visible.get());
+                        let show = enabled.get() && pane_visible.get();
+                        tab.borrow().pane.set_reveal_child(show);
+                        tab.borrow().pane.set_visible(show);
                         let current_status = status.borrow();
                         tab.borrow().assistant.set_text(if enabled.get() {
                             &current_status
@@ -796,8 +799,12 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
             window.add_action(&action);
             app.set_accels_for_action(&format!("win.{name}"), &accelerators);
         }
-        let toggle =
-            gio::SimpleAction::new_stateful("show-ai", None, &options.show_ai.to_variant());
+        let toggle = gio::SimpleAction::new_stateful(
+            "show-ai",
+            None,
+            &(!disabled && options.show_ai).to_variant(),
+        );
+        toggle.set_enabled(!disabled);
         let pane_tabs = tabs.clone();
         let visible = pane_visible.clone();
         toggle.connect_activate(move |action, _| {
@@ -806,6 +813,7 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
             action.set_state(&show.to_variant());
             for tab in pane_tabs.borrow().iter() {
                 tab.borrow().pane.set_reveal_child(show);
+                tab.borrow().pane.set_visible(show);
             }
         });
         window.add_action(&toggle);
@@ -816,13 +824,20 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
         let enable_tabs = tabs.clone();
         let ai_enabled = enabled.clone();
         let status = model_status.clone();
+        let show_action = toggle.clone();
+        let visibility = pane_visible.clone();
         enable_action.connect_activate(move |action, _| {
             let on = !ai_enabled.get();
             ai_enabled.set(on);
             action.set_state(&on.to_variant());
+            let show = on && visibility.get();
+            show_action.set_enabled(on);
+            show_action.set_state(&show.to_variant());
             for tab in enable_tabs.borrow().iter() {
                 let mut tab = tab.borrow_mut();
                 tab.enabled = on;
+                tab.pane.set_reveal_child(show);
+                tab.pane.set_visible(show);
                 tab.invalidate();
                 let current_status = status.borrow();
                 tab.assistant
@@ -849,6 +864,15 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                         active_model.clone(),
                         move |saved| {
                             if let Some(parent) = weak.upgrade() {
+                                if !saved.ai_enabled {
+                                    if let Some(action) = parent.lookup_action("enable-ai") {
+                                        if action.state().and_then(|v| v.get::<bool>())
+                                            == Some(true)
+                                        {
+                                            action.activate(None);
+                                        }
+                                    }
+                                }
                                 gio::prelude::ActionGroupExt::activate_action(
                                     &parent,
                                     "theme",
@@ -983,6 +1007,17 @@ mod tests {
             std::thread::sleep(Duration::from_millis(10));
         }
     }
+    #[test]
+    #[ignore = "requires a graphical display; starts a real Bash PTY"]
+    fn disabled_ai_hides_pane() {
+        gtk::init().unwrap();
+        let book = gtk::Notebook::new();
+        let (tx, _rx) = std::sync::mpsc::sync_channel(2);
+        let tab = new_tab(&book, 1, tx, false, &crate::settings::Settings::default()).unwrap();
+        assert!(!tab.borrow().pane.reveals_child());
+        assert!(!tab.borrow().pane.is_visible());
+    }
+
     #[test]
     #[ignore = "requires a graphical display; runs a real Bash PTY"]
     fn desktop_flow() {

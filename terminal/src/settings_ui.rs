@@ -95,7 +95,7 @@ pub fn show(
     row(&appearance, "Scrollback lines", &scrollback);
     note(
         &appearance,
-        "Theme changes apply when saved. Other changes take effect when cAIman is relaunched.",
+        "Theme changes and disabling AI apply when saved. Other changes take effect when cAIman is relaunched.",
     );
     stack.add_titled(&appearance, Some("appearance"), "Appearance");
 
