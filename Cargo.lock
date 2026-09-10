@@ -82,7 +82,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cayman-terminal"
+name = "caiman-terminal"
 version = "0.1.0"
 dependencies = [
  "anyhow",

@@ -1,4 +1,4 @@
-use cayman_terminal::{
+use caiman_terminal::{
     context::Session,
     prompt::Prompt,
     worker::{self, Request},
@@ -81,11 +81,11 @@ fn malformed_responses_share_one_repair_and_stale_results_are_rejected() {
 #[test]
 #[ignore = "loads the default GGUF; writes /tmp/cayman-model-harness.json"]
 fn default_model_harness() {
-    use cayman_terminal::{context::CommandRecord, inference::LocalModel};
+    use caiman_terminal::{context::CommandRecord, inference::LocalModel};
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
-        .join(cayman_terminal::default_model());
+        .join(caiman_terminal::default_model());
     let model = LocalModel::load(&path).unwrap();
     let mut req = request("Which filename did the last command print? Answer with the filename.");
     req.session.at_prompt = true;

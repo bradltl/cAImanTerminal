@@ -1,4 +1,4 @@
-use cayman_terminal::{
+use caiman_terminal::{
     adapters,
     settings::{self, Settings},
 };
@@ -63,5 +63,5 @@ fn unsupported_adapters_fail_explicitly_and_model_preference_wins() {
     );
     // A missing saved model must not prevent the plain terminal from starting.
     config.validate().unwrap();
-    assert!(cayman_terminal::default_model().contains("sft-v2.gguf"));
+    assert!(caiman_terminal::default_model().contains("sft-v2.gguf"));
 }

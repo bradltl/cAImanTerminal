@@ -4,7 +4,7 @@
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
 > Model research is documented in [llm/README.md](../../llm/README.md).
 
-Start `./target/debug/cayman-terminal`. Bash and the assistant share a compact,
+Start `./target/debug/caiman-terminal`. Bash and the assistant share a compact,
 terminal-style split. The assistant shows only `Ready..` after the model loads.
 Drag the divider to resize the panes. Drag tabs to reorder them.
 
@@ -85,7 +85,7 @@ for you. Previous-command advice clears when you start editing.
 
 ## Icon, themes, and manual
 
-After local installation, launch `cayman-terminal` from any directory or choose
+After local installation, launch `caiman-terminal` from any directory or choose
 cAIman Terminal in the desktop app menu. The original caiman icon is drawn with literal monospaced ASCII characters in
 terminal green on a dark background, focused on the eyes and upper snout;
 `--help` includes the same eyes-only ASCII caiman.
@@ -97,10 +97,10 @@ is saved to `$XDG_CONFIG_HOME/cayman-terminal/settings.json`, normally
 `~/.config/cayman-terminal/settings.json`. Existing other windows retain their
 current colors; newly launched windows read the saved preference.
 
-`cayman-terminal --theme nord` overrides the saved preference for one window.
-`cayman-terminal --list-themes` lists IDs. Read `man cayman-terminal` for options,
+`caiman-terminal --theme nord` overrides the saved preference for one window.
+`caiman-terminal --list-themes` lists IDs. Read `man caiman-terminal` for options,
 shortcuts, configuration paths, examples, and known limits. The source manual can
-also be viewed with `man -l terminal/resources/man/cayman-terminal.1`.
+also be viewed with `man -l terminal/resources/man/caiman-terminal.1`.
 
 ## Settings
 

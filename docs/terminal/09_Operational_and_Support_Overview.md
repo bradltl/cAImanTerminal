@@ -43,7 +43,7 @@ python3 terminal/packaging/install.py
 ```
 
 The default prefix is `~/.local`. The installer places an executable under
-`lib/cayman-terminal`, a shell launcher under `bin`, a freedesktop application
+`lib/caiman-terminal`, a shell launcher under `bin`, a freedesktop application
 entry, a scalable icon, the section-1 man page, and theme license notices under
 `share`. It never copies or downloads model weights. The launcher passes the
 existing repository GGUF as an absolute path; supply `--model /path/to/file.gguf`
@@ -55,8 +55,8 @@ installed desktop executable. `glib-compile-resources` (from GLib development
 tools) is required when building embedded desktop icon resources.
 
 For a staged package inspection, pass `--prefix /tmp/cayman-install-preview`.
-`desktop-file-validate packaging/io.cayman.Terminal.desktop` and
-`man -l terminal/resources/man/cayman-terminal.1` verify the launcher metadata/manual.
+`desktop-file-validate terminal/packaging/io.cayman.Terminal.desktop` and
+`man -l terminal/resources/man/caiman-terminal.1` verify the launcher metadata/manual.
 
 The default model is SFT v2, specified in `terminal/resources/default-model.txt` for both
 CLI and installer. `--model` overrides it. Runtime context/validation checks and

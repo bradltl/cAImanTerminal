@@ -14,7 +14,7 @@ args = parser.parse_args()
 repo = Path(__file__).resolve().parents[2]
 prefix = args.prefix.expanduser().resolve()
 model = (args.model or repo / (repo / 'terminal/resources/default-model.txt').read_text().strip()).expanduser().resolve()
-binary = repo / 'target/debug/cayman-terminal'
+binary = repo / 'target/debug/caiman-terminal'
 if not binary.is_file():
     parser.error('Build first: cargo build --offline --features desktop,inference')
 renderer = shutil.which('rsvg-convert')
@@ -37,9 +37,12 @@ def put(relative, source=None, text=None, mode=0o644):
         target.chmod(mode)
     print(target)
 
-put('lib/cayman-terminal/cayman-terminal', source=binary, mode=0o755)
-launcher = prefix / 'bin/cayman-terminal'
-put('bin/cayman-terminal', text='#!/bin/sh\nexport CAYMAN_DEFAULT_MODEL=' + shlex.quote(str(model)) + '\nexec ' + shlex.quote(str(prefix / 'lib/cayman-terminal/cayman-terminal')) + ' "$@"\n', mode=0o755)
+put('lib/caiman-terminal/caiman-terminal', source=binary, mode=0o755)
+launcher = prefix / 'bin/caiman-terminal'
+put('bin/caiman-terminal', text='#!/bin/sh\nexport CAYMAN_DEFAULT_MODEL=' + shlex.quote(str(model)) + '\nexec ' + shlex.quote(str(prefix / 'lib/caiman-terminal/caiman-terminal')) + ' "$@"\n', mode=0o755)
+# Existing scripts and cached launchers continue through the canonical launcher.
+put('bin/cayman-terminal', text='#!/bin/sh\nexec ' + shlex.quote(str(launcher)) + ' "$@"\n', mode=0o755)
+put('share/man/man1/cayman-terminal.1', text='.so man1/caiman-terminal.1\n')
 put('share/icons/hicolor/scalable/apps/io.cayman.Terminal.svg', source=repo / 'terminal/resources/icons/scalable/apps/io.cayman.Terminal.svg')
 # Supply raster sizes as well as SVG for desktop panels and icon loaders.
 for size in (16, 24, 32, 48, 64, 128, 256):
@@ -52,19 +55,19 @@ for size in (16, 24, 32, 48, 64, 128, 256):
     temp.chmod(0o644)
     os.replace(temp, target)
     print(target)
-put('share/man/man1/cayman-terminal.1', source=repo / 'terminal/resources/man/cayman-terminal.1')
+put('share/man/man1/caiman-terminal.1', source=repo / 'terminal/resources/man/caiman-terminal.1')
 # Desktop Exec has its own quoting and percent-field-code rules, not shell quoting.
 quoted = str(launcher).replace('%', '%%')
 for ch in ['\\', '"', '`', '$']:
     quoted = quoted.replace(ch, '\\' + ch)
-desktop = (repo / 'terminal/packaging/io.cayman.Terminal.desktop').read_text().replace('Exec=cayman-terminal', 'Exec="' + quoted + '"')
+desktop = (repo / 'terminal/packaging/io.cayman.Terminal.desktop').read_text().replace('Exec=caiman-terminal', 'Exec="' + quoted + '"')
 # An explicit icon path also works before a running panel refreshes its theme cache.
 icon = str(prefix / 'share/icons/hicolor/256x256/apps/io.cayman.Terminal.png')
 icon = icon.replace('\\', '\\\\').replace('\t', '\\t').replace(' ', '\\s')
 desktop = desktop.replace('Icon=io.cayman.Terminal', 'Icon=' + icon)
 put('share/applications/io.cayman.Terminal.desktop', text=desktop)
 for name in ['LICENSE-Gogh', 'LICENSE-MIT', 'README.md']:
-    put('share/doc/cayman-terminal/themes/' + name, source=repo / 'terminal/resources/themes' / name)
+    put('share/doc/caiman-terminal/themes/' + name, source=repo / 'terminal/resources/themes' / name)
 if shutil.which('update-desktop-database'):
     subprocess.run(['update-desktop-database', str(prefix / 'share/applications')], check=True)
 if shutil.which('gtk-update-icon-cache'):
@@ -73,4 +76,4 @@ if shutil.which('gtk-update-icon-cache'):
 if prefix == (Path.home() / '.local').resolve() and shutil.which('kbuildsycoca6'):
     subprocess.run(['kbuildsycoca6', '--noincremental'], check=True)
 print('Launch: ' + str(launcher))
-print('Manual: man -l ' + str(prefix / 'share/man/man1/cayman-terminal.1'))
+print('Manual: man -l ' + str(prefix / 'share/man/man1/caiman-terminal.1'))

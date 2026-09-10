@@ -23,13 +23,13 @@ fn main() -> anyhow::Result<()> {
                 let id = args.next().ok_or_else(|| {
                     anyhow::anyhow!("--theme requires a theme ID; use --list-themes")
                 })?;
-                if cayman_terminal::theme::find(&id).is_none() {
+                if caiman_terminal::theme::find(&id).is_none() {
                     anyhow::bail!("Unknown theme '{id}'; use --list-themes");
                 }
                 theme = Some(id);
             }
             "--list-themes" => {
-                for theme in cayman_terminal::theme::all() {
+                for theme in caiman_terminal::theme::all() {
                     println!("{:<20} {}", theme.id, theme.name);
                 }
                 return Ok(());
@@ -51,7 +51,7 @@ fn main() -> anyhow::Result<()> {
                 )
             }
             "--help" | "-h" => {
-                println!("{}\ncAIman Terminal 0.1\n\n  --model PATH  Local GGUF (default: SFT v2)\n  --no-ai       Plain terminal, no model load\n  --ask TEXT    Headless final-pipeline inference; never executes commands\n  --audit-report PATH  Replay a saved benchmark through host validation\n  --theme ID    Theme override for this window\n  --list-themes List bundled theme IDs\n  --version     Print version\n\nManual: man cayman-terminal", include_str!("../resources/caiman.txt"));
+                println!("{}\ncAIman Terminal 0.1\n\n  --model PATH  Local GGUF (default: SFT v2)\n  --no-ai       Plain terminal, no model load\n  --ask TEXT    Headless final-pipeline inference; never executes commands\n  --audit-report PATH  Replay a saved benchmark through host validation\n  --theme ID    Theme override for this window\n  --list-themes List bundled theme IDs\n  --version     Print version\n\nManual: man caiman-terminal", include_str!("../resources/caiman.txt"));
                 return Ok(());
             }
             _ => anyhow::bail!("Unknown option: {arg}"),
@@ -59,7 +59,7 @@ fn main() -> anyhow::Result<()> {
     }
     if let Some(path) = audit {
         let report = serde_json::from_str(&std::fs::read_to_string(path)?)?;
-        let audit = cayman_terminal::host::audit_report(&report)?;
+        let audit = caiman_terminal::host::audit_report(&report)?;
         println!("{}", serde_json::to_string_pretty(&audit)?);
         if audit["critical_cases_still_stageable"]
             .as_u64()
@@ -70,7 +70,7 @@ fn main() -> anyhow::Result<()> {
         }
         return Ok(());
     }
-    let mut settings = cayman_terminal::settings::load(&cayman_terminal::settings::path()?)?;
+    let mut settings = caiman_terminal::settings::load(&caiman_terminal::settings::path()?)?;
     let model = model.unwrap_or_else(|| settings.resolved_model());
     disabled |= !settings.ai_enabled;
     if let Some(id) = &theme {
@@ -82,14 +82,14 @@ fn main() -> anyhow::Result<()> {
     if let Some(text) = ask {
         #[cfg(feature = "inference")]
         {
-            let hash = cayman_terminal::host::model_hash(&model)?;
-            let runtime = cayman_terminal::adapters::load_model(
+            let hash = caiman_terminal::host::model_hash(&model)?;
+            let runtime = caiman_terminal::adapters::load_model(
                 &settings.model_backend,
                 &model,
                 &settings.inference,
             )?;
-            let request = cayman_terminal::worker::Request {
-                session: cayman_terminal::context::Session::new(
+            let request = caiman_terminal::worker::Request {
+                session: caiman_terminal::context::Session::new(
                     0,
                     std::env::current_dir()?.display().to_string(),
                 ),
@@ -98,7 +98,7 @@ fn main() -> anyhow::Result<()> {
                 cancellation: Arc::new(AtomicU64::new(0)),
                 passive: false,
             };
-            let answer = cayman_terminal::worker::process(&request, |p| {
+            let answer = caiman_terminal::worker::process(&request, |p| {
                 runtime.generate(p, &request.cancellation, 0)
             })?;
             println!(
@@ -116,7 +116,7 @@ fn main() -> anyhow::Result<()> {
         }
     }
     #[cfg(feature = "desktop")]
-    cayman_terminal::ui::run(model, disabled, settings);
+    caiman_terminal::ui::run(model, disabled, settings);
     #[cfg(not(feature = "desktop"))]
     {
         let _ = (model, disabled, theme, settings);

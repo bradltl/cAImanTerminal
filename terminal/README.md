@@ -12,9 +12,9 @@ GTK4 VTE 0.76 or newer is required. Then:
 
 ```sh
 cargo build --locked --features desktop,inference
-./target/debug/cayman-terminal
-./target/debug/cayman-terminal --no-ai
-./target/debug/cayman-terminal --model /absolute/path/to/model.gguf
+./target/debug/caiman-terminal
+./target/debug/caiman-terminal --no-ai
+./target/debug/caiman-terminal --model /absolute/path/to/model.gguf
 ```
 
 The default is `artifacts/models/qwen2.5-0.5b-instruct-sft-v2.gguf`. Weights are
@@ -26,8 +26,8 @@ pipeline and never executes a suggested command.
 
 ```sh
 python3 terminal/packaging/install.py
-cayman-terminal
-man cayman-terminal
+caiman-terminal
+man caiman-terminal
 ```
 
 The installer copies the debug desktop build, icon, desktop entry and manual to
@@ -37,8 +37,9 @@ prevents a headless test build from breaking the installed launcher.
 Open **Menu → Settings** or press **Ctrl+,** for themes, font/scrollback, assistant
 behavior, local model/runtime options and host information. Theme applies on Save;
 other settings apply on relaunch. Model precedence is `--model`, saved choice,
-installed launcher fallback, then the source default. Stable executable, desktop
-and settings identifiers retain `cayman` to preserve existing installations.
+installed launcher fallback, then the source default. The executable is `caiman-terminal`; the installer supplies a legacy
+`cayman-terminal` forwarding alias. Desktop identity and the existing
+`cayman-terminal` settings directory stay stable, preserving pins and preferences.
 
 ## Verify
 
@@ -54,7 +55,7 @@ cargo test --locked --lib settings_ui::tests::settings_window -- --ignored --noc
 
 See the [runtime harness guide](tests/README.md) for live-model testing and context
 policies. Raw-model training and benchmarking belong to [`llm/`](../llm/README.md).
-For static safety replay: `./target/debug/cayman-terminal --audit-report artifacts/results/RUN.json`.
+For static safety replay: `./target/debug/caiman-terminal --audit-report artifacts/results/RUN.json`.
 That replay is narrower than full end-to-end evaluation.
 
 ## Documentation

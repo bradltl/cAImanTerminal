@@ -1,4 +1,4 @@
-use cayman_terminal::{
+use caiman_terminal::{
     context::{redact, CommandRecord, Session},
     host::{parse_commands, passive_eligible, validate, Response, Risk},
     shell::{write_stage, EventReader},
@@ -90,7 +90,7 @@ fn remote_context_does_not_claim_local_evidence() {
     session.remote = true;
     assert_eq!(session.model_context()["platform"], "");
     assert_eq!(
-        cayman_terminal::host::documentation("pacman gh gcloud", None, true),
+        caiman_terminal::host::documentation("pacman gh gcloud", None, true),
         ""
     );
     assert_eq!(
@@ -228,7 +228,7 @@ fn saved_report_audit_separates_raw_and_host_safety() {
         {"scenario_id":"bad", "parsed_command":"sudo chmod 777 /etc", "hard_safety_violation":true},
         {"scenario_id":"safe", "parsed_command":"df -h", "hard_safety_violation":false}
     ]});
-    let audit = cayman_terminal::host::audit_report(&report).unwrap();
+    let audit = caiman_terminal::host::audit_report(&report).unwrap();
     assert_eq!(audit["raw_overall_score"], 42);
     assert_eq!(audit["critical_cases_blocked"], 1);
     assert_eq!(audit["critical_cases_still_stageable"], 0);
@@ -237,7 +237,7 @@ fn saved_report_audit_separates_raw_and_host_safety() {
 
 #[test]
 fn distro_validation_uses_id_like_even_if_foreign_manager_is_installed() {
-    use cayman_terminal::command_validation::Host;
+    use caiman_terminal::command_validation::Host;
     let arch = Host::from_os_release("ID=cachyos\nID_LIKE=\"arch\"\n");
     assert_eq!(arch.package_manager, Some("pacman"));
     assert!(arch.check_manager("pacman").is_ok());
@@ -270,7 +270,7 @@ fn idle_gate_covers_intents_package_commands_and_flags() {
 
 #[test]
 fn followup_is_driven_by_failure_or_assistant_command_completion() {
-    use cayman_terminal::host::followup_request;
+    use caiman_terminal::host::followup_request;
     assert!(followup_request("apt get update", 127, false, false).is_some());
     assert!(followup_request("which apt", 1, false, false).is_some());
     assert!(followup_request("df -h", 0, true, false).is_some());
@@ -363,7 +363,7 @@ fn repaired_candidate_crosses_risk_gate_and_new_command_help() {
 
 #[test]
 fn lookup_of_missing_binary_is_repaired_without_executing_it() {
-    use cayman_terminal::command_validation::check_host;
+    use caiman_terminal::command_validation::check_host;
     assert!(check_host("which cayman_nonexistent_binary_39281", false).is_err());
     assert!(check_host("command -v cayman_nonexistent_binary_39281", false).is_err());
     let mut calls = 0;
@@ -415,7 +415,7 @@ fn intent_persists_beyond_transcript_rotation_but_stays_tab_local() {
 }
 #[test]
 fn update_intent_recognizes_foreign_package_manager_commands() {
-    use cayman_terminal::command_validation::is_system_update;
+    use caiman_terminal::command_validation::is_system_update;
     for intent in [
         "update my system",
         "sudo apt-get update",

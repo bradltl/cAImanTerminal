@@ -1,4 +1,4 @@
-use cayman_terminal::{
+use caiman_terminal::{
     context::{CommandRecord, Session},
     worker::{build_prompt, Request},
 };

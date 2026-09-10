@@ -1,7 +1,7 @@
 //! Optional end-to-end checks with the shipped local model. No suggested command
 //! is executed; recorded terminal output is supplied as a fixture.
 #![cfg(feature = "inference")]
-use cayman_terminal::{
+use caiman_terminal::{
     context::{CommandRecord, Session},
     host,
     inference::LocalModel,
@@ -15,7 +15,7 @@ fn distro_error_followup_with_local_model() {
     let model_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
-        .join(cayman_terminal::default_model());
+        .join(caiman_terminal::default_model());
     let model = LocalModel::load(&model_path).unwrap();
     let mut session = Session::new(1, "/tmp".into());
     session.at_prompt = true;

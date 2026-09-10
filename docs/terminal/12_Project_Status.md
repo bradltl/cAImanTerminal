@@ -14,8 +14,10 @@ briefs are explicitly archived under `docs/research/archive/`.
 
 The app includes centralized settings, provider interfaces, token-aware context
 management and the host validation harness. Qwen SFT v2 remains the default.
-Stable `cayman-terminal` executable/config paths and `io.cayman.Terminal` desktop
-ID remain compatible. New operating-system and terminal providers are not shipped.
+The executable and manual are `caiman-terminal`. The installer forwards the old
+`cayman-terminal` command to the new launcher. The existing configuration directory
+and `io.cayman.Terminal` desktop ID remain compatible. New operating-system and
+terminal providers are not shipped.
 
 ## Implementation history
 
@@ -142,10 +144,10 @@ freedesktop launcher icon, plus an ASCII mascot in CLI help. Added Dracula, Nord
 Gruvbox Dark, Catppuccin Mocha, and Tokyo Night alongside cAIman. The Theme menu
 updates both panes and all terminal palette/cursor/selection colors immediately;
 new tabs inherit the choice. Preferences persist atomically in XDG configuration.
-Added --theme, --list-themes, --version, and a full cayman-terminal(1) manual.
+Added --theme, --list-themes, --version, and a full caiman-terminal(1) manual.
 
 The local installer was staged and validated, then installed under ~/.local.
-`cayman-terminal --version` and `man -w cayman-terminal` resolve correctly.
+`caiman-terminal --version` and `man -w caiman-terminal` resolve correctly.
 The installed binary is separate from Cargo's development/test target.
 
 Verification: 36 deterministic Rust tests, 15 Python tests, Clippy, formatting,

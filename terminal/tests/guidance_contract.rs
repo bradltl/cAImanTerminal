@@ -1,4 +1,4 @@
-use cayman_terminal::{
+use caiman_terminal::{
     command_validation::Host,
     context::{CommandRecord, Session},
     guidance,
@@ -214,7 +214,7 @@ fn editor_question_gives_editor_guidance_not_package_commands() {
             "/usr/bin/apt install nano",
         ] {
             assert!(
-                cayman_terminal::command_validation::check_intent(command, text, false).is_err()
+                caiman_terminal::command_validation::check_intent(command, text, false).is_err()
             );
         }
     }

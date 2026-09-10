@@ -1,4 +1,4 @@
-use cayman_terminal::{
+use caiman_terminal::{
     context::Session,
     flag_help, host,
     worker::{self, Request},

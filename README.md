@@ -16,14 +16,14 @@ Run from the repository root:
 
 ```sh
 cargo build --locked --features desktop,inference
-./target/debug/cayman-terminal --no-ai
+./target/debug/caiman-terminal --no-ai
 python3 terminal/packaging/install.py
 ```
 
-With the local v2 GGUF under `artifacts/models/`, launch `cayman-terminal` for AI
-assistance. Open **Settings** from the menu or press **Ctrl+,**. The executable,
-desktop ID and settings-directory identifiers retain `cayman` for compatibility;
-the displayed application name is **cAIman Terminal**.
+With the local v2 GGUF under `artifacts/models/`, launch `caiman-terminal` for AI
+assistance. Open **Settings** from the menu or press **Ctrl+,**. The launch command is `caiman-terminal`. The installer also supplies a
+`cayman-terminal` forwarding alias for existing scripts. The desktop ID and
+settings directory remain stable so pinned launchers and preferences keep working.
 
 ## Model research
 
