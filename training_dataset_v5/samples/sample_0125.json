@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ delete everything inside \"temp files/\"",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "rm -rf \"temp files/\"*",
+    "commands": null,
+    "explanation": "Deletes directory contents quoting path with embedded spaces.",
+    "risk": "elevated",
+    "warning": "Deletes all files inside 'temp files/'.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ delete everything inside \"temp files/\"\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"rm -rf \\\"temp files/\\\"*\",\n  \"commands\": null,\n  \"explanation\": \"Deletes directory contents quoting path with embedded spaces.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Deletes all files inside 'temp files/'.\",\n  \"question\": null\n}"
+    }
+  ]
+}

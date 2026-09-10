@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ what is a file descriptor in linux",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "commands": null,
+    "explanation": "A file descriptor is an integer handle representing an open file, socket, or pipe managed by the Linux kernel (standard descriptors: 0=stdin, 1=stdout, 2=stderr).",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ what is a file descriptor in linux\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"explain\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"A file descriptor is an integer handle representing an open file, socket, or pipe managed by the Linux kernel (standard descriptors: 0=stdin, 1=stdout, 2=stderr).\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

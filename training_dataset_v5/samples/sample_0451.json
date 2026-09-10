@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/k8s"
+  },
+  "user": "@ restart deployment api-server in namespace prod",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "kubectl rollout restart deployment/api-server -n prod",
+    "commands": null,
+    "explanation": "Triggers a rolling restart of all pods backing deployment api-server.",
+    "risk": "caution",
+    "warning": "Initiates rolling replacement of active production pods.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/k8s\n\n[USER REQUEST]\n@ restart deployment api-server in namespace prod\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"kubectl rollout restart deployment/api-server -n prod\",\n  \"commands\": null,\n  \"explanation\": \"Triggers a rolling restart of all pods backing deployment api-server.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Initiates rolling replacement of active production pods.\",\n  \"question\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "arch",
+    "shell": "bash",
+    "cwd": "/var/log/nginx"
+  },
+  "user": "@ get top 10 requesting IP addresses from access.log",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "awk '{print $1}' access.log | sort | uniq -c | sort -nr | head -n 10",
+    "commands": null,
+    "explanation": "Extracts the client IP column, aggregates counts, and displays the top 10.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: arch (arch)\nShell: bash\nCWD: /var/log/nginx\n\n[USER REQUEST]\n@ get top 10 requesting IP addresses from access.log\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"awk '{print $1}' access.log | sort | uniq -c | sort -nr | head -n 10\",\n  \"commands\": null,\n  \"explanation\": \"Extracts the client IP column, aggregates counts, and displays the top 10.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

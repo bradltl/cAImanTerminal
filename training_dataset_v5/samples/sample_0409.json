@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ stop and disable apache service",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo systemctl disable --now httpd",
+    "commands": null,
+    "explanation": "Stops running apache HTTP daemon and disables autostart.",
+    "risk": "elevated",
+    "warning": "Requires sudo; halts web server.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ stop and disable apache service\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo systemctl disable --now httpd\",\n  \"commands\": null,\n  \"explanation\": \"Stops running apache HTTP daemon and disables autostart.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; halts web server.\",\n  \"question\": null\n}"
+    }
+  ]
+}

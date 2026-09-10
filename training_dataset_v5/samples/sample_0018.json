@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ show last 50 lines of syslog and follow",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo tail -n 50 -f /var/log/syslog",
+    "commands": null,
+    "explanation": "Continuously tails system syslog.",
+    "risk": "elevated",
+    "warning": "Requires sudo to view system logs.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ show last 50 lines of syslog and follow\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo tail -n 50 -f /var/log/syslog\",\n  \"commands\": null,\n  \"explanation\": \"Continuously tails system syslog.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to view system logs.\",\n  \"question\": null\n}"
+    }
+  ]
+}

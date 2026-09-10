@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ delete empty s3 bucket my-unused-bucket",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws s3 rb s3://my-unused-bucket",
+    "commands": null,
+    "explanation": "Removes an empty S3 bucket.",
+    "risk": "caution",
+    "warning": "Deletes S3 bucket resource.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ delete empty s3 bucket my-unused-bucket\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws s3 rb s3://my-unused-bucket\",\n  \"commands\": null,\n  \"explanation\": \"Removes an empty S3 bucket.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deletes S3 bucket resource.\",\n  \"question\": null\n}"
+    }
+  ]
+}

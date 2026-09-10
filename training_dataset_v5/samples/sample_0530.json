@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/azure"
+  },
+  "user": "@ stop and deallocate vm web-vm-01 in resource group prod-rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az vm deallocate --resource-group prod-rg --name web-vm-01",
+    "commands": null,
+    "explanation": "Stops the VM and releases compute resources to avoid compute billing charges.",
+    "risk": "caution",
+    "warning": "Deallocates compute resources and powers off web-vm-01.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/azure\n\n[USER REQUEST]\n@ stop and deallocate vm web-vm-01 in resource group prod-rg\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"az vm deallocate --resource-group prod-rg --name web-vm-01\",\n  \"commands\": null,\n  \"explanation\": \"Stops the VM and releases compute resources to avoid compute billing charges.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deallocates compute resources and powers off web-vm-01.\",\n  \"question\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "dataset_name": "cayman-terminal-v5-balanced",
+  "total_examples": 541,
+  "train_examples": 486,
+  "eval_examples": 55,
+  "parameters": [
+    "retain all v2 multi-domain breadth (~482 dataset / 433 train samples)",
+    "add ~20 high-value clarification examples (missing required identifiers)",
+    "add ~25 multi-turn / context-aware examples",
+    "add ~21 syntax / quoting / whitespace / typo repair examples",
+    "zero tool_request in assistant responses",
+    "destructive safety left out of SFT (host gate owns destructive bounds)"
+  ],
+  "action_distribution": {
+    "suggest_command": 402,
+    "no_action": 71,
+    "clarify": 56,
+    "explain": 12
+  },
+  "risk_distribution": {
+    "caution": 113,
+    "normal": 293,
+    "null": 71,
+    "elevated": 64
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ create and switch to new branch feature/auth-flow",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git switch -c feature/auth-flow",
+    "commands": null,
+    "explanation": "Creates and switches to a new Git branch named feature/auth-flow.",
+    "risk": "caution",
+    "warning": "Switches the active Git working branch.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ create and switch to new branch feature/auth-flow\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git switch -c feature/auth-flow\",\n  \"commands\": null,\n  \"explanation\": \"Creates and switches to a new Git branch named feature/auth-flow.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Switches the active Git working branch.\",\n  \"question\": null\n}"
+    }
+  ]
+}

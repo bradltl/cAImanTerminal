@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/infra"
+  },
+  "user": "@ restart virtual machine web-01 in resource group prod-rg",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "az vm restart --resource-group prod-rg --name web-01",
+    "commands": null,
+    "explanation": "Reboots Azure VM web-01.",
+    "risk": "caution",
+    "warning": "Reboots virtual machine web-01.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/infra\n\n[USER REQUEST]\n@ restart virtual machine web-01 in resource group prod-rg\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"az vm restart --resource-group prod-rg --name web-01\",\n  \"commands\": null,\n  \"explanation\": \"Reboots Azure VM web-01.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Reboots virtual machine web-01.\",\n  \"question\": null\n}"
+    }
+  ]
+}

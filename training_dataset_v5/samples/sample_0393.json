@@ -1,0 +1,39 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/etc/nginx",
+    "history": [
+      {
+        "command": "sudo nginx -t",
+        "exit_code": 0,
+        "output": "nginx: configuration file /etc/nginx/nginx.conf test is successful"
+      }
+    ]
+  },
+  "user": "@ reload nginx configuration",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo systemctl reload nginx",
+    "commands": null,
+    "explanation": "Reloads Nginx configuration without dropping active connections.",
+    "risk": "elevated",
+    "warning": "Reloads active Nginx web server process via systemctl.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /etc/nginx\n\n[USER REQUEST]\n@ reload nginx configuration\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo systemctl reload nginx\",\n  \"commands\": null,\n  \"explanation\": \"Reloads Nginx configuration without dropping active connections.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Reloads active Nginx web server process via systemctl.\",\n  \"question\": null\n}"
+    }
+  ]
+}

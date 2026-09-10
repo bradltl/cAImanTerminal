@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ check certificate expiration date for domain example.com using openssl",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "openssl s_client -servername example.com -connect example.com:443 </dev/null 2>/dev/null | openssl x509 -noout -dates",
+    "commands": null,
+    "explanation": "Connects via TLS and outputs certificate validity dates.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ check certificate expiration date for domain example.com using openssl\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"openssl s_client -servername example.com -connect example.com:443 </dev/null 2>/dev/null | openssl x509 -noout -dates\",\n  \"commands\": null,\n  \"explanation\": \"Connects via TLS and outputs certificate validity dates.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

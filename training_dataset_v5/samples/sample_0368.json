@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/var/log"
+  },
+  "user": "@ find log files bigger than 100 megabytes",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find /var/log -type f -name \"*.log\" -size +100M",
+    "commands": null,
+    "explanation": "Finds files ending in .log larger than 100MB.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /var/log\n\n[USER REQUEST]\n@ find log files bigger than 100 megabytes\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"find /var/log -type f -name \\\"*.log\\\" -size +100M\",\n  \"commands\": null,\n  \"explanation\": \"Finds files ending in .log larger than 100MB.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

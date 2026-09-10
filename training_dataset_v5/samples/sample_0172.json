@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad/downloads"
+  },
+  "user": "@ find and delete all empty directories here",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "find . -type d -empty -delete",
+    "commands": null,
+    "explanation": "Finds and deletes empty directories under the current folder.",
+    "risk": "caution",
+    "warning": "Deletes empty directories immediately.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: ubuntu (arch)\nShell: bash\nCWD: /home/brad/downloads\n\n[USER REQUEST]\n@ find and delete all empty directories here\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"find . -type d -empty -delete\",\n  \"commands\": null,\n  \"explanation\": \"Finds and deletes empty directories under the current folder.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deletes empty directories immediately.\",\n  \"question\": null\n}"
+    }
+  ]
+}

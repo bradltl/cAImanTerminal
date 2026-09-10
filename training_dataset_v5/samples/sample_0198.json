@@ -1,0 +1,39 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad",
+    "history": [
+      {
+        "command": "du -sh /* | sort -h",
+        "exit_code": 0,
+        "output": "1.2G /home\n3.8G /usr\n12G /var"
+      }
+    ]
+  },
+  "user": "@ continue, inspect /var",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "du -sh /var/* | sort -h",
+    "commands": null,
+    "explanation": "Inspects size of directories inside /var to find what is consuming 12GB of disk.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ continue, inspect /var\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"du -sh /var/* | sort -h\",\n  \"commands\": null,\n  \"explanation\": \"Inspects size of directories inside /var to find what is consuming 12GB of disk.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

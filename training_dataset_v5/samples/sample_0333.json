@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "ubuntu",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ remove unused apt dependencies automatically",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo apt autoremove -y",
+    "commands": null,
+    "explanation": "Removes automatically installed packages that are no longer needed by any dependencies.",
+    "risk": "elevated",
+    "warning": "Requires sudo; uninstalls unused libraries and older kernel packages.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: ubuntu (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ remove unused apt dependencies automatically\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo apt autoremove -y\",\n  \"commands\": null,\n  \"explanation\": \"Removes automatically installed packages that are no longer needed by any dependencies.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; uninstalls unused libraries and older kernel packages.\",\n  \"question\": null\n}"
+    }
+  ]
+}

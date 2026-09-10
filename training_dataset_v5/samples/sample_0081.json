@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ create new user developer with bash shell and home directory",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo useradd -m -s /bin/bash developer",
+    "commands": null,
+    "explanation": "Creates new system user account with home folder and bash shell.",
+    "risk": "elevated",
+    "warning": "Requires sudo; creates new system user.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ create new user developer with bash shell and home directory\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo useradd -m -s /bin/bash developer\",\n  \"commands\": null,\n  \"explanation\": \"Creates new system user account with home folder and bash shell.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo; creates new system user.\",\n  \"question\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ enable and start docker service immediately",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo systemctl enable --now docker",
+    "commands": null,
+    "explanation": "Enables docker service to start on boot and launches it immediately.",
+    "risk": "elevated",
+    "warning": "Requires sudo to configure system services.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ enable and start docker service immediately\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo systemctl enable --now docker\",\n  \"commands\": null,\n  \"explanation\": \"Enables docker service to start on boot and launches it immediately.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo to configure system services.\",\n  \"question\": null\n}"
+    }
+  ]
+}

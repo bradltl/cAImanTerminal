@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ find top memory consuming user on system",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "ps -eo user,%mem --no-headers | awk '{mem[$1]+=$2} END {for (u in mem) print u, mem[u]}' | sort -k2 -nr | head -n 1",
+    "commands": null,
+    "explanation": "Aggregates memory usage by username and returns the top consumer.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ find top memory consuming user on system\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"ps -eo user,%mem --no-headers | awk '{mem[$1]+=$2} END {for (u in mem) print u, mem[u]}' | sort -k2 -nr | head -n 1\",\n  \"commands\": null,\n  \"explanation\": \"Aggregates memory usage by username and returns the top consumer.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

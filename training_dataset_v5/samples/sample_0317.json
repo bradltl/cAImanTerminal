@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ abort ongoing git rebase",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git rebase --abort",
+    "commands": null,
+    "explanation": "Aborts in-progress rebase and restores original branch state.",
+    "risk": "caution",
+    "warning": "Discards in-progress rebase state.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ abort ongoing git rebase\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git rebase --abort\",\n  \"commands\": null,\n  \"explanation\": \"Aborts in-progress rebase and restores original branch state.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Discards in-progress rebase state.\",\n  \"question\": null\n}"
+    }
+  ]
+}

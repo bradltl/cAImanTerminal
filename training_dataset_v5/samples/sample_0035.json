@@ -1,0 +1,39 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/project",
+    "history": [
+      {
+        "command": "git checkout -b feature/login",
+        "exit_code": 0,
+        "output": "Switched to a new branch 'feature/login'"
+      }
+    ]
+  },
+  "user": "@ continue, push to remote",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git push -u origin feature/login",
+    "commands": null,
+    "explanation": "Pushes the newly created branch to origin and sets upstream tracking.",
+    "risk": "caution",
+    "warning": "Pushes branch 'feature/login' to remote.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/project\n\n[USER REQUEST]\n@ continue, push to remote\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git push -u origin feature/login\",\n  \"commands\": null,\n  \"explanation\": \"Pushes the newly created branch to origin and sets upstream tracking.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Pushes branch 'feature/login' to remote.\",\n  \"question\": null\n}"
+    }
+  ]
+}

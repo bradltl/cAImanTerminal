@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/data"
+  },
+  "user": "@ archive directory \"Client Data\" into tar file",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "tar -czf \"Client Data.tar.gz\" \"Client Data\"",
+    "commands": null,
+    "explanation": "Creates compressed archive of directory containing whitespace in name.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/data\n\n[USER REQUEST]\n@ archive directory \"Client Data\" into tar file\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"tar -czf \\\"Client Data.tar.gz\\\" \\\"Client Data\\\"\",\n  \"commands\": null,\n  \"explanation\": \"Creates compressed archive of directory containing whitespace in name.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

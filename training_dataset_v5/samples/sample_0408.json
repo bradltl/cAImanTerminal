@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ rerun failed jobs for workflow run 23891234",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh run rerun 23891234 --failed",
+    "commands": null,
+    "explanation": "Triggers re-run of only failed jobs in GitHub Actions run 23891234.",
+    "risk": "caution",
+    "warning": "Re-runs failed CI workflow jobs.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ rerun failed jobs for workflow run 23891234\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gh run rerun 23891234 --failed\",\n  \"commands\": null,\n  \"explanation\": \"Triggers re-run of only failed jobs in GitHub Actions run 23891234.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Re-runs failed CI workflow jobs.\",\n  \"question\": null\n}"
+    }
+  ]
+}

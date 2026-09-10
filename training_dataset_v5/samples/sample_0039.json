@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ remove dangling images",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "docker image prune -f",
+    "commands": null,
+    "explanation": "Removes untagged, dangling Docker images to reclaim disk space.",
+    "risk": "caution",
+    "warning": "Deletes untagged Docker image layers.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ remove dangling images\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"docker image prune -f\",\n  \"commands\": null,\n  \"explanation\": \"Removes untagged, dangling Docker images to reclaim disk space.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Deletes untagged Docker image layers.\",\n  \"question\": null\n}"
+    }
+  ]
+}

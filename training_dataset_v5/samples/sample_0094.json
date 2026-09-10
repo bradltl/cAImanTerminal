@@ -1,0 +1,39 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repo",
+    "history": [
+      {
+        "command": "git status",
+        "exit_code": 0,
+        "output": "Changes not staged for commit:\n  modified: config.yaml"
+      }
+    ]
+  },
+  "user": "@ discard changes to config.yaml",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git restore config.yaml",
+    "commands": null,
+    "explanation": "Discards uncommitted working tree changes in config.yaml.",
+    "risk": "caution",
+    "warning": "Overwrites local modifications in config.yaml.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repo\n\n[USER REQUEST]\n@ discard changes to config.yaml\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git restore config.yaml\",\n  \"commands\": null,\n  \"explanation\": \"Discards uncommitted working tree changes in config.yaml.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Overwrites local modifications in config.yaml.\",\n  \"question\": null\n}"
+    }
+  ]
+}

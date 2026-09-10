@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ stop the ec2 instance",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "commands": null,
+    "explanation": "EC2 instance ID is required.",
+    "risk": "caution",
+    "warning": null,
+    "question": "What is the EC2 instance ID? (Run 'aws ec2 describe-instances' to list instances.)"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ stop the ec2 instance\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"EC2 instance ID is required.\",\n  \"risk\": \"caution\",\n  \"warning\": null,\n  \"question\": \"What is the EC2 instance ID? (Run 'aws ec2 describe-instances' to list instances.)\"\n}"
+    }
+  ]
+}

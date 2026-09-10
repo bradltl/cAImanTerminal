@@ -1,0 +1,39 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad",
+    "history": [
+      {
+        "command": "ip link show eth0",
+        "exit_code": 0,
+        "output": "2: eth0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN"
+      }
+    ]
+  },
+  "user": "@ bring up the interface",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo ip link set eth0 up",
+    "commands": null,
+    "explanation": "Activates network interface eth0.",
+    "risk": "elevated",
+    "warning": "Changes network link state using sudo.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ bring up the interface\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo ip link set eth0 up\",\n  \"commands\": null,\n  \"explanation\": \"Activates network interface eth0.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Changes network link state using sudo.\",\n  \"question\": null\n}"
+    }
+  ]
+}

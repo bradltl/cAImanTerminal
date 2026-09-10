@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "kubectl describe pod",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "commands": null,
+    "explanation": "Pod name argument is missing.",
+    "risk": "normal",
+    "warning": null,
+    "question": "Which pod would you like to describe? (Run 'kubectl get pods' to list pods in current namespace)"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\nkubectl describe pod\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"Pod name argument is missing.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": \"Which pod would you like to describe? (Run 'kubectl get pods' to list pods in current namespace)\"\n}"
+    }
+  ]
+}

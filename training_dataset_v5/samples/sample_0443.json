@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ merge pr 42 using squash and delete the branch",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "gh pr merge 42 --squash --delete-branch",
+    "commands": null,
+    "explanation": "Merges pull request 42 with squash strategy and deletes its head branch.",
+    "risk": "caution",
+    "warning": "Merges PR #42 into base branch and deletes remote branch.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ merge pr 42 using squash and delete the branch\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"gh pr merge 42 --squash --delete-branch\",\n  \"commands\": null,\n  \"explanation\": \"Merges pull request 42 with squash strategy and deletes its head branch.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Merges PR #42 into base branch and deletes remote branch.\",\n  \"question\": null\n}"
+    }
+  ]
+}

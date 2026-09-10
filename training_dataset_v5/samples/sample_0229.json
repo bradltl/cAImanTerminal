@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ amend last commit with currently staged changes without changing message",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git commit --amend --no-edit",
+    "commands": null,
+    "explanation": "Amends previous commit with newly staged changes.",
+    "risk": "caution",
+    "warning": "Rewrites the most recent commit hash.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ amend last commit with currently staged changes without changing message\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git commit --amend --no-edit\",\n  \"commands\": null,\n  \"explanation\": \"Amends previous commit with newly staged changes.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Rewrites the most recent commit hash.\",\n  \"question\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ clear the cache",
+  "assistant": {
+    "action": "clarify",
+    "command": null,
+    "commands": null,
+    "explanation": "Multiple caches exist on Linux.",
+    "risk": "caution",
+    "warning": null,
+    "question": "Which cache would you like to clear: package cache ('sudo paccache -rk2') or user cache ('rm -rf ~/.cache/*')?"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ clear the cache\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"clarify\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"Multiple caches exist on Linux.\",\n  \"risk\": \"caution\",\n  \"warning\": null,\n  \"question\": \"Which cache would you like to clear: package cache ('sudo paccache -rk2') or user cache ('rm -rf ~/.cache/*')?\"\n}"
+    }
+  ]
+}

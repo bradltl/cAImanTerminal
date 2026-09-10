@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/src"
+  },
+  "user": "# TODO: fix database migration index",
+  "assistant": {
+    "action": "no_action",
+    "command": null,
+    "commands": null,
+    "explanation": "User entered a code comment in the terminal.",
+    "risk": null,
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/src\n\n[USER REQUEST]\n# TODO: fix database migration index\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"no_action\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"User entered a code comment in the terminal.\",\n  \"risk\": null,\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

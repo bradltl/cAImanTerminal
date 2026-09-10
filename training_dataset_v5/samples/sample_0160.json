@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ replace 127.0.0.1 with 10.0.0.1 in config.ini",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sed -i 's/127\\.0\\.0\\.1/10.0.0.1/g' config.ini",
+    "commands": null,
+    "explanation": "Performs in-place replacement with sed quoting the substitution expression.",
+    "risk": "caution",
+    "warning": "Modifies config.ini in place.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ replace 127.0.0.1 with 10.0.0.1 in config.ini\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sed -i 's/127\\\\.0\\\\.0\\\\.1/10.0.0.1/g' config.ini\",\n  \"commands\": null,\n  \"explanation\": \"Performs in-place replacement with sed quoting the substitution expression.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Modifies config.ini in place.\",\n  \"question\": null\n}"
+    }
+  ]
+}

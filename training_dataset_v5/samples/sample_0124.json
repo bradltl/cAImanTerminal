@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ create an annotated release tag v1.0.0",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git tag -a v1.0.0 -m \"Release v1.0.0\"",
+    "commands": null,
+    "explanation": "Creates signed annotated Git tag pointing to current commit.",
+    "risk": "caution",
+    "warning": "Creates a new Git tag ref.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ create an annotated release tag v1.0.0\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git tag -a v1.0.0 -m \\\"Release v1.0.0\\\"\",\n  \"commands\": null,\n  \"explanation\": \"Creates signed annotated Git tag pointing to current commit.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Creates a new Git tag ref.\",\n  \"question\": null\n}"
+    }
+  ]
+}

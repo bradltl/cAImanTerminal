@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/app"
+  },
+  "user": "@ discard all unstaged modifications across working directory",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git restore .",
+    "commands": null,
+    "explanation": "Discards unstaged modifications in current repository.",
+    "risk": "caution",
+    "warning": "Overwrites and permanently discards uncommitted file modifications.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/app\n\n[USER REQUEST]\n@ discard all unstaged modifications across working directory\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git restore .\",\n  \"commands\": null,\n  \"explanation\": \"Discards unstaged modifications in current repository.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Overwrites and permanently discards uncommitted file modifications.\",\n  \"question\": null\n}"
+    }
+  ]
+}

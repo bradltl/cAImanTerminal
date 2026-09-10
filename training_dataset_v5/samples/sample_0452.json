@@ -1,0 +1,39 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad",
+    "history": [
+      {
+        "command": "sudo systemctl start nginx",
+        "exit_code": 1,
+        "output": "nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)"
+      }
+    ]
+  },
+  "user": "@ diagnose port conflict",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "ss -tlnp | grep :80",
+    "commands": null,
+    "explanation": "Finds which process is currently listening on port 80 and holding the socket.",
+    "risk": "normal",
+    "warning": null,
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ diagnose port conflict\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"ss -tlnp | grep :80\",\n  \"commands\": null,\n  \"explanation\": \"Finds which process is currently listening on port 80 and holding the socket.\",\n  \"risk\": \"normal\",\n  \"warning\": null,\n  \"question\": null\n}"
+    }
+  ]
+}

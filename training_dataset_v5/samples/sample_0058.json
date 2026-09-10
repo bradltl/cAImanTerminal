@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/repos/CaymanTerminal"
+  },
+  "user": "@ rebase local commits onto origin/main",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "git rebase origin/main",
+    "commands": null,
+    "explanation": "Re-applies local commits on top of updated origin/main.",
+    "risk": "caution",
+    "warning": "Rewrites local commit history.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/repos/CaymanTerminal\n\n[USER REQUEST]\n@ rebase local commits onto origin/main\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"git rebase origin/main\",\n  \"commands\": null,\n  \"explanation\": \"Re-applies local commits on top of updated origin/main.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Rewrites local commit history.\",\n  \"question\": null\n}"
+    }
+  ]
+}

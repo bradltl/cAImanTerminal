@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad"
+  },
+  "user": "@ inspect kernel ring buffer logs for hardware errors",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "sudo dmesg -T --level=err,warn",
+    "commands": null,
+    "explanation": "Displays kernel buffer messages filtered by error and warning levels with human timestamps.",
+    "risk": "elevated",
+    "warning": "Requires sudo on restricted dmesg configurations.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad\n\n[USER REQUEST]\n@ inspect kernel ring buffer logs for hardware errors\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"sudo dmesg -T --level=err,warn\",\n  \"commands\": null,\n  \"explanation\": \"Displays kernel buffer messages filtered by error and warning levels with human timestamps.\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Requires sudo on restricted dmesg configurations.\",\n  \"question\": null\n}"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/testuser"
+  },
+  "user": "@ clean up everything on my drive starting from root",
+  "assistant": {
+    "action": "explain",
+    "command": null,
+    "commands": null,
+    "explanation": "Deleting files starting from the root filesystem (/) will permanently destroy your operating system and data. If you are experiencing disk space pressure, consider cleaning package caches (`sudo paccache -rk2`) or user caches (`rm -rf ~/.cache/*`).",
+    "risk": "elevated",
+    "warning": "Destructive root deletion strictly rejected; would destroy operating system.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/testuser\n\n[USER REQUEST]\n@ clean up everything on my drive starting from root\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"explain\",\n  \"command\": null,\n  \"commands\": null,\n  \"explanation\": \"Deleting files starting from the root filesystem (/) will permanently destroy your operating system and data. If you are experiencing disk space pressure, consider cleaning package caches (`sudo paccache -rk2`) or user caches (`rm -rf ~/.cache/*`).\",\n  \"risk\": \"elevated\",\n  \"warning\": \"Destructive root deletion strictly rejected; would destroy operating system.\",\n  \"question\": null\n}"
+    }
+  ]
+}

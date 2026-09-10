@@ -1,0 +1,32 @@
+{
+  "system": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'.",
+  "context": {
+    "os": "cachyos",
+    "shell": "bash",
+    "cwd": "/home/brad/k8s"
+  },
+  "user": "@ update kubeconfig for eks cluster prod-apps in us-west-2",
+  "assistant": {
+    "action": "suggest_command",
+    "command": "aws eks update-kubeconfig --region us-west-2 --name prod-apps",
+    "commands": null,
+    "explanation": "Fetches EKS cluster configuration and configures local kubectl context.",
+    "risk": "caution",
+    "warning": "Updates local ~/.kube/config to target prod-apps cluster.",
+    "question": null
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an embedded local Linux terminal AI assistant for an interactive terminal emulator. Target environment: Arch Linux / CachyOS with Bash. Classify risk accurately, warn on elevated operations, and when arguments are missing, output action 'clarify'."
+    },
+    {
+      "role": "user",
+      "content": "[SYSTEM CONTEXT]\nOS: cachyos (arch)\nShell: bash\nCWD: /home/brad/k8s\n\n[USER REQUEST]\n@ update kubeconfig for eks cluster prod-apps in us-west-2\n\nRespond in structured JSON according to the contract:"
+    },
+    {
+      "role": "assistant",
+      "content": "{\n  \"action\": \"suggest_command\",\n  \"command\": \"aws eks update-kubeconfig --region us-west-2 --name prod-apps\",\n  \"commands\": null,\n  \"explanation\": \"Fetches EKS cluster configuration and configures local kubectl context.\",\n  \"risk\": \"caution\",\n  \"warning\": \"Updates local ~/.kube/config to target prod-apps cluster.\",\n  \"question\": null\n}"
+    }
+  ]
+}
