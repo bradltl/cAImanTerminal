@@ -1,0 +1,10 @@
+NAME
+  kill - send a signal to a process
+
+USAGE
+  kill [-s sigspec | -n signum | -sigspec] pid | jobspec ...
+  kill -l [sigspec]
+
+OPTIONS
+  -9, -SIGKILL             kill signal (force termination)
+  -15, -SIGTERM            termination signal (graceful shutdown)

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>cAIman Terminal</title>
+  <desc>The raised eyes and upper snout of an ASCII caiman, drawn with literal monospaced characters.</desc>
+  <rect x="8" y="8" width="240" height="240" rx="36" fill="#101718"/>
+  <text xml:space="preserve" font-family="DejaVu Sans Mono, monospace" font-size="23" font-weight="bold" fill="#a6e3a1">
+    <tspan x="24" y="105">    __   __</tspan>
+    <tspan x="24" y="139">___/ o\_/ o\___</tspan>
+    <tspan x="24" y="173"> _____________</tspan>
+  </text>
+</svg>

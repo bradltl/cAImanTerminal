@@ -1,0 +1,11 @@
+NAME
+  gh run view - View a workflow run
+
+USAGE
+  gh run view [<run-id>] [flags]
+
+FLAGS
+      --log                View full log for the workflow run
+      --log-failed         View only logs for failed steps
+  -j, --job string         View a specific job ID
+  -v, --verbose            Show verbose output

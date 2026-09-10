@@ -1,0 +1,21 @@
+name: cAIman Terminal and LLM research
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Native dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgtk-4-dev libvte-2.91-gtk4-dev libclang-dev cmake pkg-config librsvg2-bin
+      - run: cargo fmt --all -- --check
+      - run: cargo test --locked --no-default-features
+      - run: cargo test --locked
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -e './llm[test]'
+      - run: cd llm && python -m pytest tests

@@ -1,0 +1,18 @@
+NAME
+  pacman - package manager utility for Arch Linux
+
+USAGE
+  pacman <operation> [options] [targets]
+
+OPERATIONS
+  -S, --sync       Synchronize packages (install, update)
+  -Q, --query      Query package database
+  -R, --remove     Remove package(s) from the system
+  -F, --files      Query file database
+  -U, --upgrade    Upgrade or install a package from file
+
+COMMON OPTIONS
+  sudo pacman -S <pkg>       Install package
+  sudo pacman -Syu           Update system packages
+  pacman -Qe                 List explicitly installed packages
+  sudo pacman -Rns <pkg>     Remove package and unneeded dependencies

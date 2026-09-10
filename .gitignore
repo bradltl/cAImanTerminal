@@ -31,3 +31,12 @@ training/candidates/*.json
 tools/llama.cpp/
 checkpoints/
 output/
+
+# Native desktop builds
+/target/
+
+# Shared local artifacts; distribute model weights separately from source.
+/artifacts/*
+!/artifacts/README.md
+/llm/tools/llama.cpp/
+/llm/training/candidates/*.json

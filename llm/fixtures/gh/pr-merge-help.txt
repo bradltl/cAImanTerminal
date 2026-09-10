@@ -1,0 +1,12 @@
+NAME
+  gh pr merge - Merge a pull request
+
+USAGE
+  gh pr merge [<number> | <url> | <branch>] [flags]
+
+FLAGS
+  -m, --merge              Merge the commits with the merge strategy
+  -r, --rebase             Rebase the commits onto the base branch
+  -s, --squash             Squash the commits into one commit and merge it
+  -d, --delete-branch      Delete the local and remote branch after merge
+      --auto               Automatically merge only after all requirements pass

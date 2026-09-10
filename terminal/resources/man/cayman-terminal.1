@@ -1,0 +1,150 @@
+.TH CAYMAN-TERMINAL 1 "September 2026" "cAIman Terminal 0.1.0" "User Commands"
+.SH NAME
+cayman-terminal \- native Bash terminal with a local assistant
+.SH SYNOPSIS
+.B cayman-terminal
+.RI [ options ]
+.SH DESCRIPTION
+cAIman Terminal combines independent Bash tabs with a compact assistant pane.
+A local GGUF model provides assistance; known host errors and common command
+options use installed documentation directly.
+.PP
+The assistant shows Ready.. after loading. Suggestions are never executed
+automatically. Tab places a validated suggestion into the editable Bash input;
+a separate Enter runs the command.
+.SH OPTIONS
+.TP
+.BI "\-\-model " PATH
+Load this local GGUF model. The development default is
+artifacts/models/qwen2.5-0.5b-instruct-sft-v2.gguf relative to the working directory.
+The local installer creates a launcher with an absolute model path.
+No model is downloaded automatically.
+.TP
+.B \-\-no-ai
+Start a plain terminal without loading the model.
+.TP
+.BI "\-\-theme " ID
+Override the saved theme for this window. This option does not change the saved
+preference. Selecting a theme from the menu saves it for future windows.
+.TP
+.B \-\-list-themes
+Print bundled theme IDs and exit.
+.TP
+.BI "\-\-ask " TEXT
+Run a headless assistant request and print its validated JSON response.
+Does not execute the suggested command. Cannot be combined with \-\-no-ai.
+.TP
+.BI "\-\-audit-report " PATH
+Replay a saved JSON benchmark through static syntax and risk validation.
+Does not infer, execute candidates, or verify remote executable availability.
+Returns failure if a recorded critical candidate remains stageable.
+.TP
+.BR \-\-version ", " \-V
+Print the version and exit.
+.TP
+.BR \-\-help ", " \-h
+Print an ASCII caiman and a short usage summary, then exit.
+.SH SETTINGS
+Open Settings from the tab-bar menu or press Ctrl+,.
+Appearance, assistant behavior, local model, inference limits and detected host
+information are grouped in one window. Theme applies on Save; other preferences
+apply after relaunching cAIman.
+.PP
+Model selection precedence is explicit \-\-model, saved model_path,
+CAYMAN_DEFAULT_MODEL supplied by the launcher, then the bundled default (SFT v2).
+Only registered model, terminal and shell providers are accepted.
+.SH INTERACTION
+At the normal Bash prompt, prefix a request with @ and press Enter:
+.PP
+.nf
+  @ explain the error
+  @ find log files larger than 500 MB
+  @ continue
+.fi
+.PP
+Requests beginning with @ are intercepted and do not execute as shell commands.
+Each submitted request and its reply remain in that tab's scrollable AI pane
+for the lifetime of the tab. Automatic hints update without erasing this conversation.
+.PP
+Pausing after eligible input requests assistance after approximately 250 ms;
+model inference and documentation lookup add processing time.
+.PP
+A trailing dash or flag prefix, such as ps \- or ps \-\-so, shows options from
+installed help or man pages. Bare find offers a simple file-search command.
+Missing arguments receive guidance rather than invented values.
+.PP
+Failed foreground commands and completed assistant suggestions can trigger a
+follow-up using recent command output and exit status. Interrupts and successful
+unrelated commands normally stay quiet. Clearing the display retains context;
+a new tab starts with fresh context.
+.SH KEYBOARD SHORTCUTS
+.TP
+.B Ctrl+Shift+T
+Create a tab.
+.TP
+.B Ctrl+Shift+W
+Close the current tab. A running foreground command must finish or be stopped first.
+.TP
+.B Shift+Left / Shift+Right
+Switch tabs. Ctrl+PageUp / Ctrl+PageDown also work.
+.TP
+.B Ctrl+Shift+A
+Show or hide the assistant pane.
+.TP
+.B Ctrl+Shift+C / Ctrl+Shift+V
+Copy or paste terminal text.
+.TP
+.B Tab
+Stage a current suggestion. Otherwise use normal Bash completion.
+.SH THEMES
+The menu contains a Theme submenu. Changes apply immediately to all tabs in
+that window, including terminal ANSI colors, cursor, selections, and assistant.
+New tabs inherit the selected theme.
+.PP
+Bundled IDs: cayman (default), dracula, nord, gruvbox-dark,
+catppuccin-mocha, and tokyo-night.
+.SH FILES
+.TP
+.I $XDG_CONFIG_HOME/cayman-terminal/settings.json
+Versioned appearance, assistant, model, inference and terminal preferences. Defaults to ~/.config/cayman-terminal/settings.json
+when XDG_CONFIG_HOME is unset or not absolute.
+.TP
+.I /tmp/cayman-session-*/
+Private per-tab Bash integration and event files, normally removed on exit.
+A different temporary directory may be selected by TMPDIR.
+.SH ENVIRONMENT
+.TP
+.B XDG_CONFIG_HOME
+Base directory for saved preferences.
+.TP
+.B HOME
+Fallback home directory for preferences and user Bash configuration.
+.TP
+.B TMPDIR
+Optional location for temporary session files.
+.SH LIMITATIONS
+This preview supports local Bash with Emacs Readline bindings.
+Direct SSH sessions pause local assistance; full remote integration, arbitrary
+shell constructs, aliases, multiline input, and complete command semantics are
+not supported by the validator. Man-page and flag coverage is bounded.
+.PP
+No cloud inference, telemetry service, or automatic model download is used.
+The local model can be wrong. Inspect suggestions and their risk messages before
+pressing Enter. A suggestion does not provide automatic undo.
+.SH EXIT STATUS
+Zero indicates successful completion. Nonzero indicates a command-line,
+headless inference, audit, or startup error. Missing model support in a desktop
+window does not prevent the terminal from running.
+.SH EXAMPLES
+.nf
+  cayman-terminal --theme nord
+  cayman-terminal --no-ai
+  cayman-terminal --model /path/to/model.gguf
+  cayman-terminal --ask 'show disk space'
+  cayman-terminal --list-themes
+.fi
+.SH SEE ALSO
+.BR bash (1),
+.BR find (1),
+.BR ps (1),
+.BR man (1)

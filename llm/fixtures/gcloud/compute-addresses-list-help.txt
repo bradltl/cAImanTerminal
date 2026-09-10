@@ -1,0 +1,10 @@
+NAME
+  gcloud compute addresses list - list Compute Engine IP addresses
+
+USAGE
+  gcloud compute addresses list [--global | --regions=REGION,...] [flags]
+
+FLAGS
+  --global                         List global external static IP addresses
+  --filter=EXPRESSION              Filter criteria (e.g. status=IN_USE)
+  --format=FORMAT                  Output formatting

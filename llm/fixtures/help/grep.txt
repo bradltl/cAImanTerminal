@@ -1,0 +1,13 @@
+NAME
+  grep - print lines that match patterns
+
+USAGE
+  grep [OPTION...] PATTERNS [FILE...]
+
+OPTIONS
+  -r, -R, --recursive      like --directories=recurse
+  -n, --line-number        print line number with output lines
+  -i, --ignore-case        ignore case distinctions in patterns and input data
+  -v, --invert-match       select non-matching lines
+  -l, --files-with-matches print only names of FILEs with selected lines
+  -w, --word-regexp        match only whole words

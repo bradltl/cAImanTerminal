@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=cAIman Terminal
+GenericName=Terminal Emulator
+Comment=A native terminal with a local assistant
+Exec=cayman-terminal
+Icon=io.cayman.Terminal
+Terminal=false
+Categories=System;TerminalEmulator;
+Keywords=shell;bash;terminal;ai;caiman;
+StartupNotify=true
+StartupWMClass=io.cayman.Terminal

@@ -1,0 +1,11 @@
+NAME
+  gh pr review - Add a review to a pull request
+
+USAGE
+  gh pr review [<number> | <url> | <branch>] [flags]
+
+FLAGS
+  -a, --approve            Approve pull request
+  -c, --comment            Comment on pull request
+  -r, --request-changes    Request changes on pull request
+  -b, --body string        Specify the review body

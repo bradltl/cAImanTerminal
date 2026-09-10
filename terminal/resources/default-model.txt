@@ -1,0 +1,1 @@
+artifacts/models/qwen2.5-0.5b-instruct-sft-v2.gguf

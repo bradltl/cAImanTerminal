@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/io/cayman/Terminal">
+    <file>icons/scalable/apps/io.cayman.Terminal.svg</file>
+  </gresource>
+</gresources>

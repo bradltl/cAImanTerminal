@@ -1,0 +1,9 @@
+NAME
+  fallocate - preallocate or deallocate space to a file
+
+USAGE
+  fallocate [-o offset] -l length [-n] filename
+
+OPTIONS
+  -l, --length <num>       length for range operations (e.g. 1G, 500M)
+  -o, --offset <num>       offset for range operations

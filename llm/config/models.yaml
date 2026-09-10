@@ -1,0 +1,186 @@
+models:
+  mock:
+    name: "Mock Deterministic Model"
+    architecture: "mock"
+    parameters: "0B"
+    context_length: 4096
+    gguf_path: ""
+    temperature: 0.0
+    chat_format: "raw"
+    description: "In-memory mock model for testing and validating benchmark pipelines"
+
+  qwen2.5-0.5b:
+    name: "Qwen 2.5 0.5B"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+    sha256: "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db"
+    download_url: "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Ultra-compact 0.5B candidate (~398MB) for low-memory environments"
+
+  qwen2.5-0.5b-sft:
+    name: "Qwen 2.5 0.5B (SFT Fine-Tuned)"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/qwen2.5-0.5b-instruct-sft.gguf"
+    sha256: "dddcff451267f34bbd34ad3a92c40a1b29a7cd04285a082a0ea2a04f9527e629"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Cayman Terminal fine-tuned Qwen 2.5 0.5B SFT model (~506MB)"
+
+  qwen2.5-0.5b-sft-v2:
+    name: "Qwen 2.5 0.5B (SFT v2 Unified)"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/qwen2.5-0.5b-instruct-sft-v2.gguf"
+    sha256: "fdb77f88b8282cbb0e65f8362b5c11e8ea8648f1730661fb5592e5b6a633fb61"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Cayman Terminal fine-tuned Qwen 2.5 0.5B SFT v2 model trained on unified master dataset (~506MB)"
+
+  qwen2.5-0.5b-sft-v3:
+    name: "Qwen 2.5 0.5B (SFT v3 Contract Refactored)"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/qwen2.5-0.5b-instruct-sft-v3.gguf"
+    sha256: "6f16d68f7684610ba7d1d0a3379e495b41e7f92615d4f85888f43a967e9ca62a"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+  qwen2.5-0.5b-sft-v4:
+    name: "Qwen 2.5 0.5B (SFT v4 Unified Master)"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/qwen2.5-0.5b-instruct-sft-v4.gguf"
+    sha256: "ed361cc76c130e0e6c45013f63b6fdca6a3b555eb1bdf450c1200765d8624c48"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Cayman Terminal fine-tuned Qwen 2.5 0.5B SFT v4 model merging v3 strict contract with v2 multi-domain breadth (~506MB)"
+
+  qwen2.5-0.5b-sft-v5:
+    name: "Qwen 2.5 0.5B (SFT v5 Balanced Master)"
+    architecture: "qwen"
+    parameters: "0.5B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/qwen2.5-0.5b-instruct-sft-v5.gguf"
+    sha256: "7bddc3157b69e58baa0e9d2534f9ebc5a75a45248e96ad7c88898fb3af35550f"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Cayman Terminal fine-tuned Qwen 2.5 0.5B SFT v5 model retaining ~433 v2 examples with balanced additions for clarification, context, and syntax (~506MB)"
+
+
+  qwen3-0.6b:
+    name: "Qwen3 0.6B"
+    architecture: "qwen"
+    parameters: "0.6B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/Qwen3-0.6B-Q4_K_M.gguf"
+    sha256: "ac2d97712095a558e31573f62f466a3f9d93990898b0ec79d7c974c1780d524a"
+    download_url: "https://huggingface.co/unsloth/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Next-gen Qwen3 0.6B compact candidate (~378MB)"
+
+  llama3.2-1b:
+    name: "Llama 3.2 1B"
+    architecture: "llama"
+    parameters: "1.2B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+    sha256: "6f85a640a97cf2bf5b8e764087b1e83da0fdb51d7c9fab7d0fece9385611df83"
+    download_url: "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "llama-3"
+    description: "Meta Llama 3.2 1B instruct candidate (~750MB)"
+
+  smollm2-1.7b:
+    name: "SmolLM2 1.7B"
+    architecture: "smollm"
+    parameters: "1.7B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/smollm2-1.7b-instruct-q4_k_m.gguf"
+    sha256: "decd2598bc2c8ed08c19adc3c8fdd461ee19ed5708679d1c54ef54a5a30d4f33"
+    download_url: "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_k_m.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "HuggingFace SmolLM2 1.7B instruct candidate (~1.05GB)"
+
+  gemma-2-2b:
+    name: "Gemma 2 2B Instruct"
+    architecture: "gemma"
+    parameters: "2B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/gemma-2-2b-it-Q4_K_M.gguf"
+    sha256: "e0aee85060f168f0f2d8473d7ea41ce2f3230c1bc1374847505ea599288a7787"
+    download_url: "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "gemma"
+    description: "Google Gemma 2 2B Instruct candidate (~1.63GB)"
+
+  gemma-3-1b:
+    name: "Gemma 3 1B Instruct"
+    architecture: "gemma"
+    parameters: "1B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/gemma-3-1b-it-Q4_K_M.gguf"
+    sha256: "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135"
+    download_url: "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "gemma"
+    description: "Google Gemma 3 1B Instruct candidate (~768MB)"
+
+  phi-1.5:
+    name: "Microsoft Phi 1.5"
+    architecture: "phi"
+    parameters: "1.4B"
+    context_length: 2048
+    gguf_path: "../artifacts/models/phi-1_5-Q4_K_M.gguf"
+    sha256: "5dfe310d09cc9ee85251e21c60e0a54d44480e3b69e27190d9f0edb1fc36325f"
+    download_url: "https://huggingface.co/TKDKid1000/phi-1_5-GGUF/resolve/main/phi-1_5-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "raw"
+    description: "Microsoft Phi 1.5 candidate (~876MB)"
+
+  lfm2-1.2b:
+    name: "Liquid AI LFM2 1.2B"
+    architecture: "lfm"
+    parameters: "1.2B"
+    context_length: 8192
+    gguf_path: "../artifacts/models/LFM2-1.2B-Q4_K_M.gguf"
+    sha256: "55175400e3f509a9616227afeffd58d87e80b9f628a5d3d54ada884d85221fed"
+    download_url: "https://huggingface.co/LiquidAI/LFM2-1.2B-GGUF/resolve/main/LFM2-1.2B-Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "chatml"
+    description: "Liquid Foundation Model 2 1.2B candidate (~697MB)"
+
+  deepseek-coder-1.3b-base:
+    name: "DeepSeek Coder 1.3B Base"
+    architecture: "deepseek"
+    parameters: "1.3B"
+    context_length: 4096
+    gguf_path: "../artifacts/models/deepseek-coder-1.3b-base.Q4_K_M.gguf"
+    sha256: "2ad96fe419b897dab9da8c8d0503047dd3ad9b30b7c11f65e0d69bba821e3a9c"
+    download_url: "https://huggingface.co/TheBloke/deepseek-coder-1.3b-base-GGUF/resolve/main/deepseek-coder-1.3b-base.Q4_K_M.gguf"
+    temperature: 0.1
+    top_p: 0.95
+    chat_format: "raw"
+    description: "DeepSeek Coder 1.3B Base code completion model (~833MB)"

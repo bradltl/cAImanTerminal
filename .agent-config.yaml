@@ -1,0 +1,18 @@
+version: 1
+project: caiman-terminal
+roles:
+  implementation:
+    model: inherit-session
+    scope: terminal-and-tests
+  review:
+    model: inherit-session
+    scope: architecture-safety-and-verification
+  planning:
+    model: inherit-session
+    scope: milestones-and-documentation
+checks:
+  rust: cargo test --locked
+  core: cargo test --locked --no-default-features
+  format: cargo fmt --all -- --check
+  lint: cargo clippy --locked --all-targets -- -D warnings
+  python: cd llm && ../.venv/bin/python -m pytest tests

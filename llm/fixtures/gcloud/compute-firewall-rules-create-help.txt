@@ -1,0 +1,11 @@
+NAME
+  gcloud compute firewall-rules create - create a Compute Engine firewall rule
+
+USAGE
+  gcloud compute firewall-rules create NAME --allow=PROTOCOL[:PORT] [flags]
+
+FLAGS
+  --allow=PROTOCOL[:PORT]          Protocol and port list to allow (e.g. tcp:8080)
+  --source-ranges=CIDR,[CIDR,...]  Source IP ranges (default: 0.0.0.0/0)
+  --network=NETWORK                VPC network for the firewall rule
+  --direction=INGRESS|EGRESS       Direction of traffic (default: INGRESS)

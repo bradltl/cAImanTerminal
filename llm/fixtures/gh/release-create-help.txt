@@ -1,0 +1,12 @@
+NAME
+  gh release create - Create a new release
+
+USAGE
+  gh release create <tag> [<files>...] [flags]
+
+FLAGS
+      --generate-notes     Automatically generate release title and notes
+  -t, --title string       Release title
+  -n, --notes string       Release notes
+  -d, --draft              Save release as draft
+  -p, --prerelease         Mark release as a prerelease
