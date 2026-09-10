@@ -126,6 +126,7 @@ class CommandRepairEngine:
                         performed=True,
                         attempted=True,
                         success=False,
+                        status="failed",
                         initial_command=initial_command,
                         error="Failed to parse repair response JSON",
                         latency_ms=latency_ms,
@@ -136,37 +137,66 @@ class CommandRepairEngine:
 
             repaired_cmd = parse_res.response.command
             if not repaired_cmd:
-                # Model may have opted to clarify or explain
+                # Model produced a non-command action (e.g. clarify or explain)
+                is_non_cmd_contract = (
+                    intent_contract is not None
+                    and not intent_contract.is_command_contract
+                )
+                if is_non_cmd_contract:
+                    action_matches = (
+                        parse_res.response.action.value == intent_contract.operation
+                        or intent_contract.operation in ("clarify", "explain", "no_action")
+                    )
+                    is_success = action_matches
+                    status = "success" if is_success else "failed"
+                else:
+                    # Non-command response for a command-producing contract is NEVER a repair success
+                    is_success = False
+                    status = "failed"
+
                 return (
                     RepairResult(
                         performed=True,
                         attempted=True,
-                        success=True,
+                        success=is_success,
+                        status=status,
                         initial_command=initial_command,
                         repaired_command=None,
                         repaired_response=parse_res.response,
                         latency_ms=latency_ms,
                     ),
-                    ValidationResult(status=ValidationStatus.VALID),
+                    ValidationResult(status=ValidationStatus.NOT_APPLICABLE, reason="non_command_action"),
                     parse_res.response,
                 )
 
             # Re-validate the repaired command
             repaired_ast = parse_command(repaired_cmd)
             reval = validate_command(repaired_ast)
-            is_success = reval.status != ValidationStatus.INVALID
+            val_intent = None
 
             if intent_contract:
                 from .intent_validator import IntentContractValidator
                 val_intent = IntentContractValidator().evaluate(repaired_ast, intent_contract)
-                if val_intent.status in (IntentStatus.PARTIAL, IntentStatus.MISMATCH):
-                    is_success = False
+
+            is_cli_valid = (reval.status == ValidationStatus.VALID)
+            is_intent_sat = (val_intent.status == IntentStatus.SATISFIED) if val_intent else True
+
+            if is_cli_valid and is_intent_sat:
+                is_success = True
+                status = "success"
+            elif reval.status == ValidationStatus.UNKNOWN or (val_intent and val_intent.status == IntentStatus.UNKNOWN):
+                is_success = False
+                status = "unverified"
+            else:
+                is_success = False
+                status = "failed"
 
             return (
                 RepairResult(
                     performed=True,
                     attempted=True,
                     success=is_success,
+                    status=status,
                     initial_command=initial_command,
                     repaired_command=repaired_cmd,
                     repaired_response=parse_res.response,
@@ -183,6 +213,7 @@ class CommandRepairEngine:
                     performed=True,
                     attempted=True,
                     success=False,
+                    status="failed",
                     initial_command=initial_command,
                     error=str(exc),
                     latency_ms=latency_ms,

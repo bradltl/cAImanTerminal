@@ -126,6 +126,10 @@ class Scenario(BaseModel):
     file_path: Optional[str] = None
     intent: Optional[Dict[str, Any]] = None
 
+    @property
+    def scenario_id(self) -> str:
+        return self.id
+
 
 def load_scenario(path: Path | str) -> Scenario:
     path_obj = Path(path)

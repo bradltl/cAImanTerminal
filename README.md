@@ -3,6 +3,8 @@
 A local AI-assisted terminal and the research tools used to tune and evaluate its
 models. These are related projects with separate build and test workflows.
 
+This application has been built using LLMs (Codex, Claude, Gemini).
+
 | Area | Purpose | Start here |
 | --- | --- | --- |
 | [`terminal/`](terminal/) | Rust desktop app, runtime LLM harness, settings and packaging | [App guide](terminal/README.md) |

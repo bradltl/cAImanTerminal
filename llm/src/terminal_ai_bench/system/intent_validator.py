@@ -989,6 +989,11 @@ class IntentContractValidator:
                 return IntentValidationResult(status=IntentStatus.SATISFIED, domain="troubleshoot", operation=op)
             return IntentValidationResult(status=IntentStatus.MISMATCH, domain="troubleshoot", operation=op, details=f"Expected zombie process check ('ps aux | grep Z'), got '{raw}'.")
 
+        elif op == "diagnose_tls":
+            if any(s in exe for s in ("openssl", "curl")):
+                return IntentValidationResult(status=IntentStatus.SATISFIED, domain="troubleshoot", operation=op)
+            return IntentValidationResult(status=IntentStatus.MISMATCH, domain="troubleshoot", operation=op, details=f"Expected TLS diagnostic ('openssl s_client', 'curl -vI'), got '{raw}'.")
+
         return IntentValidationResult(status=IntentStatus.UNKNOWN, domain="troubleshoot", operation=op)
 
     def _evaluate_interaction(self, ast: CommandAST, contract: IntentContract) -> IntentValidationResult:

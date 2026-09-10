@@ -17,6 +17,8 @@ def generate_html_report(
     scenario_scores: List[ScenarioScore],
     output_path: Path | str,
     model_sha256: Optional[str] = None,
+    evaluation_mode: str = "raw",
+    system_metrics: Optional[Dict[str, Any]] = None,
 ) -> Path:
     """Generate interactive, standalone HTML benchmark report."""
     out = Path(output_path)
@@ -34,11 +36,68 @@ def generate_html_report(
         for k, v in category_scores.items()
     )
 
+    sys_metrics_html = ""
+    if system_metrics:
+        resp_cmds = system_metrics.get('responses_with_commands', 0)
+        non_cmds = system_metrics.get('non_command_action_count', 0)
+        v_cnt = system_metrics.get('final_command_cli_valid_count', 0)
+        iv_cnt = system_metrics.get('final_command_cli_invalid_count', 0)
+        unk_cnt = system_metrics.get('final_command_cli_unknown_count', 0)
+        cmd_v_rate = system_metrics.get('final_command_cli_valid_rate', 0.0)
+        r_succ = system_metrics.get('true_repair_successes', system_metrics.get('repair_successes', 0))
+        r_fail = system_metrics.get('failed_repairs', 0)
+        r_unk = system_metrics.get('unverified_repairs', 0)
+        r_att = system_metrics.get('repair_attempts', 0)
+        r_rate = system_metrics.get('repair_success_rate', 0.0)
+
+        sys_metrics_html = f"""
+        <div style="margin-bottom: 24px;">
+            <h2>cAIman Terminal System Pipeline Metrics</h2>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Raw LLM Score</td><td><b>{system_metrics.get('raw_overall_score', 0.0):.1f}%</b></td></tr>
+                <tr><td>System Overall Score</td><td><b style="color: #a6e3a1;">{system_metrics.get('system_overall_score', 0.0):.1f}%</b></td></tr>
+                <tr><td>Responses with Commands</td><td>{resp_cmds}</td></tr>
+                <tr><td>Non-command Actions (clarify, no_action)</td><td>{non_cmds}</td></tr>
+                <tr><td>Final Command CLI Valid Rate (commands only)</td><td><b>{cmd_v_rate:.1f}%</b> ({v_cnt}/{resp_cmds})</td></tr>
+                <tr><td>Command CLI Validity Breakdown</td><td>Valid: {v_cnt} | Invalid: {iv_cnt} | Unknown: {unk_cnt}</td></tr>
+                <tr><td>Intent Satisfied Rate</td><td><b>{system_metrics.get('intent_satisfied_rate', 0.0):.1f}%</b></td></tr>
+                <tr><td>Staging Eligible Rate</td><td><b>{system_metrics.get('staging_eligible_rate', 0.0):.1f}%</b> ({system_metrics.get('staging_eligible_count', 0)} scenarios)</td></tr>
+                <tr><td>True Repair Success Rate</td><td><b>{r_rate:.1f}%</b> ({r_succ}/{r_att})</td></tr>
+                <tr><td>Repair Outcome Breakdown</td><td>Success: {r_succ} | Failed: {r_fail} | Unverified: {r_unk}</td></tr>
+                <tr><td>Intent Repair Success Rate</td><td>{system_metrics.get('intent_repair_success_rate', 0.0):.1f}%</td></tr>
+                <tr><td>Catastrophic Block Rate</td><td>{system_metrics.get('catastrophic_block_rate', 100.0):.1f}%</td></tr>
+                <tr><td>Secret Block Rate</td><td>{system_metrics.get('secret_block_rate', 100.0):.1f}%</td></tr>
+                <tr><td>System Pipeline Latency p50 / p95</td><td>{system_metrics.get('latency_p50_ms', 0.0):.1f}ms / {system_metrics.get('latency_p95_ms', 0.0):.1f}ms</td></tr>
+            </table>
+        </div>
+        """
+
     scenario_cards = ""
     for s in scenario_scores:
         status_color = "#22c55e" if s.passed else "#ef4444"
         badge = "PASS" if s.passed else "FAIL"
         notes_html = "".join(f"<li>{html.escape(n)}</li>" for n in s.notes)
+        sys_details = ""
+        if s.system_evaluation:
+            stg = "YES" if s.system_evaluation.get("staging_eligible") else "NO"
+            stg_color = "#22c55e" if s.system_evaluation.get("staging_eligible") else "#f38ba8"
+            f_cmd = s.system_evaluation.get("final_command")
+            f_action = s.system_evaluation.get("final_action", "command")
+            f_val = s.system_evaluation.get("final_validation", {})
+            val_st = f_val.get("status", "unknown") if f_val else "unknown"
+            f_intent = s.system_evaluation.get("final_intent_validation", {})
+            intent_st = f_intent.get("status", "unknown") if f_intent else "unknown"
+
+            sys_details = f"""
+            <div style="margin-top: 6px; padding: 6px 10px; background: #11111b; border-radius: 4px; font-size: 12px;">
+                <b>System:</b> Action: <code>{html.escape(str(f_action))}</code> | 
+                CLI: <code>{html.escape(str(val_st).upper())}</code> | 
+                Intent: <code>{html.escape(str(intent_st).upper())}</code> | 
+                Staging Eligible: <span style="color: {stg_color}; font-weight: bold;">{stg}</span>
+            </div>
+            """
+
         scenario_cards += f"""
         <div class="card" style="border-left: 5px solid {status_color}; margin-bottom: 12px; padding: 12px; background: #1e1e2e; border-radius: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -48,6 +107,7 @@ def generate_html_report(
             <div style="margin-top: 8px; font-size: 13px; color: #a6adc8;">
                 <div><b>Command:</b> <code>{html.escape(s.parsed_command or 'None')}</code></div>
                 <div><b>Score Breakdown:</b> Cmd: {s.command_score}/4 | Flag: {s.flag_score}/3 | Risk: {s.risk_score}/2 | Tool: {s.tool_score}/3 | Context: {s.context_score}/2 | Expl: {s.explanation_score}/2 | Format: {s.format_compliance}/1</div>
+                {sys_details}
                 <ul style="margin-top: 4px; padding-left: 20px;">{notes_html}</ul>
             </div>
         </div>
@@ -72,10 +132,12 @@ def generate_html_report(
 <body>
     <div class="header">
         <h1>terminal-ai-bench</h1>
-        <h3>Model: {html.escape(model_name)} | Overall Score: <span style="color: #89b4fa;">{overall_score:.1f}%</span></h3>
+        <h3>Model: {html.escape(model_name)} | Mode: {html.escape(evaluation_mode)} | Overall Score: <span style="color: #89b4fa;">{overall_score:.1f}%</span></h3>
         <p style="color: #6c7086; margin: 0;">Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
         {sha_badge}
     </div>
+
+    {sys_metrics_html}
 
     <div class="grid">
         <div>

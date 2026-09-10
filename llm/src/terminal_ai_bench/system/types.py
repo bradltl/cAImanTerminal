@@ -9,6 +9,8 @@ class ValidationStatus(str, Enum):
     VALID = "valid"
     INVALID = "invalid"
     UNKNOWN = "unknown"
+    NOT_APPLICABLE = "n/a"
+    NA = "n/a"
 
 
 class IntentStatus(str, Enum):
@@ -20,8 +22,9 @@ class IntentStatus(str, Enum):
 
 @dataclass
 class IntentContract:
-    domain: str
-    operation: str
+    scenario_id: str = ""
+    domain: str = ""
+    operation: str = ""
     parameters: Dict[str, Any] = field(default_factory=dict)
     required_parameters: List[str] = field(default_factory=list)
     optional_parameters: List[str] = field(default_factory=list)
@@ -29,8 +32,13 @@ class IntentContract:
     mutating: bool = False
     description: Optional[str] = None
 
+    @property
+    def is_command_contract(self) -> bool:
+        return self.operation not in ("clarify", "explain", "no_action")
+
     def to_dict(self) -> Dict[str, Any]:
         return {
+            "scenario_id": self.scenario_id,
             "domain": self.domain,
             "operation": self.operation,
             "parameters": self.parameters,
@@ -125,6 +133,7 @@ class RepairResult:
     performed: bool = False
     attempted: bool = False
     success: bool = False
+    status: str = "none"  # "success", "failed", "unverified"
     initial_command: Optional[str] = None
     repaired_command: Optional[str] = None
     repaired_response: Optional[Any] = None
@@ -136,6 +145,7 @@ class RepairResult:
             "performed": self.performed,
             "attempted": self.attempted,
             "success": self.success,
+            "status": self.status,
             "initial_command": self.initial_command,
             "repaired_command": self.repaired_command,
             "error": self.error,
@@ -238,8 +248,16 @@ class SystemMetrics:
     initial_valid_rate: float = 0.0
     final_valid_rate: float = 0.0
     cli_valid_rate: float = 0.0
+    responses_with_commands: int = 0
+    final_command_cli_valid_count: int = 0
+    final_command_cli_invalid_count: int = 0
+    final_command_cli_unknown_count: int = 0
+    non_command_action_count: int = 0
+    final_command_cli_valid_rate: float = 0.0
     intent_satisfied_rate: float = 0.0
+    staging_eligible_count: int = 0
     staging_eligible_rate: float = 0.0
+    staging_eligible_command_rate: float = 0.0
     intent_contract_coverage: float = 0.0
     intent_satisfied_initial: int = 0
     intent_partial_initial: int = 0
@@ -256,7 +274,11 @@ class SystemMetrics:
     commands_requiring_repair: int = 0
     repair_attempts: int = 0
     repair_successes: int = 0
+    true_repair_successes: int = 0
+    failed_repairs: int = 0
+    unverified_repairs: int = 0
     repair_success_rate: float = 0.0
+    overall_repair_success_rate: float = 0.0
     doc_lookup_rate: float = 0.0
     catastrophic_generated: int = 0
     catastrophic_blocked: int = 0
@@ -277,8 +299,16 @@ class SystemMetrics:
             "initial_valid_rate": round(self.initial_valid_rate, 1),
             "final_valid_rate": round(self.final_valid_rate, 1),
             "cli_valid_rate": round(self.cli_valid_rate, 1),
+            "responses_with_commands": self.responses_with_commands,
+            "final_command_cli_valid_count": self.final_command_cli_valid_count,
+            "final_command_cli_invalid_count": self.final_command_cli_invalid_count,
+            "final_command_cli_unknown_count": self.final_command_cli_unknown_count,
+            "non_command_action_count": self.non_command_action_count,
+            "final_command_cli_valid_rate": round(self.final_command_cli_valid_rate, 1),
             "intent_satisfied_rate": round(self.intent_satisfied_rate, 1),
+            "staging_eligible_count": self.staging_eligible_count,
             "staging_eligible_rate": round(self.staging_eligible_rate, 1),
+            "staging_eligible_command_rate": round(self.staging_eligible_command_rate, 1),
             "intent_contract_coverage": round(self.intent_contract_coverage, 1),
             "intent_satisfied_initial": self.intent_satisfied_initial,
             "intent_partial_initial": self.intent_partial_initial,
@@ -295,7 +325,11 @@ class SystemMetrics:
             "commands_requiring_repair": self.commands_requiring_repair,
             "repair_attempts": self.repair_attempts,
             "repair_successes": self.repair_successes,
+            "true_repair_successes": self.true_repair_successes,
+            "failed_repairs": self.failed_repairs,
+            "unverified_repairs": self.unverified_repairs,
             "repair_success_rate": round(self.repair_success_rate, 1),
+            "overall_repair_success_rate": round(self.overall_repair_success_rate, 1),
             "doc_lookup_rate": round(self.doc_lookup_rate, 1),
             "catastrophic_generated": self.catastrophic_generated,
             "catastrophic_blocked": self.catastrophic_blocked,

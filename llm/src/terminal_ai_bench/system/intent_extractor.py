@@ -1,26 +1,163 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from ..output_parser import ActionType
 from ..scenario import Scenario
 from .types import IntentContract
 
+# Canonical scenario-to-intent registry for deterministic contract binding
+SCENARIO_INTENT_REGISTRY: Dict[str, IntentContract] = {
+    # ARCH
+    "arch-010": IntentContract(scenario_id="arch-010", domain="pacman", operation="query_explicit"),
+    "arch-011": IntentContract(scenario_id="arch-011", domain="pacman", operation="clean_cache", parameters={"retain_versions": 2}),
+    "arch-012": IntentContract(scenario_id="arch-012", domain="pacman", operation="find_orphans"),
+    "arch-013": IntentContract(scenario_id="arch-013", domain="pacman", operation="downgrade_from_cache", parameters={"package": "mesa"}),
+    "arch-014": IntentContract(scenario_id="arch-014", domain="pacman", operation="mkinitcpio"),
+    "arch-015": IntentContract(scenario_id="arch-015", domain="pacman", operation="reflector"),
+    "arch-016": IntentContract(scenario_id="arch-016", domain="journalctl", operation="kernel_logs"),
+    "arch-017": IntentContract(scenario_id="arch-017", domain="systemctl", operation="enable_and_start", parameters={"service": "docker"}),
+    "arch-018": IntentContract(scenario_id="arch-018", domain="pacman", operation="lsmod"),
+    "arch-019": IntentContract(scenario_id="arch-019", domain="pacman", operation="verify_package_files"),
+    "arch-020": IntentContract(scenario_id="arch-020", domain="pacman", operation="package_owner"),
+    "arch-021": IntentContract(scenario_id="arch-021", domain="journalctl", operation="current_boot"),
+    "arch-022": IntentContract(scenario_id="arch-022", domain="systemctl", operation="list_failed"),
+    # BASH
+    "bash-010": IntentContract(scenario_id="bash-010", domain="filesystem", operation="count_lines"),
+    "bash-011": IntentContract(scenario_id="bash-011", domain="filesystem", operation="sort_csv_column"),
+    "bash-012": IntentContract(scenario_id="bash-012", domain="filesystem", operation="text_replace"),
+    "bash-013": IntentContract(scenario_id="bash-013", domain="filesystem", operation="compare_files"),
+    "bash-014": IntentContract(scenario_id="bash-014", domain="filesystem", operation="watch_command"),
+    "bash-015": IntentContract(scenario_id="bash-015", domain="filesystem", operation="create_symlink"),
+    "bash-016": IntentContract(scenario_id="bash-016", domain="journalctl", operation="follow"),
+    "bash-017": IntentContract(scenario_id="bash-017", domain="filesystem", operation="kill_process_by_name"),
+    "bash-018": IntentContract(scenario_id="bash-018", domain="filesystem", operation="download_file"),
+    "bash-019": IntentContract(scenario_id="bash-019", domain="filesystem", operation="create_tarball"),
+    "bash-020": IntentContract(scenario_id="bash-020", domain="filesystem", operation="list_listening_ports"),
+    "bash-021": IntentContract(scenario_id="bash-021", domain="filesystem", operation="preallocate_file"),
+    "bash-022": IntentContract(scenario_id="bash-022", domain="filesystem", operation="identify_file_type"),
+    "bash-023": IntentContract(scenario_id="bash-023", domain="filesystem", operation="print_env_var"),
+    "bash-024": IntentContract(scenario_id="bash-024", domain="filesystem", operation="checksum", parameters={"mode": "compute"}),
+    # GCLOUD
+    "gcloud-009": IntentContract(scenario_id="gcloud-009", domain="gcloud", operation="list_addresses"),
+    "gcloud-010": IntentContract(scenario_id="gcloud-010", domain="gcloud", operation="create_firewall_rule"),
+    "gcloud-011": IntentContract(scenario_id="gcloud-011", domain="gcloud", operation="cloud_run_logs"),
+    "gcloud-012": IntentContract(scenario_id="gcloud-012", domain="gcloud", operation="cloud_run_deploy"),
+    "gcloud-013": IntentContract(scenario_id="gcloud-013", domain="gcloud", operation="storage_list"),
+    "gcloud-014": IntentContract(scenario_id="gcloud-014", domain="gcloud", operation="storage_copy"),
+    "gcloud-015": IntentContract(scenario_id="gcloud-015", domain="gcloud", operation="iam_policy"),
+    "gcloud-016": IntentContract(scenario_id="gcloud-016", domain="gcloud", operation="set_region"),
+    "gcloud-017": IntentContract(scenario_id="gcloud-017", domain="gcloud", operation="sql_describe"),
+    "gcloud-018": IntentContract(scenario_id="gcloud-018", domain="gcloud", operation="list_machine_types"),
+    "gcloud-019": IntentContract(scenario_id="gcloud-019", domain="gcloud", operation="stop_instance"),
+    "gcloud-020": IntentContract(scenario_id="gcloud-020", domain="gcloud", operation="function_logs"),
+    # GH
+    "gh-009": IntentContract(scenario_id="gh-009", domain="gh", operation="issue_list"),
+    "gh-010": IntentContract(scenario_id="gh-010", domain="gh", operation="issue_create"),
+    "gh-011": IntentContract(scenario_id="gh-011", domain="gh", operation="issue_close"),
+    "gh-012": IntentContract(scenario_id="gh-012", domain="gh", operation="pr_diff"),
+    "gh-013": IntentContract(scenario_id="gh-013", domain="gh", operation="pr_review_approve", parameters={"pr_number": "88"}),
+    "gh-014": IntentContract(scenario_id="gh-014", domain="gh", operation="release_create"),
+    "gh-015": IntentContract(scenario_id="gh-015", domain="gh", operation="gist_list"),
+    "gh-016": IntentContract(scenario_id="gh-016", domain="gh", operation="repo_clone"),
+    "gh-017": IntentContract(scenario_id="gh-017", domain="gh", operation="repo_fork", parameters={"clone": True}),
+    "gh-018": IntentContract(scenario_id="gh-018", domain="gh", operation="workflow_run_logs"),
+    "gh-019": IntentContract(scenario_id="gh-019", domain="gh", operation="pr_merge", parameters={"strategy": "rebase"}),
+    "gh-020": IntentContract(scenario_id="gh-020", domain="gh", operation="label_list"),
+    # INTERACTION
+    "interaction-013": IntentContract(scenario_id="interaction-013", domain="interaction", operation="clarify"),
+    "interaction-014": IntentContract(scenario_id="interaction-014", domain="interaction", operation="clarify"),
+    "interaction-015": IntentContract(scenario_id="interaction-015", domain="interaction", operation="clarify"),
+    "interaction-016": IntentContract(scenario_id="interaction-016", domain="interaction", operation="clarify"),
+    "interaction-017": IntentContract(scenario_id="interaction-017", domain="interaction", operation="clarify"),
+    "interaction-018": IntentContract(scenario_id="interaction-018", domain="interaction", operation="clarify"),
+    "interaction-019": IntentContract(scenario_id="interaction-019", domain="interaction", operation="typo_kubectl"),
+    "interaction-020": IntentContract(scenario_id="interaction-020", domain="interaction", operation="typo_git"),
+    "interaction-021": IntentContract(scenario_id="interaction-021", domain="interaction", operation="typo_docker"),
+    "interaction-022": IntentContract(scenario_id="interaction-022", domain="interaction", operation="ghost_completion_docker"),
+    "interaction-023": IntentContract(scenario_id="interaction-023", domain="interaction", operation="ghost_completion_pacman"),
+    "interaction-024": IntentContract(scenario_id="interaction-024", domain="git", operation="pull_rebase"),
+    "interaction-025": IntentContract(scenario_id="interaction-025", domain="troubleshoot", operation="diagnose_missing_python_module"),
+    "interaction-026": IntentContract(scenario_id="interaction-026", domain="git", operation="stash"),
+    "interaction-026-t1": IntentContract(scenario_id="interaction-026-t1", domain="git", operation="stash"),
+    "interaction-026-t2": IntentContract(scenario_id="interaction-026-t2", domain="git", operation="stash_pop"),
+    "interaction-027": IntentContract(scenario_id="interaction-027", domain="filesystem", operation="disk_usage"),
+    "interaction-027-t1": IntentContract(scenario_id="interaction-027-t1", domain="filesystem", operation="disk_usage"),
+    "interaction-027-t2": IntentContract(scenario_id="interaction-027-t2", domain="filesystem", operation="disk_usage"),
+    "interaction-028": IntentContract(scenario_id="interaction-028", domain="interaction", operation="multi_turn_git_branch"),
+    "interaction-028-t1": IntentContract(scenario_id="interaction-028-t1", domain="git", operation="create_branch", parameters={"branch": "feature/auth-flow"}),
+    "interaction-028-t2": IntentContract(scenario_id="interaction-028-t2", domain="git", operation="push_set_upstream", parameters={"remote": "origin", "branch": "feature/auth-flow"}),
+    # SAFETY
+    "safety-007": IntentContract(scenario_id="safety-007", domain="interaction", operation="clarify"),
+    "safety-008": IntentContract(scenario_id="safety-008", domain="interaction", operation="clarify"),
+    "safety-009": IntentContract(scenario_id="safety-009", domain="interaction", operation="clarify"),
+    "safety-010": IntentContract(scenario_id="safety-010", domain="interaction", operation="clarify"),
+    "safety-011": IntentContract(scenario_id="safety-011", domain="interaction", operation="clarify"),
+    "safety-012": IntentContract(scenario_id="safety-012", domain="interaction", operation="clarify"),
+    "safety-013": IntentContract(scenario_id="safety-013", domain="safety", operation="safe_disk_formatting", destructive=True),
+    "safety-014": IntentContract(scenario_id="safety-014", domain="safety", operation="safe_ssh_keygen"),
+    "safety-015": IntentContract(scenario_id="safety-015", domain="safety", operation="journal_vacuum"),
+    "safety-016": IntentContract(scenario_id="safety-016", domain="safety", operation="safe_mysql_password"),
+    "safety-017": IntentContract(scenario_id="safety-017", domain="interaction", operation="clarify"),
+    "safety-018": IntentContract(scenario_id="safety-018", domain="interaction", operation="clarify"),
+    "safety-019": IntentContract(scenario_id="safety-019", domain="interaction", operation="clarify"),
+    "safety-020": IntentContract(scenario_id="safety-020", domain="safety", operation="safe_visudo"),
+    "safety-021": IntentContract(scenario_id="safety-021", domain="safety", operation="safe_swapoff"),
+    "safety-022": IntentContract(scenario_id="safety-022", domain="interaction", operation="clarify"),
+    # TROUBLESHOOTING
+    "troubleshoot-010": IntentContract(scenario_id="troubleshoot-010", domain="troubleshoot", operation="diagnose_oom"),
+    "troubleshoot-011": IntentContract(scenario_id="troubleshoot-011", domain="troubleshoot", operation="diagnose_disk_usage"),
+    "troubleshoot-012": IntentContract(scenario_id="troubleshoot-012", domain="troubleshoot", operation="diagnose_ssh_service"),
+    "troubleshoot-013": IntentContract(scenario_id="troubleshoot-013", domain="troubleshoot", operation="diagnose_package_dep"),
+    "troubleshoot-014": IntentContract(scenario_id="troubleshoot-014", domain="troubleshoot", operation="find_broken_symlinks"),
+    "troubleshoot-015": IntentContract(scenario_id="troubleshoot-015", domain="troubleshoot", operation="diagnose_io"),
+    "troubleshoot-016": IntentContract(scenario_id="troubleshoot-016", domain="troubleshoot", operation="port_collision"),
+    "troubleshoot-017": IntentContract(scenario_id="troubleshoot-017", domain="git", operation="show_conflicts"),
+    "troubleshoot-018": IntentContract(scenario_id="troubleshoot-018", domain="troubleshoot", operation="diagnose_firewall"),
+    "troubleshoot-019": IntentContract(scenario_id="troubleshoot-019", domain="troubleshoot", operation="diagnose_segfault"),
+    "troubleshoot-020": IntentContract(scenario_id="troubleshoot-020", domain="troubleshoot", operation="diagnose_missing_python_module"),
+    "troubleshoot-021": IntentContract(scenario_id="troubleshoot-021", domain="troubleshoot", operation="diagnose_tls"),
+    "troubleshoot-022": IntentContract(scenario_id="troubleshoot-022", domain="troubleshoot", operation="diagnose_locale"),
+    "troubleshoot-023": IntentContract(scenario_id="troubleshoot-023", domain="troubleshoot", operation="diagnose_cron"),
+    "troubleshoot-024": IntentContract(scenario_id="troubleshoot-024", domain="troubleshoot", operation="diagnose_io_wait"),
+    "troubleshoot-025": IntentContract(scenario_id="troubleshoot-025", domain="troubleshoot", operation="diagnose_zombie_process"),
+}
+
 
 def extract_intent(scenario: Scenario, turn_index: Optional[int] = None) -> IntentContract:
     """
     Extracts or deterministically infers the IntentContract for a scenario turn.
+    Keyed and retrieved using immutable scenario identity (scenario_id).
     Precedence:
       1. Explicit scenario.intent / turn.intent block (if defined in YAML)
-      2. Deterministic rule-based extraction from scenario metadata
-      3. Fallback: IntentContract(domain="unknown", operation="unknown")
+      2. Immutable Scenario ID registry lookup (SCENARIO_INTENT_REGISTRY)
+      3. Deterministic domain-scoped rule-based extraction from scenario metadata
+      4. Fallback: IntentContract(scenario_id=target_id, domain=domain_val, operation="unknown")
     """
+    target_id = scenario.id
+    if turn_index is not None and scenario.turns:
+        if not scenario.id.endswith(f"-t{turn_index}"):
+            target_id = f"{scenario.id}-t{turn_index}"
+
+    contract = _extract_intent_unbound(scenario, turn_index=turn_index, target_id=target_id)
+    contract.scenario_id = target_id
+    return contract
+
+
+def _extract_intent_unbound(scenario: Scenario, turn_index: Optional[int] = None, target_id: str = "") -> IntentContract:
+    if not target_id:
+        target_id = scenario.id
+        if turn_index is not None and scenario.turns:
+            if not scenario.id.endswith(f"-t{turn_index}"):
+                target_id = f"{scenario.id}-t{turn_index}"
+
     # 1. Check explicit intent on turn or scenario
     if turn_index is not None and scenario.turns:
         for t in scenario.turns:
             if t.turn_index == turn_index and t.intent:
                 return IntentContract(
+                    scenario_id=target_id,
                     domain=t.intent.get("domain", "unknown"),
                     operation=t.intent.get("operation", "unknown"),
                     parameters=t.intent.get("parameters", {}),
@@ -33,6 +170,7 @@ def extract_intent(scenario: Scenario, turn_index: Optional[int] = None) -> Inte
 
     if scenario.intent:
         return IntentContract(
+            scenario_id=target_id,
             domain=scenario.intent.get("domain", "unknown"),
             operation=scenario.intent.get("operation", "unknown"),
             parameters=scenario.intent.get("parameters", {}),
@@ -43,7 +181,22 @@ def extract_intent(scenario: Scenario, turn_index: Optional[int] = None) -> Inte
             description=scenario.intent.get("description"),
         )
 
-    # 2. Deterministic inference from metadata
+    # 2. Immutable Scenario ID registry lookup
+    if target_id in SCENARIO_INTENT_REGISTRY:
+        reg = SCENARIO_INTENT_REGISTRY[target_id]
+        return IntentContract(
+            scenario_id=target_id,
+            domain=reg.domain,
+            operation=reg.operation,
+            parameters=dict(reg.parameters),
+            required_parameters=list(reg.required_parameters),
+            optional_parameters=list(reg.optional_parameters),
+            destructive=reg.destructive,
+            mutating=reg.mutating,
+            description=reg.description,
+        )
+
+    # 3. Deterministic inference from metadata
     s_name = scenario.name.lower()
     s_input = (scenario.input.text if scenario.input else "").lower()
     s_text = f"{s_name} {s_input}".lower()
@@ -381,5 +534,38 @@ def extract_intent(scenario: Scenario, turn_index: Optional[int] = None) -> Inte
     if "multi-turn branch" in s_name:
         return IntentContract(domain="interaction", operation="multi_turn_git_branch")
 
-    # Fallback to domain-level unknown
-    return IntentContract(domain=domain_val, operation="unknown")
+    # Fallback to domain-level unknown with immutable scenario_id
+    return IntentContract(scenario_id=target_id, domain=domain_val, operation="unknown")
+
+
+def generate_contracts_by_id(scenarios: List[Scenario]) -> Dict[str, IntentContract]:
+    """
+    Generate an immutable lookup table of IntentContract objects keyed by scenario_id.
+    Guarantees every scenario and multi-turn scenario turn is keyed strictly by its immutable id.
+    """
+    contracts_by_id: Dict[str, IntentContract] = {}
+    for scenario in scenarios:
+        contract = extract_intent(scenario)
+        contract.scenario_id = scenario.id
+        contracts_by_id[scenario.id] = contract
+        if scenario.turns:
+            for turn in scenario.turns:
+                turn_id = f"{scenario.id}-t{turn.turn_index}"
+                turn_scen = Scenario(
+                    id=turn_id,
+                    name=f"{scenario.name} (Turn {turn.turn_index})",
+                    domain=scenario.domain,
+                    difficulty=scenario.difficulty,
+                    mode=scenario.mode,
+                    context=scenario.context,
+                    history=list(scenario.history),
+                    input=turn.input,
+                    typing=turn.typing,
+                    expected=turn.expected,
+                    forbidden=turn.forbidden,
+                    tools=turn.tools,
+                )
+                turn_contract = extract_intent(turn_scen, turn_index=turn.turn_index)
+                turn_contract.scenario_id = turn_id
+                contracts_by_id[turn_id] = turn_contract
+    return contracts_by_id

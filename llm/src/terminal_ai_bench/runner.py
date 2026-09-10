@@ -18,7 +18,7 @@ from .tool_runtime import ToolRuntime
 from .reports.console import print_console_report
 from .reports.json_report import generate_json_report
 from .reports.html_report import generate_html_report
-from .system import SystemEvaluationPipeline, compute_system_metrics
+from .system import SystemEvaluationPipeline, compute_system_metrics, generate_contracts_by_id
 
 
 class RunSummary(BaseModel):
@@ -178,7 +178,15 @@ class BenchmarkRunner:
         ttft_values: List[float] = []
         tps_values: List[float] = []
         scenario_response_pairs = []
-        system_pipeline = SystemEvaluationPipeline(fixtures_dir=self.fixtures_dir) if system_mode else None
+        contracts_by_id = generate_contracts_by_id(all_scenarios) if system_mode else None
+        system_pipeline = (
+            SystemEvaluationPipeline(
+                fixtures_dir=self.fixtures_dir,
+                contracts_by_id=contracts_by_id,
+            )
+            if system_mode
+            else None
+        )
 
         for scenario in scenarios:
             if scenario.turns:
@@ -462,6 +470,8 @@ class BenchmarkRunner:
             scenario_scores=scores,
             output_path=html_path,
             model_sha256=model_sha256,
+            evaluation_mode="system" if system_mode else "raw",
+            system_metrics=system_metrics_dict,
         )
 
         return RunSummary(
