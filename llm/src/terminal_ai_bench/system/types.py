@@ -20,6 +20,69 @@ class IntentStatus(str, Enum):
     UNKNOWN = "unknown"
 
 
+class IntentSource(str, Enum):
+    ORACLE = "oracle"
+    RUNTIME = "runtime"
+
+
+class RuntimeIntentStatus(str, Enum):
+    RESOLVED = "resolved"
+    AMBIGUOUS = "ambiguous"
+    UNKNOWN = "unknown"
+
+
+class RuntimeIntentConfidence(str, Enum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
+@dataclass
+class IntentSpec:
+    domain: str
+    operation: str
+    lexical_hints: List[str] = field(default_factory=list)
+    required_slots: List[str] = field(default_factory=list)
+    optional_slots: List[str] = field(default_factory=list)
+    command_family: Optional[str] = None
+    destructive: bool = False
+    mutating: bool = False
+    description: Optional[str] = None
+
+
+@dataclass
+class RuntimeIntentInput:
+    user_text: str = ""
+    cwd: Optional[str] = None
+    shell: Optional[str] = None
+    distro: Optional[str] = None
+    previous_command: Optional[str] = None
+    previous_exit_code: Optional[int] = None
+    recent_terminal_output: Optional[str] = None
+    interaction_mode: Optional[str] = None
+    remote_state: Optional[Dict[str, Any]] = None
+
+
+@dataclass
+class RuntimeIntentResolution:
+    status: RuntimeIntentStatus = RuntimeIntentStatus.UNKNOWN
+    contract: Optional[IntentContract] = None
+    confidence: RuntimeIntentConfidence = RuntimeIntentConfidence.LOW
+    evidence: List[Dict[str, Any]] = field(default_factory=list)
+    missing_slots: List[str] = field(default_factory=list)
+    resolved_slots: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "status": self.status.value,
+            "contract": self.contract.to_dict() if self.contract else None,
+            "confidence": self.confidence.value,
+            "evidence": self.evidence,
+            "missing_slots": self.missing_slots,
+            "resolved_slots": self.resolved_slots,
+        }
+
+
 @dataclass
 class IntentContract:
     scenario_id: str = ""
@@ -242,6 +305,8 @@ class SystemEvaluation:
     final_response: Optional[Any] = None
     staging_eligible: bool = False
     pipeline_path: str = "normal"  # "normal", "deterministic_correction", "llm_repair", "clarify", "blocked"
+    intent_source: str = "oracle"
+    runtime_intent_resolution: Optional[RuntimeIntentResolution] = None
     latencies: Dict[str, float] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -265,6 +330,8 @@ class SystemEvaluation:
             "final_action": self.final_action,
             "staging_eligible": self.staging_eligible,
             "pipeline_path": self.pipeline_path,
+            "intent_source": self.intent_source,
+            "runtime_intent_resolution": self.runtime_intent_resolution.to_dict() if self.runtime_intent_resolution else None,
             "latencies": {k: round(v, 1) for k, v in self.latencies.items()},
         }
 
@@ -357,6 +424,25 @@ class SystemMetrics:
     dangerous_initial_candidates: int = 0
     dangerous_post_repair_candidates: int = 0
     dangerous_staged_commands: int = 0
+    intent_source: str = "oracle"
+    runtime_intent_resolved: int = 0
+    runtime_intent_ambiguous: int = 0
+    runtime_intent_unknown: int = 0
+    runtime_intent_resolution_rate: float = 0.0
+    runtime_intent_accuracy: float = 0.0
+    runtime_domain_accuracy: float = 0.0
+    runtime_operation_accuracy: float = 0.0
+    runtime_slot_accuracy: float = 0.0
+    missing_slot_detection_accuracy: float = 0.0
+    false_intent_resolution_count: int = 0
+    high_confidence_resolutions: int = 0
+    medium_confidence_resolutions: int = 0
+    low_confidence_resolutions: int = 0
+    context_resolved_count: int = 0
+    clarification_required_count: int = 0
+    incorrect_high_confidence_count: int = 0
+    incorrect_high_confidence_cases: List[Dict[str, Any]] = field(default_factory=list)
+    intent_confusion_matrix: Dict[str, Dict[str, int]] = field(default_factory=dict)
     normal_path_p50_ms: float = 0.0
     normal_path_p95_ms: float = 0.0
     deterministic_correction_p50_ms: float = 0.0
@@ -456,6 +542,34 @@ class SystemMetrics:
             "safe_commands_falsely_blocked": self.safe_commands_falsely_blocked,
             "false_positive_block_rate": round(self.false_positive_block_rate, 1),
             "final_usable_rate": round(self.final_usable_rate, 1),
+            "intent_source": self.intent_source,
+            "runtime_intent_resolved": self.runtime_intent_resolved,
+            "runtime_intent_ambiguous": self.runtime_intent_ambiguous,
+            "runtime_intent_unknown": self.runtime_intent_unknown,
+            "runtime_intent_resolution_rate": round(self.runtime_intent_resolution_rate, 1),
+            "runtime_intent_accuracy": round(self.runtime_intent_accuracy, 1),
+            "runtime_domain_accuracy": round(self.runtime_domain_accuracy, 1),
+            "runtime_operation_accuracy": round(self.runtime_operation_accuracy, 1),
+            "runtime_slot_accuracy": round(self.runtime_slot_accuracy, 1),
+            "missing_slot_detection_accuracy": round(self.missing_slot_detection_accuracy, 1),
+            "false_intent_resolution_count": self.false_intent_resolution_count,
+            "runtime_intent_coverage": round(self.runtime_intent_resolution_rate, 1),
+            "runtime_intent_precision": round(self.runtime_intent_accuracy, 1),
+            "intent_domain_accuracy": round(self.runtime_domain_accuracy, 1),
+            "intent_operation_accuracy": round(self.runtime_operation_accuracy, 1),
+            "slot_extraction_accuracy": round(self.runtime_slot_accuracy, 1),
+            "missing_slot_clarification_rate": round(self.missing_slot_detection_accuracy, 1),
+            "false_resolution_rate": round((self.false_intent_resolution_count / self.runtime_intent_resolved * 100.0) if self.runtime_intent_resolved else 0.0, 1),
+            "high_confidence_resolutions": self.high_confidence_resolutions,
+            "medium_confidence_resolutions": self.medium_confidence_resolutions,
+            "low_confidence_resolutions": self.low_confidence_resolutions,
+            "context_resolved_count": self.context_resolved_count,
+            "context_resolved_reference_count": self.context_resolved_count,
+            "clarification_required_count": self.clarification_required_count,
+            "clarification_requests_count": self.clarification_required_count,
+            "incorrect_high_confidence_count": self.incorrect_high_confidence_count,
+            "incorrect_high_confidence_cases": self.incorrect_high_confidence_cases,
+            "intent_confusion_matrix": self.intent_confusion_matrix,
             "normal_path_p50_ms": round(self.normal_path_p50_ms, 1),
             "normal_path_p95_ms": round(self.normal_path_p95_ms, 1),
             "deterministic_correction_p50_ms": round(self.deterministic_correction_p50_ms, 1),

@@ -93,6 +93,46 @@ def generate_html_report(
             </table>
         </div>
         """
+        if system_metrics.get("intent_source") == "runtime" or system_metrics.get("runtime_intent_resolved_count", 0) > 0:
+            h_c = system_metrics.get("high_confidence_resolutions", 0)
+            m_c = system_metrics.get("medium_confidence_resolutions", 0)
+            l_c = system_metrics.get("low_confidence_resolutions", 0)
+            inc_cases = system_metrics.get("incorrect_high_confidence_cases", [])
+            inc_rows = "".join(
+                f"<tr><td>{html.escape(c.get('scenario_id', ''))}</td><td>{html.escape(c.get('user_text', ''))}</td><td>{html.escape(c.get('requested_operation', ''))}</td><td>{html.escape(c.get('resolved_operation', ''))}</td></tr>"
+                for c in inc_cases
+            )
+            inc_html = f"""
+            <div style="margin-top: 16px;">
+                <h3>Incorrect HIGH-Confidence Cases</h3>
+                <table>
+                    <tr><th>Scenario ID</th><th>User Text</th><th>Requested Op</th><th>Resolved Op</th></tr>
+                    {inc_rows if inc_rows else "<tr><td colspan='4'>None</td></tr>"}
+                </table>
+            </div>
+            """ if inc_cases else ""
+
+            sys_metrics_html += f"""
+        <div style="margin-bottom: 24px;">
+            <h2>cAIman Terminal Runtime Intent Resolution Metrics</h2>
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Intent Resolution Source</td><td><b>{html.escape(str(system_metrics.get('intent_source', 'runtime')))}</b></td></tr>
+                <tr><td>Runtime Intent Coverage</td><td><b>{system_metrics.get('runtime_intent_coverage', 0.0):.1f}%</b></td></tr>
+                <tr><td>Runtime Intent Precision</td><td><b>{system_metrics.get('runtime_intent_precision', 0.0):.1f}%</b></td></tr>
+                <tr><td>Intent Domain Accuracy</td><td><b>{system_metrics.get('intent_domain_accuracy', 0.0):.1f}%</b></td></tr>
+                <tr><td>Intent Operation Accuracy</td><td><b>{system_metrics.get('intent_operation_accuracy', 0.0):.1f}%</b></td></tr>
+                <tr><td>Slot Extraction Accuracy</td><td><b>{system_metrics.get('slot_extraction_accuracy', 0.0):.1f}%</b></td></tr>
+                <tr><td>Missing Slot Clarification Rate</td><td>{system_metrics.get('missing_slot_clarification_rate', 0.0):.1f}%</td></tr>
+                <tr><td>False Resolution Rate</td><td>{system_metrics.get('false_resolution_rate', 0.0):.1f}%</td></tr>
+                <tr><td>Confidence Breakdown</td><td>HIGH: {h_c} | MED: {m_c} | LOW: {l_c}</td></tr>
+                <tr><td>Context-Resolved References</td><td>{system_metrics.get('context_resolved_reference_count', 0)}</td></tr>
+                <tr><td>Clarification Requests</td><td>{system_metrics.get('clarification_requests_count', 0)}</td></tr>
+                <tr><td>Incorrect HIGH-Confidence Count</td><td><b>{system_metrics.get('incorrect_high_confidence_count', 0)}</b></td></tr>
+            </table>
+            {inc_html}
+        </div>
+            """
 
     scenario_cards = ""
     for s in scenario_scores:

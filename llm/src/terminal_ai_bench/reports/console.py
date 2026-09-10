@@ -178,6 +178,71 @@ def print_console_report(
         console.print(s_table)
         console.print()
 
+        # Runtime Intent Resolution Metrics
+        if system_metrics.get("intent_source") == "runtime" or system_metrics.get("runtime_intent_resolved_count", 0) > 0:
+            rt_table = Table(title="cAIman Terminal Runtime Intent Resolution Metrics", show_header=True, header_style="bold magenta")
+            rt_table.add_column("Runtime Intent Metric", width=34)
+            rt_table.add_column("Value", justify="right", width=20)
+
+            rt_table.add_row("Intent Resolution Source", str(system_metrics.get("intent_source", "runtime")))
+            rt_table.add_row("Runtime Intent Coverage", f"{system_metrics.get('runtime_intent_coverage', 0.0):.1f}%")
+            rt_table.add_row("Runtime Intent Precision", f"{system_metrics.get('runtime_intent_precision', 0.0):.1f}%")
+            rt_table.add_row("Intent Domain Accuracy", f"{system_metrics.get('intent_domain_accuracy', 0.0):.1f}%")
+            rt_table.add_row("Intent Operation Accuracy", f"{system_metrics.get('intent_operation_accuracy', 0.0):.1f}%")
+            rt_table.add_row("Slot Extraction Accuracy", f"{system_metrics.get('slot_extraction_accuracy', 0.0):.1f}%")
+            rt_table.add_row("Missing Slot Clarification Rate", f"{system_metrics.get('missing_slot_clarification_rate', 0.0):.1f}%")
+            rt_table.add_row("False Resolution Rate", f"{system_metrics.get('false_resolution_rate', 0.0):.1f}%")
+            h_cnt = system_metrics.get("high_confidence_resolutions", 0)
+            m_cnt = system_metrics.get("medium_confidence_resolutions", 0)
+            l_cnt = system_metrics.get("low_confidence_resolutions", 0)
+            rt_table.add_row("Confidence Breakdown", f"HIGH:{h_cnt} MED:{m_cnt} LOW:{l_cnt}")
+            rt_table.add_row("Context-Resolved References", str(system_metrics.get("context_resolved_reference_count", 0)))
+            rt_table.add_row("Clarification Requests", str(system_metrics.get("clarification_requests_count", 0)))
+            rt_table.add_row("Incorrect HIGH-Confidence Count", str(system_metrics.get("incorrect_high_confidence_count", 0)))
+
+            console.print(rt_table)
+            console.print()
+
+            # Incorrect HIGH-confidence cases table
+            inc_cases = system_metrics.get("incorrect_high_confidence_cases", [])
+            if inc_cases:
+                inc_table = Table(title="Incorrect HIGH-Confidence Cases", show_header=True, header_style="bold red")
+                inc_table.add_column("Scenario ID", width=16)
+                inc_table.add_column("User Text", width=36)
+                inc_table.add_column("Requested Op", width=18)
+                inc_table.add_column("Resolved Op", width=18)
+                for case in inc_cases:
+                    inc_table.add_row(
+                        str(case.get("scenario_id", "")),
+                        str(case.get("user_text", ""))[:35],
+                        str(case.get("requested_operation", "")),
+                        str(case.get("resolved_operation", "")),
+                    )
+                console.print(inc_table)
+                console.print()
+
+            # Confusion Matrix summary (discrepancies where requested != resolved)
+            c_mat = system_metrics.get("intent_confusion_matrix", {})
+            mismatches = []
+            for gold_op, pred_map in c_mat.items():
+                for pred_op, cnt in pred_map.items():
+                    if gold_op != pred_op and cnt > 0:
+                        if (gold_op == "multi_turn_git_branch" and pred_op in ("create_branch", "push_set_upstream")) or \
+                           (gold_op == "stash" and pred_op in ("stash", "stash_pop")) or \
+                           (gold_op == "disk_usage" and pred_op in ("disk_usage", "diagnose_disk_usage")) or \
+                           (gold_op == "clarify" and pred_op in ("restart_service", "clarify")):
+                            continue
+                        mismatches.append((gold_op, pred_op, cnt))
+            if mismatches:
+                cm_table = Table(title="Intent Resolution Confusion Matrix (Mismatches)", show_header=True, header_style="bold yellow")
+                cm_table.add_column("Requested Operation", width=28)
+                cm_table.add_column("Resolved Operation", width=28)
+                cm_table.add_column("Count", justify="right", width=8)
+                for g_op, r_op, c in sorted(mismatches, key=lambda x: -x[2]):
+                    cm_table.add_row(g_op, r_op, str(c))
+                console.print(cm_table)
+                console.print()
+
     # Failures / Notes
     failures = [s for s in scenario_scores if not s.passed]
     if failures:

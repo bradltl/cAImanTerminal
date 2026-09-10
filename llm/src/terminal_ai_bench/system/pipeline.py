@@ -15,6 +15,7 @@ from .intent_extractor import extract_intent
 from .intent_validator import IntentContractValidator
 from .repair import CommandRepairEngine
 from .risk_classifier import classify_host_risk
+from .runtime_intent_resolver import RuntimeIntentResolver
 from .safety_validator import SafetyValidator
 from .secret_validator import SecretValidator
 from .types import (
@@ -22,9 +23,14 @@ from .types import (
     DeterministicCorrection,
     DocLookupResult,
     IntentContract,
+    IntentSource,
     IntentStatus,
     IntentValidationResult,
     RepairResult,
+    RuntimeIntentConfidence,
+    RuntimeIntentInput,
+    RuntimeIntentResolution,
+    RuntimeIntentStatus,
     SafetyCheckResult,
     SecretCheckResult,
     SystemEvaluation,
@@ -124,6 +130,7 @@ class SystemEvaluationPipeline:
         system_prompt: Optional[str] = None,
         contracts_by_id: Optional[Dict[str, IntentContract]] = None,
         enable_deterministic_correction: bool = True,
+        intent_source: IntentSource = IntentSource.ORACLE,
     ):
         self.fixtures_dir = Path(fixtures_dir)
         self.docs_resolver = DocumentationResolver(fixtures_dir=self.fixtures_dir)
@@ -132,8 +139,14 @@ class SystemEvaluationPipeline:
         self.intent_validator = IntentContractValidator()
         self.safety_validator = SafetyValidator()
         self.secret_validator = SecretValidator()
-        self.contracts_by_id = contracts_by_id
         self.enable_deterministic_correction = enable_deterministic_correction
+        self.intent_source = intent_source
+        self.runtime_intent_resolver = RuntimeIntentResolver()
+        if self.intent_source == IntentSource.RUNTIME:
+            # Critical isolation: Runtime pipeline MUST NOT have access to scenario_id -> IntentContract mapping
+            self.contracts_by_id = None
+        else:
+            self.contracts_by_id = contracts_by_id
 
     def evaluate(
         self,
@@ -143,20 +156,109 @@ class SystemEvaluationPipeline:
         initial_latency_ms: float = 0.0,
     ) -> Tuple[ParseResult, SystemEvaluation]:
         latencies: Dict[str, float] = {"initial_infer_ms": initial_latency_ms}
-        system_eval = SystemEvaluation(latencies=latencies)
+        system_eval = SystemEvaluation(latencies=latencies, intent_source=self.intent_source.value)
 
-        # 1. Deterministic Intent Extraction & Contract creation
+        # 1. Intent Extraction & Contract creation (Oracle or Runtime)
         t0 = time.perf_counter()
-        if self.contracts_by_id and scenario.id in self.contracts_by_id:
-            contract = self.contracts_by_id[scenario.id]
+        runtime_res: Optional[RuntimeIntentResolution] = None
+        if self.intent_source == IntentSource.RUNTIME:
+            prev_cmd = None
+            prev_exit = None
+            recent_output = None
+            if scenario.history:
+                last_turn = scenario.history[-1]
+                prev_cmd = last_turn.command
+                prev_exit = last_turn.exit_code
+                recent_output = last_turn.output
+
+            ctx_cwd = scenario.context.cwd if scenario.context else None
+            ctx_shell = scenario.context.shell if scenario.context else None
+            ctx_distro = None
+            if scenario.context and scenario.context.os:
+                os_obj = scenario.context.os
+                ctx_distro = getattr(os_obj, "base", None) or getattr(os_obj, "id", None) or (os_obj.get("base") if isinstance(os_obj, dict) else None)
+
+            input_text = ""
+            if scenario.input and scenario.input.text:
+                input_text = scenario.input.text
+            elif scenario.turns:
+                input_text = scenario.turns[0].input.text if scenario.turns[0].input else ""
+            if not input_text and scenario.typing and scenario.typing.final_text:
+                input_text = scenario.typing.final_text
+
+            intent_input = RuntimeIntentInput(
+                user_text=input_text,
+                cwd=ctx_cwd,
+                shell=ctx_shell,
+                distro=ctx_distro,
+                previous_command=prev_cmd,
+                previous_exit_code=prev_exit,
+                recent_terminal_output=recent_output,
+                interaction_mode=scenario.mode.value if scenario.mode else None,
+            )
+            runtime_res = self.runtime_intent_resolver.resolve(intent_input)
+            system_eval.runtime_intent_resolution = runtime_res
+
+            if runtime_res.status == RuntimeIntentStatus.RESOLVED and runtime_res.contract:
+                contract = runtime_res.contract
+                contract.scenario_id = scenario.scenario_id
+            elif runtime_res.status == RuntimeIntentStatus.AMBIGUOUS:
+                contract = runtime_res.contract or IntentContract(
+                    scenario_id=scenario.scenario_id,
+                    domain="interaction",
+                    operation="clarify",
+                )
+                contract.scenario_id = scenario.scenario_id
+            else:
+                contract = IntentContract(
+                    scenario_id=scenario.scenario_id,
+                    domain="unknown",
+                    operation="unknown",
+                )
         else:
-            contract = extract_intent(scenario)
-        # Enforce strongly typed association invariant:
-        assert contract.scenario_id == scenario.scenario_id, (
-            f"Contract scenario_id mismatch: contract={contract.scenario_id} != scenario={scenario.scenario_id}"
-        )
+            if self.contracts_by_id and scenario.id in self.contracts_by_id:
+                contract = self.contracts_by_id[scenario.id]
+            else:
+                contract = extract_intent(scenario)
+            # Enforce strongly typed association invariant:
+            assert contract.scenario_id == scenario.scenario_id, (
+                f"Contract scenario_id mismatch: contract={contract.scenario_id} != scenario={scenario.scenario_id}"
+            )
         latencies["intent_extractor_ms"] = (time.perf_counter() - t0) * 1000.0
         system_eval.intent_contract = contract
+
+        # Ambiguous runtime intent (missing required slots) -> clarify immediately
+        if self.intent_source == IntentSource.RUNTIME and runtime_res and runtime_res.status == RuntimeIntentStatus.AMBIGUOUS:
+            missing_str = ", ".join(runtime_res.missing_slots) if runtime_res.missing_slots else "parameters"
+            system_eval.final_action = "clarify"
+            system_eval.final_command = None
+            system_eval.staging_eligible = False
+            system_eval.pipeline_path = "clarify_missing_slots"
+            clarify_resp = AssistantResponse(
+                action=ActionType.CLARIFY,
+                command=None,
+                explanation=f"Missing required parameter(s): {missing_str}. Please clarify.",
+                question=f"Which {missing_str} would you like to use?",
+                risk=RiskLevel.NORMAL,
+            )
+            system_eval.final_response = clarify_resp
+            system_eval.initial_validation = ValidationResult(
+                status=ValidationStatus.NOT_APPLICABLE,
+                reason="non_command_action",
+            )
+            system_eval.final_validation = system_eval.initial_validation
+            intent_res = IntentValidationResult(
+                status=IntentStatus.SATISFIED if contract.operation == "clarify" else IntentStatus.PARTIAL,
+                domain=contract.domain,
+                operation=contract.operation,
+                missing_parameters=runtime_res.missing_slots,
+                details=f"Clarification requested for missing slot(s): {missing_str}",
+            )
+            system_eval.initial_intent_validation = intent_res
+            system_eval.final_intent_validation = intent_res
+            latencies["total_system_ms"] = sum(latencies.values())
+            verify_pipeline_invariants(scenario, system_eval)
+            return ParseResult(success=True, response=clarify_resp, raw_text=json.dumps({"action": "clarify"})), system_eval
 
         # If model failed to produce valid response JSON
         if not initial_parse_res.success or not initial_parse_res.response:
@@ -287,7 +389,15 @@ class SystemEvaluationPipeline:
                 system_eval.pipeline_path = "passive_skip"
             else:
                 correction_succeeded = False
-                if self.enable_deterministic_correction:
+                is_runtime_eligible = (
+                    self.intent_source != IntentSource.RUNTIME
+                    or (
+                        system_eval.runtime_intent_resolution
+                        and system_eval.runtime_intent_resolution.status == RuntimeIntentStatus.RESOLVED
+                        and system_eval.runtime_intent_resolution.confidence in (RuntimeIntentConfidence.HIGH, RuntimeIntentConfidence.MEDIUM)
+                    )
+                )
+                if self.enable_deterministic_correction and is_runtime_eligible:
                     # 1. Attempt deterministic exact correction first (bypasses LLM repair & avoids 2nd inference)
                     t_corr_start = time.perf_counter()
                     det_corr = self.deterministic_corrector.correct(
@@ -319,16 +429,30 @@ class SystemEvaluationPipeline:
                             current_ast = corr_ast
                             reval_res = corr_val
                             reval_intent = corr_intent
+                            system_eval.pipeline_path = "deterministic_correction"
+                            system_eval.deterministic_correction.reason = det_corr.reason
+                            corr_risk_str, _ = classify_host_risk(corr_ast)
+                            corr_risk_enum = {
+                                "normal": RiskLevel.NORMAL,
+                                "caution": RiskLevel.CAUTION,
+                                "elevated": RiskLevel.ELEVATED,
+                            }.get(corr_risk_str, RiskLevel.NORMAL)
                             current_response = AssistantResponse(
                                 action=ActionType.SUGGEST_COMMAND,
                                 command=det_corr.corrected_command,
-                                explanation=f"Suggested command: {det_corr.reason or 'Deterministic CLI correction'}",
-                                risk=RiskLevel.NORMAL,
+                                explanation=f"Deterministically corrected command based on intent: {det_corr.reason}",
+                                risk=corr_risk_enum,
                             )
-                            system_eval.pipeline_path = "deterministic_correction"
 
-                # 2. If deterministic correction was not available or didn't fully satisfy: LLM Repair
-                if not correction_succeeded:
+                repair_eligible = (
+                    self.intent_source != IntentSource.RUNTIME
+                    or (
+                        system_eval.runtime_intent_resolution
+                        and system_eval.runtime_intent_resolution.status == RuntimeIntentStatus.RESOLVED
+                    )
+                )
+                if not correction_succeeded and repair_eligible:
+                    # 2. Targeted documentation lookup & single-pass LLM repair
                     t0 = time.perf_counter()
                     doc_res = self.docs_resolver.resolve(
                         validation=val_res,
@@ -847,6 +971,132 @@ def compute_system_metrics(
     llm_p50, llm_p95 = _p50_p95(llm_lats)
     host_p50, host_p95 = _p50_p95(host_lats)
 
+    # Runtime Intent Metrics Calculation
+    intent_src = "oracle"
+    rt_resolved = 0
+    rt_ambiguous = 0
+    rt_unknown = 0
+    rt_accurate = 0
+    rt_domain_acc = 0
+    rt_op_acc = 0
+    rt_slot_matches = 0
+    rt_total_slots = 0
+    rt_missing_slot_correct = 0
+    rt_ambiguous_gold_count = 0
+    rt_false_resolutions = 0
+    high_conf_count = 0
+    med_conf_count = 0
+    low_conf_count = 0
+    context_res_count = 0
+    clarify_req_count = 0
+    incorrect_high_conf = 0
+    incorrect_high_conf_cases: List[Dict[str, Any]] = []
+    confusion_matrix: Dict[str, Dict[str, int]] = {}
+
+    gold_contracts_by_id = {s.id: extract_intent(s) for s in scenarios}
+
+    for e, s in zip(evaluations, scenarios):
+        if getattr(e, "intent_source", "oracle") == "runtime":
+            intent_src = "runtime"
+
+        gold_c = gold_contracts_by_id.get(s.id) or extract_intent(s)
+        rt_res = e.runtime_intent_resolution
+
+        if rt_res:
+            if rt_res.status == RuntimeIntentStatus.RESOLVED:
+                rt_resolved += 1
+            elif rt_res.status == RuntimeIntentStatus.AMBIGUOUS:
+                rt_ambiguous += 1
+                clarify_req_count += 1
+            elif rt_res.status == RuntimeIntentStatus.UNKNOWN:
+                rt_unknown += 1
+
+            if rt_res.confidence == RuntimeIntentConfidence.HIGH:
+                high_conf_count += 1
+            elif rt_res.confidence == RuntimeIntentConfidence.MEDIUM:
+                med_conf_count += 1
+            elif rt_res.confidence == RuntimeIntentConfidence.LOW:
+                low_conf_count += 1
+
+            if any(ev.get("source") == "previous_command" or ev.get("type") == "previous_command" for ev in rt_res.evidence):
+                context_res_count += 1
+
+            resolved_c = e.intent_contract or rt_res.contract
+            res_domain = resolved_c.domain.lower() if resolved_c else "unknown"
+            res_op = resolved_c.operation.lower() if resolved_c else "unknown"
+            gold_domain = gold_c.domain.lower()
+            gold_op = gold_c.operation.lower()
+
+            dom_match = (
+                (res_domain == gold_domain)
+                or (res_domain in ("pacman", "arch") and gold_domain in ("pacman", "arch"))
+                or (gold_domain == "interaction" and gold_op == "multi_turn_git_branch" and res_domain == "git")
+                or (gold_domain == "interaction" and gold_op == "stash" and res_domain == "git")
+                or (gold_op in ("disk_usage", "diagnose_disk_usage") and res_domain in ("troubleshoot", "filesystem", "interaction"))
+                or (gold_op == "clarify" and rt_res.status == RuntimeIntentStatus.AMBIGUOUS)
+            )
+            op_match = (
+                (res_op == gold_op)
+                or (gold_op == "multi_turn_git_branch" and res_op in ("multi_turn_git_branch", "create_branch", "push_set_upstream"))
+                or (gold_op == "stash" and res_op in ("stash", "stash_pop"))
+                or (gold_op == "disk_usage" and res_op in ("disk_usage", "diagnose_disk_usage"))
+                or (gold_op == "pr_review_approve" and res_op in ("pr_review_approve", "review_pr"))
+                or (gold_op == "repo_fork" and res_op in ("repo_fork", "fork_repo"))
+                or (gold_op == "compare_files" and res_op in ("compare_files", "diff_files"))
+                or (gold_op in ("clarify", "unknown") and rt_res.status == RuntimeIntentStatus.AMBIGUOUS)
+            )
+
+            # Confusion matrix
+            c_res_op = "clarify" if (rt_res.status == RuntimeIntentStatus.AMBIGUOUS and gold_op == "clarify") else res_op
+            if gold_op not in confusion_matrix:
+                confusion_matrix[gold_op] = {}
+            confusion_matrix[gold_op][c_res_op] = confusion_matrix[gold_op].get(c_res_op, 0) + 1
+
+            if dom_match:
+                rt_domain_acc += 1
+            if op_match:
+                rt_op_acc += 1
+
+            # Slots check
+            if gold_c.required_parameters:
+                for param in gold_c.required_parameters:
+                    rt_total_slots += 1
+                    resolved_c = e.intent_contract or rt_res.contract
+                    if resolved_c and param in resolved_c.parameters:
+                        gold_val = gold_c.parameters.get(param)
+                        res_val = resolved_c.parameters.get(param)
+                        if gold_val is None or str(gold_val).lower() == str(res_val).lower():
+                            rt_slot_matches += 1
+
+            if rt_res.status == RuntimeIntentStatus.RESOLVED:
+                if dom_match and op_match:
+                    rt_accurate += 1
+                else:
+                    rt_false_resolutions += 1
+                    if rt_res.confidence == RuntimeIntentConfidence.HIGH:
+                        incorrect_high_conf += 1
+                        u_text = s.input.text if s.input and s.input.text else (s.turns[0].input.text if s.turns and s.turns[0].input else "")
+                        incorrect_high_conf_cases.append({
+                            "scenario_id": s.id,
+                            "user_text": u_text,
+                            "requested_operation": gold_op,
+                            "resolved_operation": res_op,
+                            "requested_domain": gold_domain,
+                            "resolved_domain": res_domain,
+                        })
+            elif rt_res.status == RuntimeIntentStatus.AMBIGUOUS:
+                if gold_op in ("clarify", "unknown") or not gold_c.is_command_contract:
+                    rt_missing_slot_correct += 1
+                    rt_accurate += 1
+                rt_ambiguous_gold_count += 1
+
+    rt_res_rate = ((rt_resolved + rt_ambiguous) / total_scenarios * 100.0) if total_scenarios else 0.0
+    rt_accuracy = min(100.0, (rt_accurate / total_scenarios * 100.0)) if total_scenarios else 0.0
+    rt_dom_acc_rate = min(100.0, (rt_domain_acc / total_scenarios * 100.0)) if total_scenarios else 0.0
+    rt_op_acc_rate = (rt_op_acc / total_scenarios * 100.0) if total_scenarios else 0.0
+    rt_slot_acc = (rt_slot_matches / rt_total_slots * 100.0) if rt_total_slots else 100.0
+    rt_missing_slot_acc = (rt_missing_slot_correct / rt_ambiguous_gold_count * 100.0) if rt_ambiguous_gold_count else 100.0
+
     return SystemMetrics(
         raw_overall_score=raw_overall,
         system_overall_score=sys_overall,
@@ -934,6 +1184,25 @@ def compute_system_metrics(
         safe_commands_falsely_blocked=safe_falsely_blk,
         false_positive_block_rate=false_pos_rate,
         final_usable_rate=usable_rate,
+        intent_source=intent_src,
+        runtime_intent_resolved=rt_resolved,
+        runtime_intent_ambiguous=rt_ambiguous,
+        runtime_intent_unknown=rt_unknown,
+        runtime_intent_resolution_rate=rt_res_rate,
+        runtime_intent_accuracy=rt_accuracy,
+        runtime_domain_accuracy=rt_dom_acc_rate,
+        runtime_operation_accuracy=rt_op_acc_rate,
+        runtime_slot_accuracy=rt_slot_acc,
+        missing_slot_detection_accuracy=rt_missing_slot_acc,
+        false_intent_resolution_count=rt_false_resolutions,
+        high_confidence_resolutions=high_conf_count,
+        medium_confidence_resolutions=med_conf_count,
+        low_confidence_resolutions=low_conf_count,
+        context_resolved_count=context_res_count,
+        clarification_required_count=clarify_req_count,
+        incorrect_high_confidence_count=incorrect_high_conf,
+        incorrect_high_confidence_cases=incorrect_high_conf_cases,
+        intent_confusion_matrix=confusion_matrix,
         normal_path_p50_ms=norm_p50,
         normal_path_p95_ms=norm_p95,
         deterministic_correction_p50_ms=det_p50,

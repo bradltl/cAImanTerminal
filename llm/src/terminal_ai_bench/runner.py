@@ -18,7 +18,7 @@ from .tool_runtime import ToolRuntime
 from .reports.console import print_console_report
 from .reports.json_report import generate_json_report
 from .reports.html_report import generate_html_report
-from .system import SystemEvaluationPipeline, compute_system_metrics, generate_contracts_by_id
+from .system import IntentSource, SystemEvaluationPipeline, compute_system_metrics, generate_contracts_by_id
 
 
 class RunSummary(BaseModel):
@@ -103,6 +103,7 @@ class BenchmarkRunner:
         mock_persona: str = "perfect",
         live_mode: bool = False,
         system_mode: bool = False,
+        intent_source: str = "oracle",
     ) -> RunSummary:
         alias_map = {
             "gemma3-1b": "gemma-3-1b",
@@ -143,10 +144,18 @@ class BenchmarkRunner:
             "deepseek-coder-1.3b": "deepseek-coder-1.3b-base",
             "deepseek-1.3b": "deepseek-coder-1.3b-base",
         }
-        effective_model_name = alias_map.get(model_name.lower(), model_name)
-        mode_prefix = f"{effective_model_name}-system" if system_mode else effective_model_name
+        canonical_model = alias_map.get(model_name.lower(), model_name)
+        mode_prefix = f"{canonical_model}-system" if system_mode else canonical_model
         run_id = f"{mode_prefix}-{int(time.time())}-{uuid.uuid4().hex[:6]}"
-        model_cfg = self.models_config.get(effective_model_name, {})
+
+        # Load configuration
+        with open(self.models_config_path, "r", encoding="utf-8") as f:
+            models_data = yaml.safe_load(f).get("models", {})
+
+        model_cfg = models_data.get(canonical_model)
+        if not model_cfg and not mock_mode and model_name != "mock":
+            raise ValueError(f"Model '{model_name}' not configured in {self.models_config_path}")
+
         self.tool_runtime.live_mode = live_mode
 
         # Load scenarios
@@ -178,10 +187,13 @@ class BenchmarkRunner:
         ttft_values: List[float] = []
         tps_values: List[float] = []
         scenario_response_pairs = []
-        contracts_by_id = generate_contracts_by_id(all_scenarios) if system_mode else None
+
+        intent_src_enum = IntentSource.RUNTIME if intent_source == "runtime" else IntentSource.ORACLE
+        contracts_by_id = generate_contracts_by_id(all_scenarios) if (system_mode and intent_src_enum == IntentSource.ORACLE) else None
         system_pipeline = (
             SystemEvaluationPipeline(
                 fixtures_dir=self.fixtures_dir,
+                intent_source=intent_src_enum,
                 contracts_by_id=contracts_by_id,
             )
             if system_mode

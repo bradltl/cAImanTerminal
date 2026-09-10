@@ -26,8 +26,24 @@ def main():
 @click.option("--mock", is_flag=True, help="Force mock runtime instead of loading weights")
 @click.option("--persona", default="perfect", type=click.Choice(["perfect", "imperfect", "unsafe"]), help="Mock response persona")
 @click.option("--system", is_flag=True, help="Evaluate complete cAIman Terminal system inference pipeline")
-def run_command(model: str, domain: Optional[str], scenario: Optional[str], scenarios_dir: str, mock: bool, persona: str, system: bool):
+@click.option("--intent-source", default="oracle", type=click.Choice(["oracle", "runtime"]), help="Intent contract resolution source: oracle or runtime")
+@click.option("--runtime-system", is_flag=True, help="Shortcut to evaluate complete system pipeline with runtime intent resolver")
+def run_command(
+    model: str,
+    domain: Optional[str],
+    scenario: Optional[str],
+    scenarios_dir: str,
+    mock: bool,
+    persona: str,
+    system: bool,
+    intent_source: str,
+    runtime_system: bool,
+):
     """Run benchmark against a candidate model."""
+    if runtime_system:
+        system = True
+        intent_source = "runtime"
+
     runner = BenchmarkRunner(scenarios_dir=scenarios_dir)
     try:
         runner.run(
@@ -37,6 +53,7 @@ def run_command(model: str, domain: Optional[str], scenario: Optional[str], scen
             mock_mode=mock or (model == "mock"),
             mock_persona=persona,
             system_mode=system,
+            intent_source=intent_source,
         )
     except Exception as exc:
         console = Console()

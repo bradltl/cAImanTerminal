@@ -2,19 +2,27 @@ from .command_parser import parse_command
 from .command_validator import validate_command
 from .docs_resolver import DocumentationResolver
 from .intent_extractor import extract_intent, generate_contracts_by_id, SCENARIO_INTENT_REGISTRY
+from .intent_registry import CANONICAL_INTENT_SPECS, IntentRegistry
 from .intent_validator import IntentContractValidator
 from .pipeline import SystemEvaluationPipeline, compute_system_metrics, verify_pipeline_invariants
 from .repair import CommandRepairEngine
 from .risk_classifier import classify_host_risk
+from .runtime_intent_resolver import RuntimeIntentResolver
 from .safety_validator import SafetyValidator
 from .secret_validator import SecretValidator, redact_secrets
 from .types import (
     CommandAST,
     DocLookupResult,
     IntentContract,
+    IntentSource,
+    IntentSpec,
     IntentStatus,
     IntentValidationResult,
     RepairResult,
+    RuntimeIntentConfidence,
+    RuntimeIntentInput,
+    RuntimeIntentResolution,
+    RuntimeIntentStatus,
     SafetyCheckResult,
     SafetyRuleViolation,
     SecretCheckResult,
@@ -31,7 +39,10 @@ __all__ = [
     "extract_intent",
     "generate_contracts_by_id",
     "SCENARIO_INTENT_REGISTRY",
+    "CANONICAL_INTENT_SPECS",
+    "IntentRegistry",
     "IntentContractValidator",
+    "RuntimeIntentResolver",
     "SystemEvaluationPipeline",
     "compute_system_metrics",
     "verify_pipeline_invariants",
@@ -43,9 +54,15 @@ __all__ = [
     "CommandAST",
     "DocLookupResult",
     "IntentContract",
+    "IntentSource",
+    "IntentSpec",
     "IntentStatus",
     "IntentValidationResult",
     "RepairResult",
+    "RuntimeIntentConfidence",
+    "RuntimeIntentInput",
+    "RuntimeIntentResolution",
+    "RuntimeIntentStatus",
     "SafetyCheckResult",
     "SafetyRuleViolation",
     "SecretCheckResult",
