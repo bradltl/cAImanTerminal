@@ -30,8 +30,8 @@ pub fn load_model(
 pub trait ShellIntegration {
     fn bootstrap(&self) -> &'static str;
     fn argv(&self, rcfile: &Path) -> Vec<String>;
-    fn snapshot_key(&self) -> &'static [u8];
-    fn stage_key(&self) -> &'static [u8];
+    fn snapshot_key(&self) -> crate::terminal_backend::IntegrationKey;
+    fn stage_key(&self) -> crate::terminal_backend::IntegrationKey;
 }
 pub struct Bash;
 impl ShellIntegration for Bash {
@@ -47,11 +47,11 @@ impl ShellIntegration for Bash {
             "-i".into(),
         ]
     }
-    fn snapshot_key(&self) -> &'static [u8] {
-        b"\x18\x07"
+    fn snapshot_key(&self) -> crate::terminal_backend::IntegrationKey {
+        crate::terminal_backend::IntegrationKey::Snapshot
     }
-    fn stage_key(&self) -> &'static [u8] {
-        b"\x18s"
+    fn stage_key(&self) -> crate::terminal_backend::IntegrationKey {
+        crate::terminal_backend::IntegrationKey::Stage
     }
 }
 pub fn shell(id: &str) -> Result<&'static dyn ShellIntegration> {

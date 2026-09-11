@@ -4,8 +4,21 @@
 set -o emacs
 __cayman_dir=$CAYMAN_SESSION_DIR
 unset CAYMAN_SESSION_DIR
+IFS= read -r __cayman_nonce < "$__cayman_dir/nonce"
+readonly __cayman_pid=$BASHPID
+__cayman_sequence=0
 __cayman_emit() {
-    builtin printf '%s\0%s\0%s\0%s\0' "$1" "$2" "$PWD" "${3:0:16384}" >> "$__cayman_dir/events"
+    [[ $BASHPID == "$__cayman_pid" ]] || return
+    local cwd kind=$1 status=$2 text=$3
+    cwd=$(builtin pwd -P)
+    # Reject oversized records, never silently truncate command or directory data.
+    local LC_ALL=C
+    if (( ${#cwd} + ${#text} >= 3800 )); then
+        # Explicitly invalidate integration; never retain an older snapshot.
+        kind=overflow status=0 cwd=/ text=''
+    fi
+    ((__cayman_sequence+=1))
+    builtin printf '%s\0%s\0%s\0%s\0%s\0%s\0' "$__cayman_nonce" "$__cayman_sequence" "$kind" "$status" "$cwd" "$text" > "$__cayman_dir/events"
 }
 __cayman_prompt() {
     local status=$?
@@ -29,15 +42,15 @@ __cayman_accept() {
 }
 __cayman_snapshot() { __cayman_emit input 0 "$READLINE_LINE"; }
 __cayman_stage() {
-    local expected candidate
+    local expected_cwd expected candidate
     if [[ -f $__cayman_dir/stage ]]; then
-        { IFS= read -r expected; IFS= read -r candidate; } < "$__cayman_dir/stage"
-        if [[ $READLINE_LINE == "$expected" && -n $candidate ]]; then
+        { IFS= read -r expected_cwd; IFS= read -r expected; IFS= read -r candidate; } < "$__cayman_dir/stage"
+        if [[ $BASHPID == "$__cayman_pid" && $(builtin pwd -P) == "$expected_cwd" && $READLINE_LINE == "$expected" && -n $candidate ]]; then
             READLINE_LINE=$candidate
             READLINE_POINT=${#READLINE_LINE}
             __cayman_emit staged 0 "$READLINE_LINE"
         fi
-        command rm -f -- "$__cayman_dir/stage"
+        /bin/rm -f -- "$__cayman_dir/stage"
     fi
 }
 # A macro runs our widget first, then the standard accept-line operation. @ is

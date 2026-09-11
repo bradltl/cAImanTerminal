@@ -28,6 +28,8 @@ struct AssistantPane {
 }
 impl AssistantPane {
     fn set_text(&self, text: &str) {
+        let redacted = crate::context::redact(text);
+        let text = redacted.as_str();
         if *self.current.borrow() == text {
             return;
         }
@@ -35,17 +37,26 @@ impl AssistantPane {
         self.render(false);
     }
     fn user_message(&self, text: &str) {
+        let text = crate::context::redact(text);
         self.conversation
             .borrow_mut()
             .push(format!("@ {}", text.trim_start()));
         self.current.borrow_mut().clear();
+        if self.conversation.borrow().len() > 100 {
+            self.conversation.borrow_mut().remove(0);
+        }
         self.render(true);
     }
     fn response(&self, text: &str, passive: bool) {
         if passive {
             self.set_text(text);
         } else {
-            self.conversation.borrow_mut().push(text.to_string());
+            self.conversation
+                .borrow_mut()
+                .push(crate::context::redact(text));
+            if self.conversation.borrow().len() > 100 {
+                self.conversation.borrow_mut().remove(0);
+            }
             self.current.borrow_mut().clear();
             self.render(false);
         }
@@ -86,6 +97,7 @@ struct Suggestion {
     command: String,
     input: String,
     ticket: u64,
+    binding: crate::context::ContextBinding,
 }
 struct Tab {
     session: Session,
@@ -138,10 +150,11 @@ impl Tab {
         if !self.session.at_prompt
             || self.session.remote
             || s.ticket != self.cancellation.load(Ordering::Relaxed)
+            || !s.binding.matches(&self.session)
         {
             return false;
         }
-        match shell::write_stage(self.dir.path(), &s.command, &s.input) {
+        match shell::write_stage(self.dir.path(), &s.command, &s.input, &self.session.cwd) {
             Ok(()) => {
                 // Fixed widget key sequence only. Never feed model text or Enter.
                 self.terminal.send_integration_key(self.shell.stage_key());
@@ -155,6 +168,9 @@ impl Tab {
         }
     }
     fn request(&mut self, text: String, passive: bool, requests: &SyncSender<Request>) {
+        if !self.session.at_prompt || self.session.remote {
+            return;
+        }
         if !passive {
             self.assistant.user_message(&text);
         }
@@ -213,6 +229,8 @@ impl Tab {
         let events = match self.reader.poll(&self.dir.path().join("events")) {
             Ok(events) => events,
             Err(e) => {
+                self.invalidate();
+                self.enabled = false;
                 self.status
                     .set_text(&format!("Shell integration unavailable: {e}"));
                 self.session.at_prompt = false;
@@ -220,6 +238,13 @@ impl Tab {
             }
         };
         for event in events {
+            if self.session.cwd != event.cwd
+                || event.kind == "request"
+                || (event.kind == "prompt" && (!self.session.at_prompt || self.session.remote))
+            {
+                self.invalidate();
+                self.session.revision += 1;
+            }
             self.session.cwd = event.cwd.clone();
             match event.kind.as_str() {
                 "prompt" => {
@@ -236,7 +261,7 @@ impl Tab {
                             &command,
                             event.status,
                             ai_origin,
-                            self.session.remote,
+                            false, // The original local Bash prompt has now returned.
                         );
                         self.edited = Instant::now();
                         self.session.record(CommandRecord {
@@ -264,14 +289,15 @@ impl Tab {
                     self.snapshot_waiting = false;
                     self.session.at_prompt = false;
                     self.session.edit(String::new());
-                    let remote = shlex::split(&event.text)
-                        .is_some_and(|w| w.first().is_some_and(|s| s == "ssh"));
+                    // All running programs, wrappers and nested shells are unknown.
+                    // Only our original local Readline prompt resumes assistance.
+                    let remote = true;
                     self.session.remote = remote;
                     let ai_origin = self.staged.take().is_some_and(|s| s == event.text)
                         || self.suggested.as_deref() == Some(event.text.trim());
                     self.running = Some((event.text, event.cwd, self.start_row, ai_origin));
                     self.status.set_text(if remote {
-                        "ssh | assistance paused"
+                        "running / host unknown | assistance paused"
                     } else {
                         "running"
                     });
@@ -363,7 +389,7 @@ fn new_tab(
     let dir = tempfile::Builder::new()
         .prefix("cayman-session-")
         .tempdir()?;
-    fs::write(dir.path().join("events"), b"")?;
+    let reader = EventReader::create(dir.path())?;
     let shell_adapter = crate::adapters::shell(&options.shell)?;
     fs::write(dir.path().join("bashrc"), shell_adapter.bootstrap())?;
     let terminal = vte::Terminal::new();
@@ -455,7 +481,7 @@ fn new_tab(
         activity: pane_label,
         pane,
         dir,
-        reader: EventReader::default(),
+        reader,
         cancellation: Arc::new(AtomicU64::new(0)),
         pending: None,
         running: None,
@@ -935,6 +961,8 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                             continue;
                         }
                         tab.activity.set_text("ai");
+                        tab.pending = None;
+                        tab.ghost.set_text("");
                         match result {
                             Ok(answer) => {
                                 let mut message = answer
@@ -947,6 +975,12 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                                     message.push_str(&format!("\n\n{}", plan.join("\n")));
                                 }
                                 if let Some(v) = answer.validation {
+                                    let Some(binding) = v.binding().cloned() else {
+                                        continue;
+                                    };
+                                    if passive || !binding.matches(&tab.session) {
+                                        continue;
+                                    }
                                     message.push_str(&format!("\n\n$ {}", v.command));
                                     if v.risk != crate::host::Risk::Normal {
                                         message
@@ -959,6 +993,7 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                                         command: v.command,
                                         input: tab.session.input.clone(),
                                         ticket,
+                                        binding,
                                     });
                                 }
                                 if !answer.source.is_empty() {
@@ -1079,7 +1114,10 @@ mod tests {
             assert_eq!(request.session.input, "find");
             let answer =
                 worker::process(&request, |_| panic!("bare find must not need inference")).unwrap();
-            assert_eq!(answer.validation.unwrap().command, "find . -type f");
+            assert!(
+                answer.validation.is_none(),
+                "Passive find advice cannot stage"
+            );
             one.borrow().terminal.feed_child(b"\x15");
             // Confirm the buffer is empty before continuing the other PTY checks.
             one.borrow_mut().invalidate();
@@ -1214,6 +1252,7 @@ mod tests {
                 command: command.clone(),
                 input: String::new(),
                 ticket,
+                binding: crate::context::ContextBinding::capture(&tab.session),
             });
             assert!(tab.accept());
         }
@@ -1297,6 +1336,7 @@ mod tests {
                 command: "echo stale".into(),
                 input: String::new(),
                 ticket,
+                binding: crate::context::ContextBinding::capture(&tab.session),
             });
             tab.invalidate();
             assert!(!tab.accept());
@@ -1339,6 +1379,44 @@ mod tests {
         }
         // Clear the unfinished input without submitting it.
         one.borrow().terminal.feed_child(b"\x15");
+        while rx.try_recv().is_ok() {}
+        one.borrow()
+            .terminal
+            .feed_child(b"command /bin/sleep 0.3\r");
+        pump_until(|| !one.borrow().session.at_prompt);
+        assert!(
+            one.borrow().session.remote,
+            "Every running wrapper has unknown host identity"
+        );
+        one.borrow().terminal.feed(b"\x1b]133;A\x07");
+        let (paused_tx, paused_rx) = std::sync::mpsc::sync_channel(1);
+        one.borrow_mut().request("ls".into(), false, &paused_tx);
+        assert!(paused_rx.try_recv().is_err());
+        assert!(!one.borrow().session.at_prompt);
+        pump_until(|| one.borrow().session.at_prompt);
+        assert!(!one.borrow().session.remote);
+        // Terminal escapes are display data, never authenticated shell events.
+        let revision = one.borrow().session.revision;
+        let cwd = one.borrow().session.cwd.clone();
+        let clipboard = gdk::Display::default().unwrap().clipboard();
+        clipboard.set_text("caiman-clipboard-sentinel");
+        one.borrow()
+            .terminal
+            .feed(b"\x1b]133;A\x07\x1b]7;file://host/forged\x07\x1b]52;c;Zm9yZ2Vk\x07");
+        let settled = Instant::now() + Duration::from_millis(100);
+        pump_until(|| Instant::now() >= settled);
+        assert_eq!(one.borrow().session.revision, revision);
+        assert_eq!(one.borrow().session.cwd, cwd);
+        let clipboard_text = Rc::new(RefCell::new(None));
+        let result = clipboard_text.clone();
+        clipboard.read_text_async(None::<&gio::Cancellable>, move |text| {
+            *result.borrow_mut() = Some(text.unwrap().unwrap().to_string());
+        });
+        pump_until(|| clipboard_text.borrow().is_some());
+        assert_eq!(
+            clipboard_text.borrow().as_deref(),
+            Some("caiman-clipboard-sentinel")
+        );
         // Every palette updates both panes without replacing the running shell
         // or changing its context. Capture the actual widgets for visual review.
         one.borrow().terminal.feed(b"\r\n\x1b[31mred  \x1b[32mgreen  \x1b[33myellow  \x1b[34mblue  \x1b[35mmagenta  \x1b[36mcyan\x1b[0m\r\n");
@@ -1354,12 +1432,16 @@ mod tests {
             }
             let settled = Instant::now() + Duration::from_millis(100);
             pump_until(|| Instant::now() >= settled);
-            let paintable = gtk::WidgetPaintable::new(Some(&book));
-            let snapshot = gtk::Snapshot::new();
-            paintable.snapshot(&snapshot, window.width() as f64, window.height() as f64);
-            let node = snapshot
-                .to_node()
-                .expect("GTK snapshot must contain a render node");
+            let mut node = None;
+            book.queue_draw();
+            pump_until(|| {
+                let paintable = gtk::WidgetPaintable::new(Some(&book));
+                let snapshot = gtk::Snapshot::new();
+                paintable.snapshot(&snapshot, window.width() as f64, window.height() as f64);
+                node = snapshot.to_node();
+                node.is_some()
+            });
+            let node = node.unwrap();
             let renderer = gtk::gsk::Renderer::for_surface(&window.surface().unwrap()).unwrap();
             renderer
                 .render_texture(&node, None)

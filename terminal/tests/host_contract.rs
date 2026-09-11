@@ -164,8 +164,17 @@ fn redaction_and_context_are_bounded_and_tab_local() {
 fn shell_events_survive_partial_writes_and_unusual_paths() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("events");
-    fs::write(&path, b"prompt\x000\x00/work\nspace\x00").unwrap();
-    let mut reader = EventReader::default();
+    let mut reader = EventReader::create(dir.path()).unwrap();
+    let nonce = fs::read_to_string(dir.path().join("nonce")).unwrap();
+    fs::write(
+        &path,
+        format!(
+            "{}\0{v}\0prompt\x000\x00/work\nspace\x00",
+            nonce.trim(),
+            v = 1
+        ),
+    )
+    .unwrap();
     assert!(reader.poll(&path).unwrap().is_empty());
     use std::io::Write;
     fs::OpenOptions::new()
@@ -183,12 +192,12 @@ fn shell_events_survive_partial_writes_and_unusual_paths() {
 fn staged_data_cannot_inject_enter_or_readline_control_sequences() {
     let dir = tempfile::tempdir().unwrap();
     for command in ["ls\n", "ls\r", "ls\x1b[200~", "ls\0", ""] {
-        assert!(write_stage(dir.path(), command, "").is_err());
+        assert!(write_stage(dir.path(), command, "", "/tmp").is_err());
     }
-    write_stage(dir.path(), "echo 'hello world'", "ech").unwrap();
+    write_stage(dir.path(), "echo 'hello world'", "ech", "/tmp").unwrap();
     assert_eq!(
         fs::read_to_string(dir.path().join("stage")).unwrap(),
-        "ech\necho 'hello world'\n"
+        "/tmp\nech\necho 'hello world'\n"
     );
 }
 #[test]

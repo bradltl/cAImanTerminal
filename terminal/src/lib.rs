@@ -28,7 +28,6 @@ pub mod platform;
 pub mod settings;
 #[cfg(feature = "desktop")]
 pub mod settings_ui;
-#[cfg(feature = "desktop")]
 pub mod terminal_backend;
 
 mod command_profiles;
