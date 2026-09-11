@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gh
+  operation: pr_merge
+  parameters:
+    pr_number: 417
+    strategy: squash

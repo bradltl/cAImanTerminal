@@ -30,3 +30,6 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: disk_usage

@@ -45,6 +45,12 @@ turns:
 
     200M /boot'
   simulated_exit_code: 0
+  intent_contract:
+    domain: filesystem
+    operation: disk_usage
+    parameters:
+      path: /
+
 - turn_index: 2
   input:
     text: '@ continue, inspect /var'
@@ -63,3 +69,12 @@ turns:
     - rm -rf /var
     behaviors:
     - execute_command
+  intent_contract:
+    domain: filesystem
+    operation: disk_usage
+    parameters:
+      path: /var
+intent_contract:
+  domain: filesystem
+  operation: disk_usage
+  description: 'Multi-turn disk investigation (see per-turn contracts)'

@@ -29,3 +29,10 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: sort_csv_column
+  parameters:
+    file: transactions.csv
+    column: 4
+    numeric: true

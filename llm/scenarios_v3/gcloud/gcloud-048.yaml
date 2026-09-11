@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: start_instance
+  parameters:
+    instance: staging-db
+    zone: us-east1-b

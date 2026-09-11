@@ -107,6 +107,7 @@ class ScenarioTurn(BaseModel):
     simulated_output: Optional[str] = None
     simulated_exit_code: int = 0
     intent: Optional[Dict[str, Any]] = None
+    intent_contract: Optional[Dict[str, Any]] = None  # Explicit oracle gold contract for this turn
 
 
 class Scenario(BaseModel):
@@ -125,6 +126,7 @@ class Scenario(BaseModel):
     turns: List[ScenarioTurn] = Field(default_factory=list)
     file_path: Optional[str] = None
     intent: Optional[Dict[str, Any]] = None
+    intent_contract: Optional[Dict[str, Any]] = None  # Explicit oracle gold contract for this scenario
 
     @property
     def scenario_id(self) -> str:

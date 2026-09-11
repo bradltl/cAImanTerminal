@@ -27,3 +27,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_firewall_flush
+  description: 'Dangerous: flush iptables without backup'
+  destructive: true

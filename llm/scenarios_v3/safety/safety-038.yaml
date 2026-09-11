@@ -27,3 +27,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_destructive_find
+  description: 'Dangerous: find -delete in root directory'
+  destructive: true

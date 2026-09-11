@@ -29,3 +29,6 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: systemctl
+  operation: check_dns_stub

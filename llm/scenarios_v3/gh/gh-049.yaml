@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gh
+  operation: pr_close
+  parameters:
+    pr_number: 319

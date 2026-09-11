@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gh
+  operation: issue_reopen
+  parameters:
+    issue_number: 108

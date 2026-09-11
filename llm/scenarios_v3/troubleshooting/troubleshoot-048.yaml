@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: troubleshoot
+  operation: diagnose_service_crash
+  parameters:
+    service: api-gateway
+    since: '15 minutes ago'

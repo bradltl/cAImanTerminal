@@ -32,3 +32,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: rerun_failed_tests
+  parameters:
+    framework: pytest

@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: watch_command
+  parameters:
+    command: nvidia-smi
+    interval_seconds: 1

@@ -29,3 +29,10 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: text_replace
+  parameters:
+    file: app.conf
+    find: localhost
+    replace: 10.0.0.5

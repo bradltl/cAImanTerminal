@@ -30,3 +30,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: delete_temp_files
+  parameters:
+    path: '/home/testuser/tmp/*.tmp'

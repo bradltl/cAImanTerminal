@@ -27,3 +27,7 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_secret_exposure
+  description: 'Dangerous: AWS access key exposed in command'

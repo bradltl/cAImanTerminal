@@ -538,34 +538,74 @@ def _extract_intent_unbound(scenario: Scenario, turn_index: Optional[int] = None
     return IntentContract(scenario_id=target_id, domain=domain_val, operation="unknown")
 
 
+def _contract_from_dict(data: Any, scenario_id: str = "") -> IntentContract:
+    """Deserialize a plain dict (loaded from YAML intent_contract block) into IntentContract."""
+    if isinstance(data, IntentContract):
+        return data
+    if not isinstance(data, dict):
+        raise TypeError(f"intent_contract must be a dict, got {type(data)!r}")
+    return IntentContract(
+        scenario_id=scenario_id,
+        domain=data.get("domain", ""),
+        operation=data.get("operation", ""),
+        parameters=data.get("parameters") or {},
+        required_parameters=data.get("required_parameters") or [],
+        optional_parameters=data.get("optional_parameters") or [],
+        destructive=bool(data.get("destructive", False)),
+        mutating=bool(data.get("mutating", False)),
+        description=data.get("description"),
+    )
+
+
 def generate_contracts_by_id(scenarios: List[Scenario]) -> Dict[str, IntentContract]:
     """
     Generate an immutable lookup table of IntentContract objects keyed by scenario_id.
     Guarantees every scenario and multi-turn scenario turn is keyed strictly by its immutable id.
+
+    Contract resolution priority:
+      1. Explicit ``intent_contract:`` block in scenario YAML (oracle gold standard)
+      2. Explicit ``intent:`` dict in scenario YAML (legacy inline format)
+      3. Immutable Scenario ID registry lookup (SCENARIO_INTENT_REGISTRY)
+      4. Deterministic lexical inference from scenario metadata
+      5. Fallback: domain-level unknown contract
+
+    For oracle evaluation, scenarios_v3 scenarios should all resolve via path 1.
+    Paths 3-5 remain for backward compatibility with scenarios/ and scenarios_v2/.
     """
     contracts_by_id: Dict[str, IntentContract] = {}
     for scenario in scenarios:
-        contract = extract_intent(scenario)
-        contract.scenario_id = scenario.id
+        # Path 1: explicit oracle gold contract stored directly in YAML
+        if scenario.intent_contract is not None:
+            contract = _contract_from_dict(scenario.intent_contract, scenario_id=scenario.id)
+        else:
+            # Paths 2-5: legacy extraction chain
+            contract = extract_intent(scenario)
+            contract.scenario_id = scenario.id
         contracts_by_id[scenario.id] = contract
+
         if scenario.turns:
             for turn in scenario.turns:
                 turn_id = f"{scenario.id}-t{turn.turn_index}"
-                turn_scen = Scenario(
-                    id=turn_id,
-                    name=f"{scenario.name} (Turn {turn.turn_index})",
-                    domain=scenario.domain,
-                    difficulty=scenario.difficulty,
-                    mode=scenario.mode,
-                    context=scenario.context,
-                    history=list(scenario.history),
-                    input=turn.input,
-                    typing=turn.typing,
-                    expected=turn.expected,
-                    forbidden=turn.forbidden,
-                    tools=turn.tools,
-                )
-                turn_contract = extract_intent(turn_scen, turn_index=turn.turn_index)
-                turn_contract.scenario_id = turn_id
+                # Path 1 for per-turn: explicit oracle gold contract in turn YAML
+                if turn.intent_contract is not None:
+                    turn_contract = _contract_from_dict(turn.intent_contract, scenario_id=turn_id)
+                else:
+                    turn_scen = Scenario(
+                        id=turn_id,
+                        name=f"{scenario.name} (Turn {turn.turn_index})",
+                        domain=scenario.domain,
+                        difficulty=scenario.difficulty,
+                        mode=scenario.mode,
+                        context=scenario.context,
+                        history=list(scenario.history),
+                        input=turn.input,
+                        typing=turn.typing,
+                        expected=turn.expected,
+                        forbidden=turn.forbidden,
+                        tools=turn.tools,
+                    )
+                    turn_contract = extract_intent(turn_scen, turn_index=turn.turn_index)
+                    turn_contract.scenario_id = turn_id
                 contracts_by_id[turn_id] = turn_contract
     return contracts_by_id
+

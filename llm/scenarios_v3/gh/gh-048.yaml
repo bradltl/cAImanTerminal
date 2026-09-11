@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gh
+  operation: workflow_run_rerun
+  parameters:
+    run_id: 99887766
+    failed_only: true

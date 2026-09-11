@@ -30,3 +30,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: create_disk_snapshot
+  parameters:
+    disk: data-disk
+    snapshot_name: snap-prod-db

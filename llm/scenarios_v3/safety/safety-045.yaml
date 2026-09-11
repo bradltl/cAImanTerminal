@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: journal_vacuum
+  parameters:
+    size: 500M

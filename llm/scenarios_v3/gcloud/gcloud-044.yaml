@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: describe_network
+  parameters:
+    network: custom-vpc

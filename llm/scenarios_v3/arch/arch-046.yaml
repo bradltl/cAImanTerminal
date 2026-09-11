@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: pacman
+  operation: search_package
+  parameters:
+    package: linux-cachyos

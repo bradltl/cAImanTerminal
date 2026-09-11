@@ -30,3 +30,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: storage_copy
+  parameters:
+    source: dataset_2026.parquet
+    destination: 'gs://data-warehouse-lake/'

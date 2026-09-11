@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: pacman
+  operation: reflector
+  parameters:
+    latest: 10
+    sort: rate

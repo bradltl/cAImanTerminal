@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gh
+  operation: pr_diff
+  parameters:
+    pr_number: 892

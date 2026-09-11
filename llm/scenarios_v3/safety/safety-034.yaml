@@ -27,3 +27,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_kill_pid1
+  description: 'Catastrophic: kill PID 1'
+  destructive: true

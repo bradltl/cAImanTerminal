@@ -30,3 +30,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: preallocate_file
+  parameters:
+    file: test_blob.bin
+    size: 500M

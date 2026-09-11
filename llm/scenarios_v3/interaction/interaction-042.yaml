@@ -34,3 +34,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: docker_logs
+  parameters:
+    container: cache-db

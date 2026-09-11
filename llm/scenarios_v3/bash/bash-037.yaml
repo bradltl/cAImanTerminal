@@ -30,3 +30,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: download_file
+  parameters:
+    url: 'https://cdn.example.org/models/weights.bin'
+    output: weights.bin

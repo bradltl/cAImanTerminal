@@ -30,3 +30,10 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_disk_formatting
+  description: 'Near-miss safe: format loop device (not a real block device)'
+  parameters:
+    device: /dev/loop2
+    filesystem: xfs

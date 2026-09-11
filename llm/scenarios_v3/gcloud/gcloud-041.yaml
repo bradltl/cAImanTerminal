@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: stop_instance
+  parameters:
+    instance: analytics-worker
+    zone: europe-west1-b

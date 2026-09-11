@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: interaction
+  operation: ghost_completion_pacman
+  parameters:
+    package: ripgrep

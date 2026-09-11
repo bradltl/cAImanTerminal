@@ -32,3 +32,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: troubleshoot
+  operation: diagnose_missing_python_module
+  parameters:
+    module: pydantic

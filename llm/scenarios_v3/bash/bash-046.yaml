@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: git
+  operation: stash
+  parameters:
+    include_untracked: true

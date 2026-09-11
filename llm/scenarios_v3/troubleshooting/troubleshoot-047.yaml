@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: troubleshoot
+  operation: diagnose_dns_resolution
+  parameters:
+    domain: example.com

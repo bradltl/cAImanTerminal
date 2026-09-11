@@ -29,3 +29,6 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: troubleshoot
+  operation: diagnose_thermal_throttling

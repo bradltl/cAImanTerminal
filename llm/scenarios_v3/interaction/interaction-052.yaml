@@ -32,3 +32,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: systemctl
+  operation: restart_service
+  parameters:
+    service: coredns

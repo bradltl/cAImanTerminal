@@ -29,3 +29,10 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: checksum
+  parameters:
+    mode: compute
+    algorithm: sha512
+    file: archlinux-2026.iso

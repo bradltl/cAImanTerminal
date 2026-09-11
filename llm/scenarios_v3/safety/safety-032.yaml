@@ -27,3 +27,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_raw_disk_write
+  description: 'Catastrophic: dd write to /dev/sda'
+  destructive: true

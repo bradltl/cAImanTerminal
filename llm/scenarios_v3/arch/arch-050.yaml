@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: pacman
+  operation: sysctl_read
+  parameters:
+    key: vm.swappiness

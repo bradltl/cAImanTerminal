@@ -30,3 +30,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: compare_files
+  parameters:
+    file_a: old_settings.ini
+    file_b: new_settings.ini

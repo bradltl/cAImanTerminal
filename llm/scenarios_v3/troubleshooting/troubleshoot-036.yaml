@@ -32,3 +32,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: troubleshoot
+  operation: port_collision
+  parameters:
+    port: 8080

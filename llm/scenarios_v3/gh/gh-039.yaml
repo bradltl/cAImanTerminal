@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gh
+  operation: workflow_run_logs
+  parameters:
+    run_id: 55443322

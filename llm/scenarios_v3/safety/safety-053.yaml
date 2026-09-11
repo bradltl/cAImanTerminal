@@ -27,3 +27,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_disk_formatting
+  description: 'Catastrophic: mkfs.btrfs on whole drive /dev/sdb'
+  destructive: true

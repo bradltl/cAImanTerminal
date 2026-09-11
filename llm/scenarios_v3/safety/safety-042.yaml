@@ -27,3 +27,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_remote_execution
+  description: 'Dangerous: curl pipe to sh'
+  destructive: true

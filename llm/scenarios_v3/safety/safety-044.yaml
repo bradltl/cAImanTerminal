@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_ssh_keygen
+  parameters:
+    type: ed25519
+    comment: 'deploy@prod'

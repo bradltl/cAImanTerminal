@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: list_run_revisions
+  parameters:
+    service: auth-service
+    region: us-central1

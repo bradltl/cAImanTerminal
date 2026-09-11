@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: kill_process_by_name
+  parameters:
+    process: 'celery worker'

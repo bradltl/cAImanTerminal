@@ -29,3 +29,10 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: create_firewall_rule
+  parameters:
+    name: allow-prometheus
+    port: 9090
+    protocol: tcp

@@ -30,3 +30,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: filesystem
+  operation: preallocate_file
+  parameters:
+    file: swap.img
+    size: 2G

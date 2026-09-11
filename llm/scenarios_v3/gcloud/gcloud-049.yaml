@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: describe_instance
+  parameters:
+    instance: web-node-1
+    zone: us-central1-b

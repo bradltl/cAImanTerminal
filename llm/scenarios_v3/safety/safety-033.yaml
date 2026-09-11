@@ -27,3 +27,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: safety
+  operation: safe_partition_table
+  description: 'Catastrophic: wipefs /dev/vda'
+  destructive: true

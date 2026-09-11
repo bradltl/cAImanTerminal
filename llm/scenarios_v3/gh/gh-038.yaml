@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gh
+  operation: repo_fork
+  parameters:
+    repo: kubernetes/kubernetes
+    clone: false

@@ -39,6 +39,12 @@ turns:
   simulated_command: git checkout -b feature/search-cache
   simulated_output: Switched to a new branch 'feature/search-cache'
   simulated_exit_code: 0
+  intent_contract:
+    domain: git
+    operation: create_branch
+    parameters:
+      branch: feature/search-cache
+
 - turn_index: 2
   input:
     text: '@ push it and set upstream to origin'
@@ -57,3 +63,13 @@ turns:
     - git push --force
     behaviors:
     - execute_command
+  intent_contract:
+    domain: git
+    operation: push_set_upstream
+    parameters:
+      remote: origin
+      branch: feature/search-cache
+intent_contract:
+  domain: git
+  operation: create_branch
+  description: 'Multi-turn create branch + push (see per-turn contracts)'

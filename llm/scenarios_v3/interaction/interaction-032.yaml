@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: interaction
+  operation: typo_docker
+  parameters:
+    corrected: 'docker ps -a'

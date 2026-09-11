@@ -29,3 +29,9 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: git
+  operation: push_set_upstream
+  parameters:
+    remote: origin
+    branch: feature/auth-provider

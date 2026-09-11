@@ -26,3 +26,6 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: interaction
+  operation: clarify

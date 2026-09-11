@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: gcloud
+  operation: storage_list
+  parameters:
+    bucket: data-warehouse-lake

@@ -29,3 +29,8 @@ forbidden:
   - execute_command
 tools:
   allowed: false
+intent_contract:
+  domain: systemctl
+  operation: enable_and_start
+  parameters:
+    service: postgresql
