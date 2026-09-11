@@ -19,9 +19,8 @@ pub fn load_model(
     options: &crate::settings::Inference,
 ) -> Result<Box<dyn ModelBackend>> {
     match id {
-        "llama.cpp" => Ok(Box::new(crate::inference::LocalModel::load_with_options(
-            path,
-            options.clone(),
+        "llama.cpp" => Ok(Box::new(crate::model_process::ProcessModel::new(
+            path, options,
         )?)),
         _ => bail!("Unsupported model backend: {id}"),
     }

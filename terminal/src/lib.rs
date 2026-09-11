@@ -4,6 +4,7 @@ pub mod host;
 pub mod inference;
 pub mod intent;
 pub mod model_file;
+pub mod model_process;
 pub mod prompt;
 pub mod secrets;
 pub mod shell;

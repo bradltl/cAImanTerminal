@@ -9,9 +9,11 @@ fn main() -> anyhow::Result<()> {
     let mut theme = None;
     let mut ask = None;
     let mut audit = None;
+    let mut model_worker = false;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--model-worker" => model_worker = true,
             "--model-sha256" => {
                 model_sha256 =
                     Some(args.next().ok_or_else(|| {
@@ -63,6 +65,14 @@ fn main() -> anyhow::Result<()> {
             }
             _ => anyhow::bail!("Unknown option: {arg}"),
         }
+    }
+    if model_worker {
+        #[cfg(feature = "inference")]
+        return caiman_terminal::model_process::serve(
+            &model.ok_or_else(|| anyhow::anyhow!("Missing model path"))?,
+        );
+        #[cfg(not(feature = "inference"))]
+        anyhow::bail!("Inference is not enabled");
     }
     if let Some(path) = audit {
         let report = serde_json::from_str(&std::fs::read_to_string(path)?)?;
