@@ -34,6 +34,7 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: systemctl
   operation: restart_service
   parameters:

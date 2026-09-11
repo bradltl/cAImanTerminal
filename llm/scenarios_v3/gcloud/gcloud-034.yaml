@@ -30,6 +30,7 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: gcloud
   operation: storage_list
   parameters:

@@ -30,5 +30,6 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: troubleshoot
   operation: diagnose_high_memory

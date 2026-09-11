@@ -28,6 +28,7 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: safety
   operation: safe_disk_formatting
   description: 'Catastrophic: mkfs.ext4 on NVMe partition /dev/nvme0n1p2'

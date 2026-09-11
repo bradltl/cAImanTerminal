@@ -15,6 +15,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["pr_number"],
         command_family="gh",
         description="Approve a GitHub pull request",
+        doc_topic="gh pr review"
     ),
     IntentSpec(
         domain="gh",
@@ -56,6 +57,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         optional_slots=["notes"],
         command_family="gh",
         description="Create a new release with tag",
+        doc_topic="gh release create"
     ),
     IntentSpec(
         domain="gh",
@@ -81,6 +83,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         optional_slots=["clone"],
         command_family="gh",
         description="Fork a GitHub repository",
+        doc_topic="gh repo fork"
     ),
     IntentSpec(
         domain="gh",
@@ -89,6 +92,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["run_id"],
         command_family="gh",
         description="View logs for a GitHub Actions workflow run",
+        doc_topic="gh run view"
     ),
     IntentSpec(
         domain="gh",
@@ -98,6 +102,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         optional_slots=["strategy"],
         command_family="gh",
         description="Merge a pull request",
+        doc_topic="gh pr merge"
     ),
     IntentSpec(
         domain="gh",
@@ -116,6 +121,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=[],
         command_family="gcloud",
         description="List external static IP addresses",
+        doc_topic="gcloud compute addresses list"
     ),
     IntentSpec(
         domain="gcloud",
@@ -124,6 +130,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["rule_name", "port"],
         command_family="gcloud",
         description="Create a compute firewall rule",
+        doc_topic="gcloud compute firewall-rules create"
     ),
     IntentSpec(
         domain="gcloud",
@@ -206,6 +213,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         optional_slots=["zone"],
         command_family="gcloud",
         description="Stop a running Compute Engine instance",
+        doc_topic="gcloud compute instances stop"
     ),
     IntentSpec(
         domain="gcloud",
@@ -233,6 +241,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         optional_slots=["retain_versions"],
         command_family="pacman",
         description="Clean package cache keeping recent versions",
+        doc_topic="paccache"
     ),
     IntentSpec(
         domain="pacman",
@@ -300,6 +309,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         optional_slots=["priority"],
         command_family="journalctl",
         description="Check kernel errors in system journal",
+        doc_topic="journalctl"
     ),
     IntentSpec(
         domain="journalctl",
@@ -308,6 +318,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=[],
         command_family="journalctl",
         description="Follow system journal in real time",
+        doc_topic="journalctl"
     ),
     IntentSpec(
         domain="journalctl",
@@ -316,6 +327,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=[],
         command_family="journalctl",
         description="Show journal logs for current boot",
+        doc_topic="journalctl"
     ),
 
     # ── SYSTEMCTL SPECIFICATIONS ───────────────────────────────────────
@@ -326,6 +338,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["service"],
         command_family="systemctl",
         description="Enable and immediately start a systemd service",
+        doc_topic="systemctl"
     ),
     IntentSpec(
         domain="systemctl",
@@ -342,6 +355,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=[],
         command_family="systemctl",
         description="List systemd units in failed state",
+        doc_topic="systemctl"
     ),
 
     # ── FILESYSTEM / COREUTILS / BASH SPECIFICATIONS ──────────────────
@@ -353,6 +367,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         optional_slots=["path"],
         command_family="coreutils",
         description="Count lines in a file",
+        doc_topic="wc"
     ),
     IntentSpec(
         domain="filesystem",
@@ -378,6 +393,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["file1", "file2"],
         command_family="coreutils",
         description="Compare two configuration files using diff",
+        doc_topic="diff"
     ),
     IntentSpec(
         domain="filesystem",
@@ -386,6 +402,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["command"],
         command_family="coreutils",
         description="Watch command output periodically",
+        doc_topic="watch"
     ),
     IntentSpec(
         domain="filesystem",
@@ -394,6 +411,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["target", "linkname"],
         command_family="coreutils",
         description="Create a symbolic link",
+        doc_topic="ln"
     ),
     IntentSpec(
         domain="filesystem",
@@ -402,6 +420,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["process_name"],
         command_family="coreutils",
         description="Kill a process by name",
+        doc_topic="pkill"
     ),
     IntentSpec(
         domain="filesystem",
@@ -435,6 +454,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["filename", "size"],
         command_family="coreutils",
         description="Safely preallocate a file of specified size",
+        doc_topic="fallocate"
     ),
     IntentSpec(
         domain="filesystem",
@@ -443,6 +463,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=["file"],
         command_family="coreutils",
         description="Identify file type using file utility",
+        doc_topic="file"
     ),
     IntentSpec(
         domain="filesystem",
@@ -460,6 +481,7 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         optional_slots=["algorithm"],
         command_family="coreutils",
         description="Compute cryptographic hash of a file",
+        doc_topic="sha256sum"
     ),
     IntentSpec(
         domain="filesystem",
@@ -645,6 +667,516 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         description="Diagnose and locate zombie or defunct processes",
     ),
 
+    # ── ADDITIONAL TROUBLESHOOT SPECIFICATIONS (v3) ────────────────────
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_service_crash",
+        lexical_hints=["service crash loop", "service restarting repeatedly", "diagnose service crash", "systemd service crash", "service failing repeatedly"],
+        required_slots=[],
+        optional_slots=["service", "since"],
+        command_family="troubleshoot",
+        description="Diagnose a repeatedly crashing systemd service via journal",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_failed_mount",
+        lexical_hints=["failed mount unit", "systemd mount failed", "mount unit failure", "nfs mount failed", "view logs for failed unit"],
+        required_slots=[],
+        optional_slots=["unit"],
+        command_family="troubleshoot",
+        description="Diagnose a failed systemd mount unit via journal",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_pacman_signature",
+        lexical_hints=["pacman signature error", "invalid or corrupted package", "signature verification failed", "update archlinux-keyring", "keyring signature error"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose pacman signature verification errors by refreshing keyring",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_docker_daemon",
+        lexical_hints=["docker daemon error", "docker service error", "docker startup failure", "docker service failed", "view docker service error logs", "docker daemon startup failure"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose docker daemon startup failures via journal",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_nfs_mount",
+        lexical_hints=["nfs stale file handle", "nfs mount error", "stale file handle", "nfs mount stale"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose NFS mount stale file handle errors",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_swap_exhaustion",
+        lexical_hints=["swap exhaustion", "swap full", "no swap space", "check swap usage", "swap exhaustion on low ram"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose swap exhaustion on a low RAM host",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_thermal_throttling",
+        lexical_hints=["cpu throttling", "thermal throttling", "cpu overheating", "cpu temperature", "thermal limit"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose CPU thermal throttling via sensors",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_dns_resolution",
+        lexical_hints=["dns resolution timeout", "dns resolution failure", "dns lookup timeout", "failed coredns resolution", "diagnose dns"],
+        required_slots=[],
+        optional_slots=["domain", "server"],
+        command_family="troubleshoot",
+        description="Diagnose DNS resolution timeouts and failures using dig",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="verify_journal_integrity",
+        lexical_hints=["verify journal integrity", "journal corruption", "journal verify", "system journal corruption", "journal corruption verification"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Verify integrity of systemd journal log files",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_core_dump_config",
+        lexical_hints=["core dump pattern", "core dump configuration", "kernel core pattern", "coredump config"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose core dump pattern configuration via sysctl",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_load_average",
+        lexical_hints=["system load average", "high load average", "diagnose load", "check load average", "system load with uptime"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose system load average via w or uptime",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_journal_disk_usage",
+        lexical_hints=["journal disk usage", "journal disk size", "how much space does journal use", "journalctl disk usage"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose journal disk usage via journalctl --disk-usage",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_high_memory",
+        lexical_hints=["high memory consumption", "memory usage by process", "top memory consuming processes", "process memory usage"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose high memory consumption by process tree",
+    ),
+    IntentSpec(
+        domain="troubleshoot",
+        operation="diagnose_oom",
+        lexical_hints=["oom killer", "out of memory", "oom killed process", "process killed by oom", "oom termination", "diagnose why the node service suddenly died"],
+        required_slots=[],
+        command_family="troubleshoot",
+        description="Diagnose OOM killer events in kernel ring buffer or journal",
+    ),
+
+    # ── ADDITIONAL SYSTEMCTL SPECIFICATIONS (v3) ───────────────────────
+    IntentSpec(
+        domain="systemctl",
+        operation="list_timers",
+        lexical_hints=["list active timers", "list systemd timers", "active timers", "systemctl timers"],
+        required_slots=[],
+        command_family="systemctl",
+        description="List active systemd timer units",
+    ),
+    IntentSpec(
+        domain="systemctl",
+        operation="list_dependencies",
+        lexical_hints=["list dependencies", "service dependency tree", "systemctl dependency", "list dependencies for unit"],
+        required_slots=[],
+        optional_slots=["unit"],
+        command_family="systemctl",
+        description="Show systemd unit dependency tree",
+    ),
+    IntentSpec(
+        domain="systemctl",
+        operation="check_dns_stub",
+        lexical_hints=["check dns stub", "resolvectl status", "systemd resolved status", "dns server status"],
+        required_slots=[],
+        command_family="systemctl",
+        description="Check systemd-resolved DNS stub resolver status",
+    ),
+
+    # ── ADDITIONAL PACMAN/ARCH SPECIFICATIONS (v3) ────────────────────
+    IntentSpec(
+        domain="pacman",
+        operation="search_package",
+        lexical_hints=["search package", "search for package", "query package in repo", "search repo", "search package in repos"],
+        required_slots=[],
+        optional_slots=["package"],
+        command_family="pacman",
+        description="Search for a package in pacman repositories",
+    ),
+    IntentSpec(
+        domain="pacman",
+        operation="query_foreign",
+        lexical_hints=["list aur packages", "foreign packages", "query aur packages", "list foreign packages", "list packages installed from aur"],
+        required_slots=[],
+        command_family="pacman",
+        description="List foreign/AUR packages installed via pacman -Qm",
+    ),
+    IntentSpec(
+        domain="pacman",
+        operation="check_db_lock",
+        lexical_hints=["pacman database lock", "pacman db locked", "pacman lock file", "inspect processes holding pacman database lock", "check if pacman database has any locked processes"],
+        required_slots=[],
+        command_family="pacman",
+        description="Check for processes holding the pacman database lock",
+    ),
+    IntentSpec(
+        domain="pacman",
+        operation="sysctl_read",
+        lexical_hints=["sysctl read", "read sysctl parameter", "kernel sysctl", "inspect sysctl", "check kernel parameter"],
+        required_slots=[],
+        optional_slots=["key"],
+        command_family="pacman",
+        description="Read a kernel sysctl parameter value",
+    ),
+    IntentSpec(
+        domain="pacman",
+        operation="inspect_config",
+        lexical_hints=["pacman config", "active repositories", "show repositories", "pacman.conf repos", "show active pacman repositories"],
+        required_slots=[],
+        command_family="pacman",
+        description="Inspect pacman.conf for active repository sections",
+    ),
+
+    # ── ADDITIONAL JOURNALCTL SPECIFICATIONS (v3) ─────────────────────
+    IntentSpec(
+        domain="journalctl",
+        operation="previous_boot",
+        lexical_hints=["previous boot logs", "last boot journal", "boot minus one", "journalctl -b -1"],
+        required_slots=[],
+        command_family="journalctl",
+        description="View journal logs from the previous boot",
+    ),
+    IntentSpec(
+        domain="journalctl",
+        operation="vacuum_time",
+        lexical_hints=["vacuum journal by time", "clean journal older than", "remove old journal entries", "vacuum journal logs keeping 14 days", "clean journal log files"],
+        required_slots=[],
+        optional_slots=["days"],
+        command_family="journalctl",
+        description="Vacuum journal logs older than a given time threshold",
+    ),
+    IntentSpec(
+        domain="journalctl",
+        operation="kernel_grep",
+        lexical_hints=["journal kernel grep", "filter kernel messages", "grep kernel journal", "show kernel messages containing", "kernel messages efi"],
+        required_slots=[],
+        optional_slots=["pattern"],
+        command_family="journalctl",
+        description="Filter kernel journal messages by grep pattern",
+    ),
+
+    # ── ADDITIONAL GCLOUD SPECIFICATIONS (v3) ─────────────────────────
+    IntentSpec(
+        domain="gcloud",
+        operation="describe_network",
+        lexical_hints=["describe vpc network", "describe compute network", "gcloud network describe", "vpc network details"],
+        required_slots=[],
+        optional_slots=["network"],
+        command_family="gcloud",
+        description="Describe a GCP VPC compute network",
+    ),
+    IntentSpec(
+        domain="gcloud",
+        operation="list_disks",
+        lexical_hints=["list persistent disks", "list compute disks", "gcloud compute disks", "list persistent disks in compute"],
+        required_slots=[],
+        command_family="gcloud",
+        description="List GCP compute persistent disks",
+    ),
+    IntentSpec(
+        domain="gcloud",
+        operation="list_configurations",
+        lexical_hints=["list gcloud configurations", "gcloud config list", "active gcloud configuration", "gcloud configurations"],
+        required_slots=[],
+        command_family="gcloud",
+        description="List active gcloud SDK configurations",
+    ),
+    IntentSpec(
+        domain="gcloud",
+        operation="list_run_services",
+        lexical_hints=["list cloud run services", "list run services", "cloud run services list"],
+        required_slots=[],
+        optional_slots=["region"],
+        command_family="gcloud",
+        description="List Cloud Run services in a region",
+    ),
+    IntentSpec(
+        domain="gcloud",
+        operation="start_instance",
+        lexical_hints=["start compute instance", "start instance", "gcloud start instance", "start stopped instance"],
+        required_slots=[],
+        optional_slots=["instance", "zone"],
+        command_family="gcloud",
+        description="Start a stopped GCP compute instance",
+    ),
+    IntentSpec(
+        domain="gcloud",
+        operation="describe_instance",
+        lexical_hints=["describe compute instance", "instance details", "gcloud compute instances describe", "describe instance details"],
+        required_slots=[],
+        optional_slots=["instance", "zone"],
+        command_family="gcloud",
+        description="Describe a GCP compute instance",
+    ),
+    IntentSpec(
+        domain="gcloud",
+        operation="list_subnets",
+        lexical_hints=["list subnets", "compute subnets", "list compute subnets", "vpc subnets", "list compute subnets in network"],
+        required_slots=[],
+        optional_slots=["network"],
+        command_family="gcloud",
+        description="List GCP compute VPC subnets",
+    ),
+    IntentSpec(
+        domain="gcloud",
+        operation="create_disk_snapshot",
+        lexical_hints=["create disk snapshot", "snapshot disk", "create compute snapshot", "create persistent disk snapshot"],
+        required_slots=[],
+        optional_slots=["disk", "snapshot_name"],
+        command_family="gcloud",
+        description="Create a snapshot of a GCP compute persistent disk",
+    ),
+    IntentSpec(
+        domain="gcloud",
+        operation="list_run_revisions",
+        lexical_hints=["list cloud run revisions", "run revisions list", "cloud run service revisions"],
+        required_slots=[],
+        optional_slots=["service", "region"],
+        command_family="gcloud",
+        description="List revisions for a Cloud Run service",
+    ),
+
+    # ── ADDITIONAL GH SPECIFICATIONS (v3) ─────────────────────────────
+    IntentSpec(
+        domain="gh",
+        operation="workflow_run_list",
+        lexical_hints=["list workflow runs", "view all workflows", "workflow status", "run list", "list runs"],
+        required_slots=[],
+        command_family="gh",
+        description="List GitHub Actions workflow runs",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="pr_checkout",
+        lexical_hints=["checkout pr", "checkout pull request", "check out pr locally", "pr checkout"],
+        required_slots=["pr_number"],
+        command_family="gh",
+        description="Checkout a pull request locally",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="pr_list",
+        lexical_hints=["list pull requests", "list prs", "show pull requests", "list open prs"],
+        required_slots=[],
+        optional_slots=["assignee", "label", "state"],
+        command_family="gh",
+        description="List pull requests with optional filters",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="auth_status",
+        lexical_hints=["check gh auth status", "gh authentication status", "verify github login", "gh auth status"],
+        required_slots=[],
+        command_family="gh",
+        description="Check GitHub CLI authentication status",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="repo_view",
+        lexical_hints=["view repository", "repo view", "repository summary", "view repo status", "repo status summary"],
+        required_slots=[],
+        command_family="gh",
+        intent_type="expansion",
+        description="View repository summary status via gh repo view",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="workflow_run_rerun",
+        lexical_hints=["rerun failed workflow", "rerun workflow run", "re-run failed jobs", "rerun failed workflow jobs"],
+        required_slots=["run_id"],
+        optional_slots=["failed_only"],
+        command_family="gh",
+        intent_type="expansion",
+        description="Rerun a failed GitHub Actions workflow run",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="pr_close",
+        lexical_hints=["close pr without merging", "close pull request", "discard pr"],
+        required_slots=["pr_number"],
+        command_family="gh",
+        description="Close a pull request without merging",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="pr_checks",
+        lexical_hints=["pr checks summary", "pr status checks", "check status for pr", "view pr checks"],
+        required_slots=["pr_number"],
+        command_family="gh",
+        description="View CI/CD check status summary for a PR",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="issue_reopen",
+        lexical_hints=["reopen issue", "re-open closed issue"],
+        required_slots=["issue_number"],
+        command_family="gh",
+        description="Reopen a previously closed issue",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="release_view",
+        lexical_hints=["view release", "list release assets", "release details", "release view"],
+        required_slots=[],
+        optional_slots=["tag"],
+        command_family="gh",
+        description="View release details and assets",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="workflow_view",
+        lexical_hints=["view workflow file", "workflow view", "view specific workflow"],
+        required_slots=[],
+        optional_slots=["workflow"],
+        command_family="gh",
+        description="View a specific GitHub Actions workflow file",
+    ),
+    IntentSpec(
+        domain="gh",
+        operation="pr_create",
+        lexical_hints=["create pull request", "create draft pr", "create pr", "open pull request"],
+        required_slots=[],
+        optional_slots=["draft", "title"],
+        command_family="gh",
+        description="Create a new pull request (optionally as draft)",
+    ),
+
+    # ── ADDITIONAL FILESYSTEM SPECIFICATIONS (v3) ─────────────────────
+    IntentSpec(
+        domain="filesystem",
+        operation="docker_logs",
+        lexical_hints=["check docker logs", "inspect container logs", "docker logs", "view container logs", "check the logs of"],
+        required_slots=[],
+        optional_slots=["container"],
+        command_family="filesystem",
+        description="View container log output via docker logs",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="find_broken_symlinks",
+        lexical_hints=["find broken symlinks", "broken symbolic links", "dangling symlinks", "find broken links"],
+        required_slots=[],
+        optional_slots=["path"],
+        command_family="filesystem",
+        description="Find dangling/broken symbolic links under a given path",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="delete_temp_files",
+        lexical_hints=["delete temp files", "remove temporary files", "clean up tmp files", "delete cache files"],
+        required_slots=[],
+        optional_slots=["path"],
+        command_family="filesystem",
+        description="Delete temporary or cache files from user directory",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="inspect_partition_table",
+        lexical_hints=["inspect partition table", "check partition table", "view partition table", "fdisk list partitions"],
+        required_slots=[],
+        command_family="filesystem",
+        description="Inspect disk partition table safely (read-only)",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="show_uptime",
+        lexical_hints=["check system uptime", "system uptime", "uptime and load", "check uptime"],
+        required_slots=[],
+        command_family="filesystem",
+        description="Show system uptime and load average",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="rerun_failed_tests",
+        lexical_hints=["rerun failed tests", "run only failed tests", "rerun only the failed test", "pytest rerun failed", "last failed tests"],
+        required_slots=[],
+        optional_slots=["framework"],
+        command_family="filesystem",
+        description="Rerun only the most recently failed tests",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="count_words",
+        lexical_hints=["count words", "word count", "wc -w", "count words in file"],
+        required_slots=[],
+        optional_slots=["file"],
+        command_family="filesystem",
+        description="Count words in a file using wc -w",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="list_block_devices",
+        lexical_hints=["list block devices", "show block devices", "lsblk", "block device info", "list block devices showing filesystem"],
+        required_slots=[],
+        command_family="filesystem",
+        intent_type="expansion",
+        description="List block devices with filesystem info via lsblk",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="show_ip_routing_table",
+        lexical_hints=["ip routing table", "show routing table", "kernel routing table", "view routing table"],
+        required_slots=[],
+        command_family="filesystem",
+        intent_type="expansion",
+        description="Show IP routing table via ip route or route -n",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="list_docker_containers",
+        lexical_hints=["list running docker containers", "list docker containers", "running containers", "active docker containers"],
+        required_slots=[],
+        command_family="filesystem",
+        intent_type="expansion",
+        description="List running docker containers via docker ps",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="network_socket_stats",
+        lexical_hints=["network socket statistics", "socket statistics", "ss -s", "socket stats summary"],
+        required_slots=[],
+        command_family="filesystem",
+        intent_type="expansion",
+        description="Show summary network socket statistics via ss -s",
+    ),
+    IntentSpec(
+        domain="filesystem",
+        operation="show_partition_table",
+        lexical_hints=["show disk partition table", "partition table", "parted list", "disk partition table with parted"],
+        required_slots=[],
+        command_family="filesystem",
+        intent_type="expansion",
+        description="Show disk partition table via parted -l",
+    ),
+
     # ── SAFETY / CONTROLLED ELEVATION SPECIFICATIONS ──────────────────
     IntentSpec(
         domain="safety",
@@ -708,6 +1240,14 @@ CANONICAL_INTENT_SPECS: List[IntentSpec] = [
         required_slots=[],
         command_family="interaction",
         description="Ambiguous user request requiring clarification",
+    ),
+    IntentSpec(
+        domain="interaction",
+        operation="no_action",
+        lexical_hints=[],
+        required_slots=[],
+        command_family="interaction",
+        description="Passive terminal state requiring no model action",
     ),
     IntentSpec(
         domain="interaction",

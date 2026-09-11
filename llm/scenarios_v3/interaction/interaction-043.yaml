@@ -46,6 +46,7 @@ turns:
     200M /boot'
   simulated_exit_code: 0
   intent_contract:
+    intent_type: supported
     domain: filesystem
     operation: disk_usage
     parameters:
@@ -70,11 +71,13 @@ turns:
     behaviors:
     - execute_command
   intent_contract:
+    intent_type: supported
     domain: filesystem
     operation: disk_usage
     parameters:
       path: /var
 intent_contract:
+  intent_type: supported
   domain: filesystem
   operation: disk_usage
   description: 'Multi-turn disk investigation (see per-turn contracts)'

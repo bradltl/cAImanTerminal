@@ -4,7 +4,8 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from .types import DocLookupResult, IntentValidationResult, ValidationResult
+from terminal_ai_bench.system.intent_registry import IntentRegistry
+from .types import DocLookupResult, IntentValidationResult, ValidationResult, IntentContract
 
 
 class DocumentationResolver:
@@ -13,8 +14,13 @@ class DocumentationResolver:
     Retrieves the minimal relevant documentation needed for repair from frozen fixtures.
     """
 
-    def __init__(self, fixtures_dir: Path | str = "fixtures"):
+    def __init__(
+        self,
+        fixtures_dir: Path | str = "fixtures",
+        registry: Optional[IntentRegistry] = None,
+    ):
         self.fixtures_dir = Path(fixtures_dir)
+        self.registry = registry or IntentRegistry()
 
     def resolve(
         self,
@@ -27,32 +33,10 @@ class DocumentationResolver:
         # 1. Determine desired topic from intent contract / intent validation first (what the user actually wanted)
         if intent_validation and intent_validation.help_topic:
             topic = intent_validation.help_topic
-        elif contract and contract.operation:
-            op_to_topic = {
-                "clean_cache": "paccache",
-                "preallocate_file": "fallocate",
-                "count_lines": "wc",
-                "create_symlink": "ln",
-                "kill_process_by_name": "pkill",
-                "compare_files": "diff",
-                "watch_command": "watch",
-                "checksum": "sha256sum",
-                "identify_file_type": "file",
-                "kernel_logs": "journalctl",
-                "current_boot": "journalctl",
-                "follow": "journalctl",
-                "list_failed": "systemctl",
-                "enable_and_start": "systemctl",
-                "pr_review_approve": "gh pr review",
-                "repo_fork": "gh repo fork",
-                "release_create": "gh release create",
-                "workflow_run_logs": "gh run view",
-                "pr_merge": "gh pr merge",
-                "stop_instance": "gcloud compute instances stop",
-                "list_addresses": "gcloud compute addresses list",
-                "create_firewall_rule": "gcloud compute firewall-rules create",
-            }
-            topic = op_to_topic.get(contract.operation)
+        elif contract and contract.domain and contract.operation:
+            spec = self.registry.get_spec(contract.domain, contract.operation)
+            if spec and spec.doc_topic:
+                topic = spec.doc_topic
 
         if not topic and validation and validation.help_topic:
             topic = validation.help_topic

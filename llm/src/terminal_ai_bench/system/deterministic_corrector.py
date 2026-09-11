@@ -4,6 +4,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from ..scenario import Scenario
+from .intent_registry import IntentRegistry
 from .types import (
     CommandAST,
     DeterministicCorrection,
@@ -28,6 +29,9 @@ class DeterministicCorrector:
       4. Corrected commands must undergo full revalidation.
     """
 
+    def __init__(self, registry: Optional[IntentRegistry] = None):
+        self.registry = registry or IntentRegistry()
+
     def correct(
         self,
         scenario: Scenario,
@@ -37,6 +41,10 @@ class DeterministicCorrector:
         intent_val_res: IntentValidationResult,
     ) -> DeterministicCorrection:
         if not contract or not contract.is_command_contract:
+            return DeterministicCorrection(available=False, original_command=ast.raw_command)
+
+        spec = self.registry.get_spec(contract.domain, contract.operation)
+        if not spec or spec.intent_type == "expansion":
             return DeterministicCorrection(available=False, original_command=ast.raw_command)
 
         op = contract.operation

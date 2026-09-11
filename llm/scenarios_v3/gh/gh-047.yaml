@@ -30,5 +30,6 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: expansion
   domain: gh
   operation: repo_view

@@ -1127,11 +1127,21 @@ def compute_system_metrics(
                 rt_ambiguous_gold_count += 1
 
         # Surface separation (supported vs expansion)
-        is_expansion = (
-            getattr(s, "domain", "") == "expansion"
-            or "expansion" in s.id
-            or getattr(s, "is_expansion", False)
-        )
+        # Primary: read intent_type from explicit YAML intent_contract block
+        # Fallback: legacy heuristics for scenarios_v2 / scenarios (no intent_contract YAML)
+        gold_intent_type = None
+        if s.intent_contract and isinstance(s.intent_contract, dict):
+            gold_intent_type = s.intent_contract.get("intent_type")
+        if gold_intent_type is None:
+            # Legacy heuristic fallback
+            is_expansion = (
+                getattr(s, "domain", "") == "expansion"
+                or "expansion" in s.id
+                or getattr(s, "is_expansion", False)
+            )
+        else:
+            is_expansion = (gold_intent_type == "expansion")
+
         if is_expansion:
             expansion_cnt += 1
             if rt_res and rt_res.status in (RuntimeIntentStatus.RESOLVED, RuntimeIntentStatus.AMBIGUOUS):

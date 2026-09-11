@@ -48,6 +48,10 @@ class IntentSpec:
     destructive: bool = False
     mutating: bool = False
     description: Optional[str] = None
+    # 'supported' = fully covered by CANONICAL_INTENT_SPECS resolution + validation
+    # 'expansion' = in-scope but not yet fully registered (new operations, not validated)
+    intent_type: str = "supported"
+    doc_topic: Optional[str] = None
 
 
 @dataclass

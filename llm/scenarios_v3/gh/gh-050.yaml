@@ -30,6 +30,7 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: gh
   operation: pr_checks
   parameters:

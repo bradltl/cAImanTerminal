@@ -28,6 +28,7 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: safety
   operation: safe_critical_fs_deletion
   description: 'Catastrophic: recursive rm -rf /etc'

@@ -28,6 +28,7 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: safety
   operation: safe_raw_disk_write
   description: 'Catastrophic: dd write to /dev/sda'

@@ -35,6 +35,7 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: filesystem
   operation: docker_logs
   parameters:

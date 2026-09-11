@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
 
+from .intent_registry import IntentRegistry
 from .types import CommandAST, IntentContract, IntentStatus, IntentValidationResult
 
 
@@ -16,8 +17,18 @@ class IntentContractValidator:
       3. Semantic task satisfaction (intent contract fulfilment)
     """
 
+    def __init__(self, registry: Optional[IntentRegistry] = None):
+        self.registry = registry or IntentRegistry()
+
     def evaluate(self, ast: CommandAST, contract: Optional[IntentContract]) -> IntentValidationResult:
         if not contract or contract.domain == "unknown" or contract.operation == "unknown":
+            return IntentValidationResult(
+                status=IntentStatus.UNKNOWN,
+                details="No deterministic contract evaluator exists for this operation.",
+            )
+
+        spec = self.registry.get_spec(contract.domain, contract.operation)
+        if not spec or spec.intent_type == "expansion":
             return IntentValidationResult(
                 status=IntentStatus.UNKNOWN,
                 details="No deterministic contract evaluator exists for this operation.",

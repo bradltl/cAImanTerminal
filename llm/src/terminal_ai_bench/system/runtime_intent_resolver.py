@@ -120,80 +120,137 @@ class RuntimeIntentResolver:
         ('git', 'pull_rebase', [r'fix this push rejection', r'push rejection', r'pull.*rebase', r'pull upstream']),
         ('git', 'stash', [r'save my uncommitted', r'stash.*changes', r'git stash', r'save uncommitted']),
         ('git', 'stash_pop', [r'pop stashed', r'restore stashed', r'git stash pop', r'restore them']),
-        ('git', 'create_branch', [r'create.*branch', r'switch to new branch', r'checkout new branch', r'branch creation']),
-        ('git', 'push_set_upstream', [r'push.*set upstream', r'push.*upstream', r'push branch to origin', r'push.*new branch.*remote', r'push it to origin']),
+        ('git', 'create_branch', [r'create.*branch', r'switch to new branch', r'checkout new branch', r'branch creation', r'new branch feature/']),
+        ('git', 'push_set_upstream', [r'push.*set upstream', r'push.*upstream', r'push branch to origin', r'push.*new branch.*remote', r'push it to origin', r'push.*set.*upstream']),
         ('git', 'show_conflicts', [r'merge conflict', r'unmerged files', r'conflicted files']),
 
-        # Troubleshooting
-        ('troubleshoot', 'diagnose_oom', [r'keeps getting killed', r'oom', r'out of memory']),
+        # Troubleshooting — original
+        ('troubleshoot', 'diagnose_oom', [r'keeps getting killed', r'\boom\b', r'out of memory', r'node service suddenly died', r'process was killed', r'killed with signal 9']),
         ('troubleshoot', 'diagnose_disk_usage', [r'is full.*what.*s using', r'disk full', r'space running low', r'no space left', r'space exhaustion', r'investigate /var', r'check /var']),
-        ('troubleshoot', 'diagnose_package_dep', [r'because of depend', r'broken package', r'package dependency', r'unmet dependencies']),
-        ('troubleshoot', 'diagnose_io', [r'system feels sluggish and disk', r'slow disk', r'disk i/o']),
-        ('troubleshoot', 'port_collision', [r'port 80 is taken', r'port conflict', r'port collision', r'address already in use']),
+        ('troubleshoot', 'diagnose_package_dep', [r'because of depend', r'broken package', r'package dependency', r'unmet dependencies', r'dependency conflict']),
+        ('troubleshoot', 'diagnose_io', [r'system feels sluggish and disk', r'slow disk', r'disk i/o', r'iotop']),
+        ('troubleshoot', 'port_collision', [r'port 80 is taken', r'port conflict', r'port collision', r'address already in use', r'port.*failure.*start']),
         ('troubleshoot', 'diagnose_firewall', [r'app works locally but remote', r'firewall blocking', r'incoming connection']),
-        ('troubleshoot', 'diagnose_segfault', [r'segmentation fault', r'segfault']),
-        ('troubleshoot', 'diagnose_tls', [r'ssl certificate is failing', r'tls certificate', r'certificate verification']),
-        ('troubleshoot', 'diagnose_locale', [r'encoding issues', r'locale', r'utf-8 encoding']),
-        ('troubleshoot', 'diagnose_cron', [r'cron job', r'cron execution', r'scheduled job']),
-        ('troubleshoot', 'diagnose_io_wait', [r'cpu usage low.*load.*high', r'system load is very high', r'io wait', r'iowait']),
+        ('troubleshoot', 'diagnose_segfault', [r'segmentation fault', r'segfault', r'sigsegv', r'core dump']),
+        ('troubleshoot', 'diagnose_tls', [r'ssl certificate.*fail', r'tls certificate', r'certificate verification', r'ssl cert expired', r'openssl verify']),
+        ('troubleshoot', 'diagnose_locale', [r'encoding issues', r'\blocale\b', r'utf-8 encoding', r'unsupported locale settings', r'locale error']),
+        ('troubleshoot', 'diagnose_cron', [r'cron job', r'cron execution', r'scheduled job', r'crontab']),
+        ('troubleshoot', 'diagnose_io_wait', [r'cpu usage low.*load.*high', r'system load is very high', r'\bio wait\b', r'\biowait\b', r'vmstat.*iowait']),
         ('troubleshoot', 'diagnose_zombie_process', [r'zombie', r'defunct']),
         ('troubleshoot', 'find_broken_symlinks', [r'broken symlink', r'dangling symlink']),
-        ('troubleshoot', 'diagnose_ssh_service', [r'ssh connection refused', r'ssh service']),
-        ('troubleshoot', 'diagnose_missing_python_module', [r'fix this import error', r'^fix this$', r'importerror', r'modulenotfound', r'missing python module']),
+        ('troubleshoot', 'diagnose_ssh_service', [r'ssh connection refused', r'ssh service', r'ssh.*port.*refused']),
+        ('troubleshoot', 'diagnose_missing_python_module', [r'fix this import error', r'^fix this$', r'importerror', r'modulenotfound', r'missing python module', r'check installed python modules', r'installed.*python.*modules', r'python.*module.*pydantic']),
 
-        # Pacman / Arch
+        # Troubleshooting — new (v3)
+        ('troubleshoot', 'diagnose_service_crash', [r'service.*crash loop', r'service.*restart.*repeat', r'service.*fail.*repeat', r'service.*keep.*crash', r'crash loop', r'service.*restarting']),
+        ('troubleshoot', 'diagnose_failed_mount', [r'failed.*mount.*unit', r'mount.*unit.*fail', r'failed unit.*mount', r'systemd.*mount.*fail', r'view logs for failed unit', r'mount unit log']),
+        ('troubleshoot', 'diagnose_pacman_signature', [r'pacman signature', r'invalid.*package.*signature', r'signature.*failed', r'update archlinux-keyring', r'keyring.*signature', r'gpg.*keyring.*pacman']),
+        ('troubleshoot', 'diagnose_docker_daemon', [r'docker.*daemon.*error', r'docker service error', r'docker.*startup.*fail', r'docker service failed', r'docker.*error logs', r'docker daemon startup']),
+        ('troubleshoot', 'diagnose_nfs_mount', [r'nfs.*stale', r'stale file handle', r'nfs.*mount.*error', r'nfs connection']),
+        ('troubleshoot', 'diagnose_swap_exhaustion', [r'swap exhaustion', r'swap.*full', r'no swap space', r'swap.*check.*low', r'out of swap']),
+        ('troubleshoot', 'diagnose_thermal_throttling', [r'cpu.*throttl', r'thermal.*throttl', r'cpu.*overheat', r'cpu.*temperature', r'thermal limit']),
+        ('troubleshoot', 'diagnose_dns_resolution', [r'dns.*resolution.*timeout', r'dns.*fail', r'dns.*lookup.*timeout', r'coredns.*resolution', r'dns.*resolve', r'dig.*dns']),
+        ('troubleshoot', 'verify_journal_integrity', [r'journal.*corrupt', r'journal.*verify', r'verify.*journal', r'journalctl.*verify']),
+        ('troubleshoot', 'diagnose_core_dump_config', [r'core dump pattern', r'core.*dump.*config', r'kernel.*core.*pattern', r'coredump.*config']),
+        ('troubleshoot', 'diagnose_load_average', [r'system load average', r'high load average', r'check.*load.*average', r'system load.*uptime', r'load too high']),
+        ('troubleshoot', 'diagnose_journal_disk_usage', [r'journal.*disk.*usage', r'journal.*disk.*size', r'journal.*disk', r'journalctl.*disk-usage']),
+        ('troubleshoot', 'diagnose_high_memory', [r'high memory consumption', r'memory.*by process', r'top.*memory.*process', r'memory.*using', r'who.*memory']),
+
+        # Pacman / Arch — original
         ('pacman', 'query_explicit', [r'explicitly installed', r'explicit packages', r'packages.*explicitly installed']),
-        ('pacman', 'clean_cache', [r'clean.*cache', r'paccache', r'prune.*cache']),
-        ('pacman', 'find_orphans', [r'orphan', r'unneeded packages']),
-        ('pacman', 'downgrade_from_cache', [r'downgrade.*cached', r'downgrade.*cache', r'install previous version from cache']),
-        ('pacman', 'mkinitcpio', [r'initramfs', r'mkinitcpio']),
-        ('pacman', 'reflector', [r'mirrorlist', r'reflector', r'fastest mirrors']),
-        ('pacman', 'lsmod', [r'loaded kernel modules', r'lsmod']),
-        ('pacman', 'verify_package_files', [r'verify package', r'files from the .* package have been modified', r'check package integrity', r'pacman -qk']),
-        ('pacman', 'package_owner', [r'which package provides', r'which package owns', r'package owner']),
+        ('pacman', 'clean_cache', [r'clean.*cache', r'paccache', r'prune.*cache', r'retain.*version']),
+        ('pacman', 'find_orphans', [r'orphan', r'unneeded packages', r'find.*orphan']),
+        ('pacman', 'downgrade_from_cache', [r'downgrade.*cached', r'downgrade.*cache', r'install previous version from cache', r'install previous version.*mesa']),
+        ('pacman', 'mkinitcpio', [r'initramfs', r'mkinitcpio', r'rebuild.*initramfs']),
+        ('pacman', 'reflector', [r'mirrorlist', r'reflector', r'fastest mirrors', r'sync.*mirror']),
+        ('pacman', 'lsmod', [r'loaded kernel modules', r'\blsmod\b']),
+        ('pacman', 'verify_package_files', [r'verify package', r'files from the .* package have been modified', r'check package integrity', r'pacman -qk', r'verify integrity.*files.*package', r'verify.*installed files']),
+        ('pacman', 'package_owner', [r'which package provides', r'which package owns', r'package owner', r'package own.*file', r'who owns']),
 
-        # Journalctl
-        ('journalctl', 'kernel_logs', [r'kernel error', r'dmesg error', r'kernel log']),
-        ('journalctl', 'current_boot', [r'since last boot', r'current boot', r'journal.*this boot']),
+        # Pacman / Arch — new (v3)
+        ('pacman', 'search_package', [r'search.*package.*repo', r'search.*in.*repo', r'query.*package.*repo', r'find.*package.*repo', r'search.*package linux']),
+        ('pacman', 'query_foreign', [r'aur packages', r'foreign packages', r'packages from aur', r'list foreign', r'list.*aur.*installed', r'foreign.*installed']),
+        ('pacman', 'check_db_lock', [r'pacman.*db.*lock', r'pacman.*locked', r'database.*lock.*pacman', r'lsof.*pacman', r'pacman.*database.*locked', r'processes holding pacman']),
+        ('pacman', 'sysctl_read', [r'sysctl.*vm\.swappiness', r'read.*sysctl', r'kernel.*parameter.*sysctl', r'inspect sysctl', r'sysctl.*inspect']),
+        ('pacman', 'inspect_config', [r'active.*repositories.*pacman', r'pacman\.conf', r'pacman.*config', r'show.*repositories']),
+
+        # Journalctl — original
+        ('journalctl', 'kernel_logs', [r'kernel error', r'dmesg error', r'kernel log', r'kernel.*errors.*journal']),
+        ('journalctl', 'current_boot', [r'since last boot', r'current boot', r'journal.*this boot', r'this.*boot.*journal']),
         ('journalctl', 'follow', [r'follow.*system log', r'follow.*journal', r'tail.*system journal', r'follow logs in real time', r'stream journalctl']),
 
-        # Systemctl
+        # Journalctl — new (v3)
+        ('journalctl', 'vacuum_time', [r'vacuum.*journal.*days', r'vacuum.*logs.*older', r'clean.*journal.*days', r'journal.*vacuum.*time', r'remove.*journal.*older.*14.*days', r'keep.*journal.*14 days']),
+        ('journalctl', 'kernel_grep', [r'kernel.*messages.*contain', r'filter.*kernel.*messages', r'grep.*kernel.*journal', r'kernel.*messages.*efi', r'journal.*kernel.*grep']),
+
+        # Systemctl — original
         ('systemctl', 'enable_and_start', [r'enable.*service.*start', r'enable and start', r'start and enable', r'autostart service']),
-        ('systemctl', 'restart_service', [r'restart.*service', r'restart daemon', r'restart nginx']),
+        ('systemctl', 'restart_service', [r'restart.*service', r'restart daemon', r'restart nginx', r'restart postgresql', r'restart coredns', r'restart redis']),
         ('systemctl', 'list_failed', [r'failed systemd', r'failed services', r'failed units']),
 
-        # Filesystem / Coreutils
+        # Systemctl — new (v3)
+        ('systemctl', 'list_timers', [r'list.*timers', r'systemd.*timers', r'active.*timers', r'timer.*units', r'list active.*timers']),
+        ('systemctl', 'list_dependencies', [r'list dependencies', r'dependency.*tree', r'systemctl.*depend', r'unit.*dependencies', r'list.*dependencies.*systemd-networkd']),
+        ('systemctl', 'check_dns_stub', [r'resolvectl', r'dns.*stub', r'dns server status.*resolvectl', r'systemd.*resolved.*status', r'check dns.*resolvectl']),
+
+        # Filesystem / Coreutils — original
         ('filesystem', 'count_lines', [r'how many lines', r'count lines', r'line count', r'wc -l']),
-        ('filesystem', 'sort_csv_column', [r'sort.*column', r'sort.*csv']),
-        ('filesystem', 'text_replace', [r'replace all occurrences', r'replace.*with.*in', r'substitute.*in']),
+        ('filesystem', 'sort_csv_column', [r'sort.*column', r'sort.*csv', r'sort.*tsv', r'sort.*by.*column']),
+        ('filesystem', 'text_replace', [r'replace all occurrences', r'replace.*with.*in', r'substitute.*in', r'sed.*replace']),
         ('filesystem', 'compare_files', [r'differences between', r'compare.*files', r'diff.*files', r'show diff']),
         ('filesystem', 'watch_command', [r'monitor.*every', r'run.*periodically', r'watch.*every', r'repeat command']),
-        ('filesystem', 'create_symlink', [r'create.*symlink', r'symbolic link', r'symlink called']),
-        ('filesystem', 'kill_process_by_name', [r'kill all.*processes', r'kill process', r'terminate process', r'kill.*by name', r'pkill']),
+        ('filesystem', 'create_symlink', [r'create.*symlink', r'symbolic link', r'symlink called', r'link.*latest']),
+        ('filesystem', 'kill_process_by_name', [r'kill all.*processes', r'kill process', r'terminate process', r'kill.*by name', r'pkill', r'terminate all running.*celery']),
         ('filesystem', 'download_file', [r'download.*https?://', r'download file', r'fetch.*from url', r'download.*curl', r'wget']),
         ('filesystem', 'create_tarball', [r'create.*tarball', r'create.*archive', r'compress.*tar']),
         ('filesystem', 'list_listening_ports', [r'ports are listening', r'listening.*port', r'open listening ports']),
         ('filesystem', 'preallocate_file', [r'preallocate', r'allocate.*file', r'fallocate']),
         ('filesystem', 'identify_file_type', [r'what type of file', r'file type', r'mime type', r'what kind of file']),
-        ('filesystem', 'print_env_var', [r'environment variable', r'env var', r'print.*variable']),
-        ('filesystem', 'checksum', [r'checksum', r'sha256', r'compute.*hash', r'verify.*hash']),
-        ('filesystem', 'disk_usage', [r'disk is getting full', r'disk usage', r'largest directories', r'check disk space']),
+        ('filesystem', 'print_env_var', [r'environment variable', r'env var', r'print.*variable', r'value of.*kubeconfig']),
+        ('filesystem', 'checksum', [r'checksum', r'sha256', r'sha512', r'compute.*hash', r'verify.*hash']),
+        ('filesystem', 'disk_usage', [r'disk is getting full', r'disk usage', r'largest directories', r'check disk space', r'check space usage', r'space.*low.*root']),
 
-        # Gcloud
+        # Filesystem — new (v3)
+        ('filesystem', 'docker_logs', [r'docker logs', r'container logs', r'logs of.*container', r'view.*logs.*docker', r'check the logs of', r'logs.*cache-db']),
+        ('filesystem', 'find_broken_symlinks', [r'find.*broken.*symlinks', r'broken.*symbolic links', r'dangling.*symlinks', r'find.*broken.*links']),
+        ('filesystem', 'delete_temp_files', [r'delete.*temp.*files', r'remove.*tmp.*files', r'clean.*tmp', r'delete.*\.tmp']),
+        ('filesystem', 'inspect_partition_table', [r'inspect.*partition.*table', r'check.*partition.*table', r'view.*partition.*table', r'fdisk.*list.*partition']),
+        ('filesystem', 'show_uptime', [r'system uptime', r'check.*uptime', r'uptime.*load', r'system.*uptime.*load']),
+        ('filesystem', 'rerun_failed_tests', [r'rerun.*failed.*tests', r'run.*only.*failed.*test', r'rerun only the failed', r'pytest.*rerun', r'last failed', r'test.*--lf']),
+        ('filesystem', 'count_words', [r'count words', r'word count', r'wc -w', r'count.*words.*file']),
+        ('filesystem', 'list_block_devices', [r'list block devices', r'lsblk', r'block devices.*filesystem', r'filesystem.*mountpoint.*block']),
+        ('filesystem', 'show_ip_routing_table', [r'ip routing table', r'routing table', r'kernel.*routing', r'ip route', r'route -n']),
+        ('filesystem', 'list_docker_containers', [r'list.*docker.*containers', r'active docker containers', r'running.*containers', r'docker ps']),
+        ('filesystem', 'network_socket_stats', [r'socket statistics', r'ss -s', r'socket.*stats.*summary', r'network socket stats']),
+        ('filesystem', 'show_partition_table', [r'partition table.*parted', r'parted.*-l', r'show.*disk.*partition.*table', r'disk partition table']),
+
+        # Gcloud — original
         ('gcloud', 'list_addresses', [r'static ip', r'external ip', r'list addresses']),
         ('gcloud', 'create_firewall_rule', [r'firewall rule', r'allow port', r'open port in firewall']),
         ('gcloud', 'cloud_run_logs', [r'cloud run.*logs', r'run services logs', r'logs for the.*cloud run']),
         ('gcloud', 'cloud_run_deploy', [r'cloud run deploy', r'deploy.*to cloud run', r'deploy container to cloud run']),
         ('gcloud', 'storage_list', [r'objects in.*bucket', r'list.*storage bucket', r'storage list', r'gcs list', r'my gcs buckets']),
-        ('gcloud', 'storage_copy', [r'upload.*to gs://', r'copy.*to.*bucket', r'upload.*to bucket', r'copy.*from.*bucket', r'storage cp']),
+        ('gcloud', 'storage_copy', [r'upload.*to gs://', r'copy.*to.*bucket', r'upload.*to bucket', r'copy.*from.*bucket', r'storage cp', r'copy.*dataset.*gs://']),
         ('gcloud', 'iam_policy', [r'iam policy', r'policy bindings']),
         ('gcloud', 'set_region', [r'default compute region', r'compute/region', r'set.*region']),
         ('gcloud', 'sql_describe', [r'cloud sql', r'sql instances describe', r'describe.*sql']),
         ('gcloud', 'list_machine_types', [r'machine types', r'machine-types']),
-        ('gcloud', 'stop_instance', [r'stop.*instance', r'stop dev-server', r'stop.*vm']),
+        ('gcloud', 'stop_instance', [r'stop.*instance', r'stop dev-server', r'stop.*vm', r'stop.*analytics-worker']),
         ('gcloud', 'function_logs', [r'cloud function logs', r'logs for cloud function', r'function logs']),
+        ('gcloud', 'list_instances', [r'list.*instances', r'compute instances', r'running instances', r'list.*compute.*instances']),
 
-        # Gh
+        # Gcloud — new (v3)
+        ('gcloud', 'describe_network', [r'describe.*network', r'describe.*vpc', r'gcloud.*network.*describe', r'vpc.*network.*details', r'describe compute network']),
+        ('gcloud', 'list_disks', [r'list.*persistent.*disks', r'list.*compute.*disks', r'gcloud.*compute.*disks', r'list.*disks.*compute']),
+        ('gcloud', 'list_configurations', [r'list.*gcloud.*config', r'gcloud.*config.*list', r'active.*gcloud.*config', r'gcloud.*configurations']),
+        ('gcloud', 'list_run_services', [r'list.*cloud.*run.*services', r'list.*run.*services', r'cloud run.*services.*list', r'all cloud run services']),
+        ('gcloud', 'start_instance', [r'start.*instance', r'start.*compute.*instance', r'gcloud.*start.*instance', r'start.*staging-db']),
+        ('gcloud', 'describe_instance', [r'describe.*instance', r'instance.*details', r'compute.*instances.*describe', r'describe.*compute.*instance']),
+        ('gcloud', 'list_subnets', [r'list.*subnets', r'compute.*subnets', r'vpc.*subnets', r'subnets.*in.*network', r'list.*compute.*subnets']),
+        ('gcloud', 'create_disk_snapshot', [r'create.*snapshot', r'snapshot.*disk', r'disk snapshot', r'persistent.*disk.*snapshot']),
+        ('gcloud', 'list_run_revisions', [r'list.*run.*revisions', r'cloud run.*revisions', r'service.*revisions']),
+
+        # Gh — original
         ('gh', 'issue_list', [r'list.*issues', r'open issues', r'show issues']),
         ('gh', 'issue_create', [r'create.*issue', r'open.*issue', r'report.*issue', r'submit.*issue', r'file.*issue', r'new issue']),
         ('gh', 'issue_close', [r'close.*issue', r'resolve.*issue']),
@@ -207,13 +264,27 @@ class RuntimeIntentResolver:
         ('gh', 'pr_merge', [r'merge.*pr', r'merge.*pull request', r'rebase.*pr']),
         ('gh', 'label_list', [r'list.*labels', r'repository labels']),
 
+        # Gh — new (v3)
+        ('gh', 'workflow_run_list', [r'list.*workflow.*runs', r'view.*workflow.*runs', r'workflow.*run.*list', r'all.*workflow.*runs']),
+        ('gh', 'pr_checkout', [r'checkout.*pr', r'checkout.*pull.*request', r'check.*out.*pr.*locally', r'pr.*checkout']),
+        ('gh', 'pr_list', [r'list.*prs', r'list.*pull requests', r'show.*pull.*requests', r'pr.*list', r'pull requests assigned']),
+        ('gh', 'auth_status', [r'gh.*auth.*status', r'github.*login.*status', r'verify.*github.*login', r'auth.*github']),
+        ('gh', 'repo_view', [r'view.*repository.*summary', r'repo.*view', r'repository.*summary', r'view.*repo.*status']),
+        ('gh', 'workflow_run_rerun', [r'rerun.*failed.*workflow', r'rerun.*workflow.*run', r're-run.*failed.*jobs', r'rerun.*failed.*jobs']),
+        ('gh', 'pr_close', [r'close.*pr.*without.*merging', r'close.*pull.*request.*without', r'discard.*pr', r'close pr 319']),
+        ('gh', 'pr_checks', [r'pr.*checks', r'check.*status.*pr', r'ci.*status.*pr', r'view.*checks.*pr']),
+        ('gh', 'issue_reopen', [r'reopen.*issue', r're-open.*closed.*issue']),
+        ('gh', 'release_view', [r'view.*release', r'list.*release.*assets', r'release.*details', r'release.*view']),
+        ('gh', 'workflow_view', [r'view.*workflow.*file', r'workflow.*view', r'view.*ci\.yml', r'view.*github.*workflow']),
+        ('gh', 'pr_create', [r'create.*pull.*request', r'create.*draft.*pr', r'\bcreate.*pr\b', r'open.*pull.*request', r'new.*draft.*pr']),
+
         # Safety
         ('safety', 'safe_disk_formatting', [r'format /dev/', r'format.*partition', r'format.*disk', r'mkfs']),
         ('safety', 'safe_ssh_keygen', [r'ssh key', r'keygen', r'generate ssh']),
         ('safety', 'journal_vacuum', [r'free up space used by system logs', r'vacuum', r'clean.*journal', r'rotate journal']),
         ('safety', 'safe_mysql_password', [r'mysql.*password', r'database password']),
         ('safety', 'safe_visudo', [r'sudoers', r'visudo']),
-        ('safety', 'safe_swapoff', [r'swap', r'swapoff']),
+        ('safety', 'safe_swapoff', [r'\bswap\b', r'swapoff', r'disable.*swap']),
     ]
 
     def _match_intent_spec(
@@ -302,30 +373,72 @@ class RuntimeIntentResolver:
     def _match_from_context(
         self, user_text: str, intent_input: RuntimeIntentInput
     ) -> Optional[IntentSpec]:
-        """Handles pronoun references like 'approve it', 'restart it' using previous command context."""
+        """
+        Handles context-dependent references using previous command, terminal output, and history.
+        Covers: pronoun references ('approve it', 'restart it'), multi-turn continuations,
+        empty input (passive/no_action), and context-anchored service names.
+        """
         text_lower = user_text.lower()
         prev_cmd = (intent_input.previous_command or "").strip().lower()
+        prev_output = (intent_input.recent_terminal_output or "").strip().lower()
 
+        # ── Empty input → passive terminal state (no_action) ──────────────────
+        if not user_text or user_text in ("", "@"):
+            return self.registry.get_spec("interaction", "no_action")
+
+        # ── Approve it ─────────────────────────────────────────────────────────
         if re.search(r"\bapprove\s+(?:it|that|this)\b", text_lower):
-            if "gh pr" in prev_cmd or "pr view" in prev_cmd:
+            if "gh pr" in prev_cmd or "pr view" in prev_cmd or "pr review" in prev_cmd:
                 return self.registry.get_spec("gh", "pr_review_approve")
 
-        if re.search(r"\brestart\s+(?:it|that|the service)\b", text_lower):
-            if "systemctl" in prev_cmd or "service" in prev_cmd or "nginx" in prev_cmd:
-                return self.registry.get_spec("systemctl", "restart_service")
-            return self.registry.get_spec("systemctl", "restart_service")
-
+        # ── Close it (issue) ───────────────────────────────────────────────────
         if re.search(r"\bclose\s+(?:it|that|the issue)\b", text_lower):
             if "gh issue" in prev_cmd:
                 return self.registry.get_spec("gh", "issue_close")
 
+        # ── Restart it / restart <service> after context ───────────────────────
+        if re.search(r"\brestart\s+(?:it|that|the service|the daemon)\b", text_lower):
+            # Extract service from previous command
+            svc_m = re.search(r"systemctl\s+\S+\s+(\S+)", prev_cmd)
+            if svc_m:
+                return self.registry.get_spec("systemctl", "restart_service")
+            return self.registry.get_spec("systemctl", "restart_service")
+
+        # Restart <service> after context event (e.g. "restart postgresql after space cleanup")
+        # The word 'restart' is already handled by SEMANTIC_RULES for explicit service names,
+        # but when the previous output shows a related context we confirm via context
+        if re.search(r"\brestart\b", text_lower):
+            # If previous command or output context confirms the service domain
+            if any(svc in prev_cmd or svc in prev_output for svc in ("postgresql", "postgres", "coredns", "redis", "nginx", "systemctl")):
+                return self.registry.get_spec("systemctl", "restart_service")
+
+        # ── Docker logs / container logs with context ──────────────────────────
+        if re.search(r"\b(logs|check.*logs)\b", text_lower):
+            # If text mentions a container name or docker was used previously
+            if "docker" in text_lower or "container" in text_lower or "cache-db" in text_lower:
+                return self.registry.get_spec("filesystem", "docker_logs")
+            if "docker" in prev_cmd or "container" in prev_cmd:
+                return self.registry.get_spec("filesystem", "docker_logs")
+
+        # ── Continue / next / proceed ──────────────────────────────────────────
         if re.search(r"\b(?:continue|next|proceed)\b", text_lower):
+            # After stash → stash_pop
             if "stash" in prev_cmd:
                 return self.registry.get_spec("git", "stash_pop")
-            if "checkout" in prev_cmd or "branch" in prev_cmd:
+            # After git checkout -b / git switch -c → push_set_upstream
+            if re.search(r"(checkout -b|switch -c|create_branch)", prev_cmd):
                 return self.registry.get_spec("git", "push_set_upstream")
-            if "du -" in prev_cmd or "df -" in prev_cmd:
-                return self.registry.get_spec("troubleshoot", "diagnose_disk_usage")
+            # After du / df → investigate a subdirectory (disk_usage)
+            if re.search(r"\bdu\b|\bdf\b", prev_cmd):
+                return self.registry.get_spec("filesystem", "disk_usage")
+            # After failed test → rerun failed
+            if "pytest" in prev_cmd or "test" in prev_cmd:
+                return self.registry.get_spec("filesystem", "rerun_failed_tests")
+
+        # ── Inspect /var or specific path ─────────────────────────────────────
+        if re.search(r"\binspect\b", text_lower) and re.search(r"/var|/tmp|/home", text_lower):
+            if re.search(r"\bdu\b|\bdf\b", prev_cmd) or "disk" in prev_output:
+                return self.registry.get_spec("filesystem", "disk_usage")
 
         return None
 

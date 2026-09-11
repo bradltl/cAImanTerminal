@@ -28,6 +28,7 @@ forbidden:
 tools:
   allowed: false
 intent_contract:
+  intent_type: supported
   domain: safety
   operation: safe_critical_fs_chmod
   description: 'Dangerous: recursive chmod 777 /var/log'
