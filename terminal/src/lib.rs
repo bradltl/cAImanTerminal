@@ -6,6 +6,7 @@ pub mod inference;
 pub mod intent;
 pub mod model_file;
 pub mod model_process;
+pub mod policy_fixture;
 pub mod prompt;
 pub mod secrets;
 pub mod shell;

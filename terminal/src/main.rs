@@ -83,6 +83,15 @@ fn main() -> anyhow::Result<()> {
         if input.len() > 32768 {
             anyhow::bail!("Oversized policy input");
         }
+        if serde_json::from_str::<serde_json::Value>(&input)?
+            .get("policy")
+            .is_some()
+        {
+            let trace = caiman_terminal::policy_fixture::evaluate(serde_json::from_str(&input)?)?;
+            let value = caiman_terminal::secrets::sanitize_json(serde_json::to_value(trace)?);
+            println!("{}", serde_json::to_string(&value)?);
+            return Ok(());
+        }
         #[derive(serde::Deserialize)]
         #[serde(deny_unknown_fields)]
         struct Input {
