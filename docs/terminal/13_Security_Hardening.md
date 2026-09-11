@@ -12,9 +12,11 @@ command crosses them again. Unknown/ambiguous requests clarify. Passive requests
 can explain, but cannot repair or stage. Active requests share one repair budget;
 a safety/secret rejection is final, not a repair opportunity.
 
-The UI checks the tab and cancellation ticket, then generation, CWD, input, local
+The UI checks the tab and cancellation ticket, then request ID, authenticated
+prompt generation, context generation, CWD, input, local
 mode and prompt state at acceptance. Bash independently compares physical CWD
-and the exact Readline buffer before replacing it. The stage writer rescans the
+and the exact Readline buffer plus prompt generation before replacing it. A new
+prompt with identical CWD/input still invalidates an old stage file. The stage writer rescans the
 command. Only typed Snapshot/Stage keys cross the application PTY boundary;
 neither contains Enter. The separate user Enter still executes the command.
 

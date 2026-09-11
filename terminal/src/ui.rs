@@ -148,13 +148,21 @@ impl Tab {
         };
         self.ghost.set_text("");
         if !self.session.at_prompt
+            || !self.alive
+            || self.closed
             || self.session.remote
             || s.ticket != self.cancellation.load(Ordering::Relaxed)
             || !s.binding.matches(&self.session)
         {
             return false;
         }
-        match shell::write_stage(self.dir.path(), &s.command, &s.input, &self.session.cwd) {
+        match shell::write_stage_bound(
+            self.dir.path(),
+            &s.command,
+            &s.input,
+            &self.session.cwd,
+            self.session.prompt_generation,
+        ) {
             Ok(()) => {
                 // Fixed widget key sequence only. Never feed model text or Enter.
                 self.terminal.send_integration_key(self.shell.stage_key());
@@ -178,7 +186,10 @@ impl Tab {
             self.assistant.response("Off.", passive);
             return;
         }
-        let ticket = self.cancellation.load(Ordering::Relaxed);
+        let ticket = self.cancellation.fetch_add(1, Ordering::Relaxed) + 1;
+        self.session.request_id = ticket;
+        self.pending = None;
+        self.ghost.set_text("");
         let remember_intent = !passive || !self.session.input.is_empty();
         let memory = format!("User: {text}");
         let mut session = self.session.clone();
@@ -238,6 +249,11 @@ impl Tab {
             }
         };
         for event in events {
+            if self.session.prompt_generation != event.prompt_generation {
+                self.invalidate();
+                self.session.revision += 1;
+                self.session.prompt_generation = event.prompt_generation;
+            }
             if self.session.cwd != event.cwd
                 || event.kind == "request"
                 || (event.kind == "prompt" && (!self.session.at_prompt || self.session.remote))

@@ -197,7 +197,7 @@ fn staged_data_cannot_inject_enter_or_readline_control_sequences() {
     write_stage(dir.path(), "echo 'hello world'", "ech", "/tmp").unwrap();
     assert_eq!(
         fs::read_to_string(dir.path().join("stage")).unwrap(),
-        "/tmp\nech\necho 'hello world'\n"
+        "0\n/tmp\nech\necho 'hello world'\n"
     );
 }
 #[test]

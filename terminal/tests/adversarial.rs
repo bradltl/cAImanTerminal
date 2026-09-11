@@ -53,6 +53,12 @@ fn adversarial_production_pipeline_corpus() {
 fn session_binding_rejects_each_changed_dimension() {
     let req = request("ls");
     let binding = ContextBinding::capture(&req.session);
+    let mut newer = req.session.clone();
+    newer.request_id += 1;
+    assert!(!binding.matches(&newer));
+    let mut newer = req.session.clone();
+    newer.prompt_generation += 1;
+    assert!(!binding.matches(&newer));
     for change in 0..6 {
         let mut s = req.session.clone();
         match change {
