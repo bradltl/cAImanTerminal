@@ -9,8 +9,10 @@ security sandbox or a production-administration tool.
 `worker::process` produces the desktop's context-bound validation. Every command
 crosses syntax, CLI, host risk/secret and explicit intent checks; a repaired
 command crosses them again. Unknown/ambiguous requests clarify. Passive requests
-can explain, but cannot repair or stage. Active requests share one repair budget;
-a safety/secret rejection is final, not a repair opportunity.
+can explain, but cannot repair or stage. Automatic model repair is disabled.
+An unverifiable response can offer one separate **Retry suggestion** action while
+the original request snapshot is unchanged. A safety/secret rejection never
+offers retry. The alpha policy allows bounded deterministic task-option correction.
 
 The UI checks the tab and cancellation ticket, then request ID, authenticated
 prompt generation, context generation, CWD, input, local
@@ -28,7 +30,8 @@ Supported natural-language staging contracts are intentionally small:
 - Arch system update (`pacman -Syu`, with host-selected sudo when needed);
 - read a named file in the current directory (`cat`/`less`, exact quoted operand).
 
-An explicit literal authorizes only that exact command, operands and privileges;
+The versioned alpha CLI manifest limits which literals can be verified; installed
+programs outside it cannot stage. An explicit literal authorizes only that exact command, operands and privileges;
 every other gate still applies. Questions, negation and unsupported tasks cannot
 authorize a generated command. Exact destructive commands outside protected
 targets can still receive an Elevated warning: review them. Aliases, functions,

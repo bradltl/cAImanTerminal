@@ -99,6 +99,10 @@ struct Suggestion {
     ticket: u64,
     binding: crate::context::ContextBinding,
 }
+struct RetryOffer {
+    text: String,
+    binding: crate::context::ContextBinding,
+}
 struct Tab {
     session: Session,
     terminal: vte::Terminal,
@@ -126,9 +130,14 @@ struct Tab {
     child: Option<glib::Pid>,
     alive: bool,
     closed: bool,
+    retry: Option<RetryOffer>,
+    retry_button: gtk::Button,
+    last_request: Option<RetryOffer>,
 }
 impl Tab {
     fn invalidate(&mut self) {
+        self.retry = None;
+        self.retry_button.set_sensitive(false);
         self.cancellation.fetch_add(1, Ordering::Relaxed);
         self.pending = None;
         self.ghost.set_text("");
@@ -212,6 +221,12 @@ impl Tab {
             cancellation: self.cancellation.clone(),
             passive,
         };
+        self.last_request = (!passive).then(|| RetryOffer {
+            text: req.text.clone(),
+            binding: crate::context::ContextBinding::capture(&req.session),
+        });
+        self.retry = None;
+        self.retry_button.set_sensitive(false);
         match requests.try_send(req) {
             Ok(()) => {
                 if remember_intent {
@@ -463,6 +478,9 @@ fn new_tab(
         .hscrollbar_policy(gtk::PolicyType::Never)
         .build();
     side.append(&side_scroll);
+    let retry_button = gtk::Button::with_label("Retry suggestion");
+    retry_button.set_sensitive(false);
+    side.append(&retry_button);
     let pane_label = label("ai");
     pane_label.add_css_class("status");
     side.append(&pane_label);
@@ -515,7 +533,27 @@ fn new_tab(
         child: None,
         alive: true,
         closed: false,
+        retry: None,
+        last_request: None,
+        retry_button: retry_button.clone(),
     }));
+    let retry_tab = Rc::downgrade(&tab);
+    let retry_requests = requests.clone();
+    retry_button.connect_clicked(move |_| {
+        let Some(tab) = retry_tab.upgrade() else {
+            return;
+        };
+        let mut tab = tab.borrow_mut();
+        tab.retry_button.set_sensitive(false);
+        let Some(offer) = tab.retry.take() else {
+            return;
+        };
+        if tab.enabled && tab.alive && !tab.closed && offer.binding.matches(&tab.session) {
+            tab.request(offer.text, false, &retry_requests);
+            // One new inference per explicit retry; a new @ request can start over.
+            tab.last_request = None;
+        }
+    });
     let weak = Rc::downgrade(&tab);
     let book = notebook.clone();
     let page = split.clone();
@@ -1021,6 +1059,14 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                                 }
                             }
                             Err(error) => {
+                                if !passive && error.starts_with("Unverifiable:") {
+                                    if let Some(offer) = tab.last_request.take() {
+                                        if offer.binding.matches(&tab.session) {
+                                            tab.retry = Some(offer);
+                                            tab.retry_button.set_sensitive(true);
+                                        }
+                                    }
+                                }
                                 tab.assistant.response(
                                     &format!(
                                         "{}\n\n{error}",

@@ -233,8 +233,10 @@ fn hostile_context_never_authorizes_a_command_and_secrets_do_not_leave_host() {
             .as_str()
             .unwrap()
             .contains("Untrusted"));
-        let answer = worker::process(&req, |_| Ok(serde_json::json!({"action":"suggest_command", "command":"rm -rf ./project", "explanation":"do it"}).to_string())).unwrap();
-        assert!(answer.validation.is_none());
+        let answer = worker::process(&req, |_| {
+            Ok(serde_json::json!({"action":"suggest_command", "command":"rm -rf ./project", "explanation":"do it"}).to_string())
+        });
+        assert!(!answer.is_ok_and(|a| a.validation.is_some()));
     }
     let mut req = request("ls");
     req.session.input = "x".repeat(4097);

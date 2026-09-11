@@ -167,14 +167,6 @@ pub fn build_prompt(request: &Request, docs: &str) -> String {
     .encode()
 }
 
-fn correction_prompt(original: &str, error: &str, docs: &str) -> String {
-    let mut prompt: crate::prompt::Prompt =
-        serde_json::from_str(original).expect("host context envelope");
-    prompt.correction = Some(redact(error));
-    prompt.docs = redact(&docs.chars().take(4000).collect::<String>());
-    prompt.encode()
-}
-
 /// Bounded mailbox and one worker keep inference off GTK's main loop and avoid
 /// loading one model per tab. No runtime implementation has a shell handle.
 pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Settings) -> Worker {
@@ -254,10 +246,20 @@ pub fn process(
     }
     let mut answer =
         process_inner(request, generate).map_err(|e| anyhow::anyhow!(redact(&e.to_string())))?;
+    if let Some(command) = answer.response.command.as_deref() {
+        let trace = check_candidate(request, command, &crate::alpha_policy::HostFacts::local());
+        if let Some(command) = trace.final_command {
+            answer.repaired |= trace.correction.is_some();
+            answer.validation = Some(host::assess_risk(&command, false, "")?);
+            answer.response.command = Some(command);
+        } else {
+            answer.validation = None;
+        }
+    }
     let contract = crate::intent::IntentContract::resolve(request);
     if let Some(command) = answer.response.command.as_deref() {
         host::assess_risk(command, false, "")?;
-        if request.passive || contract.check(command).is_err() {
+        if request.passive || contract.check(command).is_err() || answer.validation.is_none() {
             answer.validation = None;
             let explanation = if answer.source == "Host guidance" {
                 answer.response.explanation.clone()
@@ -365,7 +367,6 @@ fn process_inner(
         return answer;
     }
     let start = Instant::now();
-    let mut docs = String::new();
     let prompt = build_prompt(request, "");
     let parse = |raw: &str| -> anyhow::Result<Response> {
         let response = Response::parse(raw)?;
@@ -386,54 +387,21 @@ fn process_inner(
         Ok(response)
     };
     let raw = infer(&prompt)?;
+    let mut response = parse(&raw).map_err(|_| {
+        anyhow::anyhow!("Unverifiable: invalid assistant response; no command staged.")
+    })?;
     let mut repaired = false;
-    let mut response = match parse(&raw) {
-        Ok(response) => response,
-        Err(error) => {
-            if request.passive {
-                return Err(error);
-            }
-            repaired = true;
-            parse(&infer(&correction_prompt(&prompt, &error.to_string(), ""))?)?
-        }
-    };
     if let Some(command) = response.command.as_deref() {
-        // Safety and secrets are final rejection, before any documentation/repair.
+        // Hard rejection never becomes a retry offer or correction opportunity.
         host::assess_risk(command, request.session.remote, "")?;
-        let check = |candidate: &str, docs: &str| -> anyhow::Result<()> {
-            crate::command_validation::check_candidate(candidate, request.session.remote, docs)?;
-            let intent = effective_intent(request);
-            crate::command_validation::check_intent(candidate, intent, request.session.remote)?;
-            if request
-                .session
-                .journal
-                .back()
-                .is_some_and(|r| r.exit_code != 0 && r.command.trim() == candidate.trim())
-            {
-                anyhow::bail!("This exact command just failed; use its output to propose a different next step");
-            }
-            Ok(())
-        };
-        if check(command, "").is_err() {
-            docs = host::documentation(&request.text, Some(command), request.session.remote);
-            // Missing cached evidence does not require a model repair if the
-            // installed help validates the original flags unchanged.
-            if let Err(error) = check(command, &docs) {
-                if repaired || request.passive {
-                    return Err(error);
-                }
-                repaired = true;
-                let repair = correction_prompt(&prompt, &format!("Candidate rejected: {}. Host validation: {error}. Correct it for the original user request, or explain the limitation. Do not repeat the rejected command.", redact(command)), &docs);
-                response = parse(&infer(&repair)?)?;
-                if let Some(candidate) = response.command.as_deref() {
-                    host::assess_risk(candidate, request.session.remote, "")?;
-                    // Repair may choose a different executable/subcommand. Never
-                    // reuse evidence for the wrong command or infer a third time.
-                    docs =
-                        host::documentation(&request.text, Some(candidate), request.session.remote);
-                    check(candidate, &docs)?;
-                }
-            }
+        let trace = check_candidate(request, command, &crate::alpha_policy::HostFacts::local());
+        if let Some(command) = trace.final_command {
+            repaired = trace.correction.is_some();
+            response.command = Some(command);
+        } else if trace.initial.cli != "valid" {
+            anyhow::bail!(
+                "Unverifiable: CLI syntax is outside the alpha policy; no command staged."
+            );
         }
     }
     // Safety rejection is final, not another opportunity to rewrite the command.
@@ -445,8 +413,26 @@ fn process_inner(
     Ok(Answer {
         response,
         validation,
-        source: docs.lines().next().unwrap_or("").to_string(),
+        source: crate::alpha_policy::VERSION.into(),
         elapsed_ms: start.elapsed().as_millis(),
         repaired,
     })
+}
+
+/// The candidate boundary is shared by generated and host-guided responses and
+/// fixture replay. Host facts are injectable; the decision code is production code.
+pub fn check_candidate(
+    request: &Request,
+    command: &str,
+    facts: &crate::alpha_policy::HostFacts,
+) -> crate::alpha_policy::DecisionTrace {
+    let mut trace = crate::alpha_policy::evaluate(request, command, facts);
+    if request.session.journal.back().is_some_and(|r| {
+        r.exit_code != 0 && Some(r.command.trim()) == trace.final_command.as_deref().map(str::trim)
+    }) {
+        trace.stageable = false;
+        trace.final_command = None;
+        trace.context = "previous_failure".into();
+    }
+    trace
 }
