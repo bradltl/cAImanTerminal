@@ -1,3 +1,4 @@
+pub mod alpha_policy;
 pub mod context;
 pub mod host;
 #[cfg(feature = "inference")]

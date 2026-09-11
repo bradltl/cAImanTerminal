@@ -3,7 +3,8 @@
 use crate::{host, worker::Request};
 use anyhow::{bail, Result};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(tag = "kind", content = "value", rename_all = "snake_case")]
 pub enum IntentContract {
     ExactCommand(String),
     Alternatives(Vec<String>),
@@ -13,6 +14,14 @@ pub enum IntentContract {
 
 impl IntentContract {
     pub fn resolve(request: &Request) -> Self {
+        Self::resolve_for_host(
+            request,
+            crate::command_validation::Host::local().package_manager,
+            unsafe { libc::geteuid() } == 0,
+        )
+    }
+
+    pub fn resolve_for_host(request: &Request, manager: Option<&str>, root: bool) -> Self {
         if request.passive || request.session.remote {
             return Self::ExplainOrClarify;
         }
@@ -46,8 +55,8 @@ impl IntentContract {
             "show current directory" | "print working directory" => &["pwd"],
             "show git status" => &["git status"],
             "update my system" | "upgrade my system" => {
-                if crate::command_validation::Host::local().package_manager == Some("pacman") {
-                    if unsafe { libc::geteuid() } == 0 {
+                if manager == Some("pacman") {
+                    if root {
                         &["pacman -Syu"]
                     } else {
                         &["sudo pacman -Syu"]

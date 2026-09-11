@@ -1,0 +1,14 @@
+{
+  "version": "alpha-v1",
+  "commands": {
+    "ls": {"flags": ["-a", "-l", "-h", "-R", "--all", "--recursive"], "min_operands": 0, "max_operands": 1},
+    "df": {"flags": ["-h", "-T", "--human-readable", "--print-type"], "min_operands": 0, "max_operands": 1},
+    "free": {"flags": ["-h", "--human"], "min_operands": 0, "max_operands": 0},
+    "pwd": {"flags": ["-L", "-P"], "min_operands": 0, "max_operands": 0},
+    "cat": {"flags": ["-n", "-b", "-s", "--number"], "min_operands": 1, "max_operands": 1},
+    "less": {"flags": [], "min_operands": 1, "max_operands": 1},
+    "echo": {"flags": [], "min_operands": 0, "max_operands": 32},
+    "git": {"flags": ["--short", "--branch", "-s", "-b"], "prefix": ["status"], "min_operands": 0, "max_operands": 0},
+    "pacman": {"flags": [], "exact_args": ["-Syu"], "min_operands": 0, "max_operands": 0}
+  }
+}
