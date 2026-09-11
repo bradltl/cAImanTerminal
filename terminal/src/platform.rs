@@ -4,9 +4,8 @@ use std::{
     io::Read,
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    time::Duration,
+    time::{Duration, Instant},
 };
-use wait_timeout::ChildExt;
 pub trait HostPlatform: Sync {
     fn id(&self) -> &'static str;
     fn detect(&self) -> crate::command_validation::Host;
@@ -63,6 +62,7 @@ fn linux_probe(exe: &str, args: &[&str]) -> Result<String> {
     use std::os::unix::process::CommandExt;
     command
         .args(args)
+        .current_dir("/")
         .env_clear()
         .env("PATH", "/usr/bin:/bin")
         .env("LC_ALL", "C")
@@ -75,8 +75,31 @@ fn linux_probe(exe: &str, args: &[&str]) -> Result<String> {
         .stdout(output.try_clone()?)
         .stderr(Stdio::null())
         .process_group(0);
+    // SAFETY: only async-signal-safe setrlimit runs between fork and exec.
+    unsafe {
+        command.pre_exec(|| {
+            let limit = libc::rlimit {
+                rlim_cur: 65536,
+                rlim_max: 65536,
+            };
+            if libc::setrlimit(libc::RLIMIT_FSIZE, &limit) != 0 {
+                return Err(std::io::Error::last_os_error());
+            }
+            Ok(())
+        });
+    }
     let mut child = command.spawn()?;
-    let status = child.wait_timeout(Duration::from_secs(2))?;
+    // Avoid a process-global SIGCHLD handler competing with GTK/model children.
+    let deadline = Instant::now() + Duration::from_secs(2);
+    let status = loop {
+        if let Some(status) = child.try_wait()? {
+            break Some(status);
+        }
+        if Instant::now() >= deadline {
+            break None;
+        }
+        std::thread::sleep(Duration::from_millis(10));
+    };
     // Include any descendants a help wrapper may have created in cleanup.
     unsafe {
         libc::kill(-(child.id() as i32), libc::SIGKILL);
