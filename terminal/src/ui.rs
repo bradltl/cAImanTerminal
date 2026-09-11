@@ -1,7 +1,7 @@
 use crate::terminal_backend::TerminalSurface;
 use crate::{
     context::{bounded, CommandRecord, Session},
-    shell::{self, EventReader},
+    shell::EventReader,
     worker::{self, Event, Request},
 };
 use gtk::{gdk, gio, glib, prelude::*};
@@ -165,16 +165,24 @@ impl Tab {
         {
             return false;
         }
-        match shell::write_stage_bound(
+        if s.input != self.session.input {
+            return false;
+        }
+        match crate::staging::stage(
+            &self.terminal,
             self.dir.path(),
-            &s.command,
-            &s.input,
-            &self.session.cwd,
-            self.session.prompt_generation,
+            &self.session,
+            crate::staging::StageAttempt {
+                command: &s.command,
+                binding: &s.binding,
+                ticket: s.ticket,
+                current_ticket: self.cancellation.load(Ordering::Relaxed),
+                alive: self.alive && !self.closed,
+                passive: false,
+            },
         ) {
             Ok(()) => {
                 // Fixed widget key sequence only. Never feed model text or Enter.
-                self.terminal.send_integration_key(self.shell.stage_key());
                 self.terminal.grab_focus();
                 true
             }
@@ -538,6 +546,12 @@ fn new_tab(
         retry_button: retry_button.clone(),
     }));
     let retry_tab = Rc::downgrade(&tab);
+    let switch_tab = Rc::downgrade(&tab);
+    notebook.connect_switch_page(move |_, _, _| {
+        if let Some(tab) = switch_tab.upgrade() {
+            tab.borrow_mut().invalidate();
+        }
+    });
     let retry_requests = requests.clone();
     retry_button.connect_clicked(move |_| {
         let Some(tab) = retry_tab.upgrade() else {

@@ -1,9 +1,17 @@
 //! The assistant reads a terminal surface through this contract, independent of
 //! the widget library. Shell event parsing and staging remain separate contracts.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IntegrationKey {
     Snapshot,
     Stage,
+}
+impl IntegrationKey {
+    pub fn bytes(self) -> &'static [u8] {
+        match self {
+            Self::Snapshot => b"\x18\x07",
+            Self::Stage => b"\x18s",
+        }
+    }
 }
 pub trait TerminalSurface {
     fn context_text(&self) -> String;
@@ -25,9 +33,6 @@ impl TerminalSurface for vte::Terminal {
     }
     fn send_integration_key(&self, key: IntegrationKey) {
         use vte::prelude::*;
-        self.feed_child(match key {
-            IntegrationKey::Snapshot => b"\x18\x07",
-            IntegrationKey::Stage => b"\x18s",
-        });
+        self.feed_child(key.bytes());
     }
 }

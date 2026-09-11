@@ -10,6 +10,7 @@ pub mod policy_fixture;
 pub mod prompt;
 pub mod secrets;
 pub mod shell;
+pub mod staging;
 #[cfg(feature = "desktop")]
 pub mod ui;
 pub mod worker;
