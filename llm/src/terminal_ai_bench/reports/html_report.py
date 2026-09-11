@@ -1,11 +1,19 @@
 from __future__ import annotations
 
-import html
+from html import escape as html_escape
+from ..privacy import redact
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
 from ..scoring import ScenarioScore
+
+class html:
+    # Redact before escaping: scanning escaped markup can miss quoted secrets
+    # or consume HTML attributes. Keep the established rendering call sites.
+    @staticmethod
+    def escape(text):
+        return html_escape(redact(text))
 
 
 def generate_html_report(
@@ -58,7 +66,8 @@ def generate_html_report(
 
         sys_metrics_html = f"""
         <div style="margin-bottom: 24px;">
-            <h2>cAIman Terminal System Pipeline Metrics</h2>
+            <h2>Python reference pipeline metrics</h2>
+            <p>Examined regression data. These scores do not certify the Rust desktop staging boundary.</p>
             <table>
                 <tr><th>Metric</th><th>Value</th></tr>
                 <tr><td>Raw LLM Score</td><td><b>{system_metrics.get('raw_overall_score', 0.0):.1f}%</b></td></tr>

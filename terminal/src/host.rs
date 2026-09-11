@@ -56,6 +56,13 @@ pub struct Validation {
     pub command: String,
     pub risk: Risk,
     pub reason: String,
+    #[serde(skip_serializing)]
+    pub(crate) binding: Option<crate::context::ContextBinding>,
+}
+impl Validation {
+    pub fn binding(&self) -> Option<&crate::context::ContextBinding> {
+        self.binding.as_ref()
+    }
 }
 
 fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> Result<()> {
@@ -69,7 +76,13 @@ fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> R
             }
         }
         "command" => {
-            fn plain(node: Node<'_>) -> bool {
+            fn plain(node: Node<'_>, source: &str) -> bool {
+                // shlex does not expand globs, braces or tilde as Bash does.
+                if node.kind() == "word"
+                    && source[node.byte_range()].contains(['*', '?', '[', '{', '~'])
+                {
+                    return false;
+                }
                 if ![
                     "command",
                     "command_name",
@@ -85,10 +98,10 @@ fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> R
                     return false;
                 }
                 let mut cursor = node.walk();
-                let ok = node.named_children(&mut cursor).all(plain);
+                let ok = node.named_children(&mut cursor).all(|n| plain(n, source));
                 ok
             }
-            if !plain(node) {
+            if !plain(node, source) {
                 bail!("Embedded shell syntax is not supported for staging");
             }
             let text = &source[node.byte_range()];
@@ -109,7 +122,7 @@ fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> R
     Ok(())
 }
 pub fn parse_commands(command: &str) -> Result<Vec<Vec<String>>> {
-    if command.is_empty() || command.len() > 4096 || command.chars().any(char::is_control) {
+    if command.is_empty() || command.len() > 4096 || command.chars().any(|c| c.is_control() || matches!(c, '\u{061c}' | '\u{200b}'..='\u{200f}' | '\u{2028}'..='\u{202e}' | '\u{2060}'..='\u{206f}' | '\u{feff}')) {
         bail!("Commands must fit on one printable line");
     }
     let mut parser = Parser::new();
@@ -160,6 +173,7 @@ pub fn validate(command: &str, remote: bool, documentation: &str) -> Result<Vali
 
 /// Final deterministic gate; no documentation subprocess or inference.
 pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<Validation> {
+    crate::secrets::check_command(command)?;
     let commands = parse_commands(command)?;
     let mut risk = Risk::Normal;
     let mut reasons = Vec::new();
@@ -173,6 +187,9 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
             }
         }
         let exe = words[0].as_str();
+        if exe.contains('/') || !exe.is_ascii() {
+            bail!("Path-qualified or non-ASCII executables cannot be staged");
+        }
         let args = &words[1..];
         let has = |s: &str| args.iter().any(|a| a == s);
         if exe == "command" && !args.first().is_some_and(|a| a == "-v" || a == "-V") {
@@ -181,7 +198,7 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
         if [
             "bash", "sh", "zsh", "fish", "python", "python3", "perl", "ruby", "node", "awk",
             "gawk", "mawk", "sed", "eval", "exec", "env", "xargs", "watch", "nohup", "timeout",
-            "busybox",
+            "busybox", "doas", "su", "pkexec", "ssh", "mosh", "tmux", "screen", "source", ".",
         ]
         .contains(&exe)
         {
@@ -339,6 +356,7 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
     }
     reasons.dedup();
     Ok(Validation {
+        binding: None,
         command: command.into(),
         risk,
         reason: reasons.join(". "),
@@ -474,10 +492,10 @@ pub fn audit_report(report: &serde_json::Value) -> Result<serde_json::Value> {
             "host_verdict": match verdict { Some(Ok(v)) => serde_json::to_value(v)?, Some(Err(e)) => serde_json::json!({"rejected":e.to_string()}), None => serde_json::json!({"rejected":"No command candidate"}) },
         }));
     }
-    Ok(serde_json::json!({
+    Ok(crate::secrets::sanitize_json(serde_json::json!({
         "audit": "cayman-host-static-v1", "scope": "Syntax and safety replay only; no documentation/repair or executable availability checks",
         "model": report["model"], "model_sha256": report["model_sha256"], "raw_overall_score": report["overall_score"],
         "scenarios": rows, "raw_critical_cases": critical, "critical_cases_blocked": blocked,
         "critical_cases_still_stageable": critical - blocked,
-    }))
+    })))
 }

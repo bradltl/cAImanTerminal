@@ -15,6 +15,8 @@ from .scoring import ScenarioScore, score_scenario
 from .scoring.interaction import compute_interaction_metrics
 from .scoring.performance import PerformanceMetrics
 from .tool_runtime import ToolRuntime
+from .provenance import evaluation_identity, prompt_digest, digest
+from .privacy import sanitize
 from .reports.console import print_console_report
 from .reports.json_report import generate_json_report
 from .reports.html_report import generate_html_report
@@ -73,6 +75,7 @@ class BenchmarkRunner:
         """Execute a single scenario turn with optional tool request loop."""
         prompt = self.context_builder.build_prompt(scenario)
         infer_res = runtime.infer(prompt)
+        infer_res.prompt_sha256 = prompt_digest(prompt)
         parse_res = parse_response(infer_res.text)
 
         # Tool request loop: if model returned lookup_help and tools are allowed
@@ -89,6 +92,7 @@ class BenchmarkRunner:
                 f"{tool_res.output}\n\nNow provide your final recommendation in structured JSON:"
             )
             second_infer = runtime.infer(prompt + tool_snippet)
+            second_infer.prompt_sha256 = prompt_digest(prompt + tool_snippet)
             second_parse = parse_response(second_infer.text)
             return second_infer, second_parse
 
@@ -159,7 +163,8 @@ class BenchmarkRunner:
         if not model_cfg and not mock_mode and model_name != "mock":
             raise ValueError(f"Model '{model_name}' not configured in {self.models_config_path}")
 
-        self.tool_runtime.live_mode = live_mode
+        if live_mode:
+            raise ValueError("Live Python tools are disabled; reference runs use fixtures only")
 
         # Load scenarios
         all_scenarios = load_all_scenarios(self.scenarios_dir)
@@ -176,10 +181,13 @@ class BenchmarkRunner:
         else:
             scenarios = all_scenarios
 
+        provenance = evaluation_identity(scenarios, self.context_builder)
         # Initialize Model Runtime
         if replay_raw_inference:
             from .model_runtime import ReplayModelRuntime
             runtime = ReplayModelRuntime(replay_raw_inference)
+            if runtime.replay_data.get("provenance") != provenance:
+                raise ValueError("Replay corpus or prompt templates changed (or legacy artifact has no identity)")
         else:
             runtime = create_model_runtime(
                 model_name=model_name,
@@ -244,6 +252,7 @@ class BenchmarkRunner:
                         infer_res = runtime.infer(prompt)
                         if save_raw_inference:
                             recorded_raw_inferences[turn_key] = {
+                                "prompt_sha256": prompt_digest(prompt),
                                 "text": infer_res.text,
                                 "prompt_tokens": infer_res.prompt_tokens,
                                 "completion_tokens": infer_res.completion_tokens,
@@ -263,6 +272,7 @@ class BenchmarkRunner:
                         infer_res, parse_res = self._execute_turn(runtime, turn_scenario, turn.tools.allowed)
                         if save_raw_inference:
                             recorded_raw_inferences[turn_key] = {
+                                "prompt_sha256": infer_res.prompt_sha256,
                                 "text": infer_res.text,
                                 "prompt_tokens": infer_res.prompt_tokens,
                                 "completion_tokens": infer_res.completion_tokens,
@@ -298,13 +308,11 @@ class BenchmarkRunner:
                     scenario_response_pairs.append((turn_scenario, parse_res.response))
 
                     # Advance simulated session history
-                    staged_cmd = (sys_eval.final_command if sys_eval else None) or (
-                        parse_res.response.command
-                        if parse_res.response and parse_res.response.command
-                        else turn.input.text
-                    )
-                    executed_cmd = turn.simulated_command or staged_cmd
-                    session_history.append(
+                    executed_cmd = turn.simulated_command
+                    # Only explicit fixture execution advances history. A suggestion
+                    # or rejected candidate is not an observed command execution.
+                    if executed_cmd:
+                        session_history.append(
                         HistoryTurn(
                             command=executed_cmd,
                             exit_code=turn.simulated_exit_code,
@@ -364,6 +372,7 @@ class BenchmarkRunner:
                     infer_res = runtime.infer(prompt)
                     if save_raw_inference:
                         recorded_raw_inferences[scenario_key] = {
+                            "prompt_sha256": prompt_digest(prompt),
                             "text": infer_res.text,
                             "prompt_tokens": infer_res.prompt_tokens,
                             "completion_tokens": infer_res.completion_tokens,
@@ -383,6 +392,7 @@ class BenchmarkRunner:
                     infer_res, parse_res = self._execute_turn(runtime, scenario, scenario.tools.allowed)
                     if save_raw_inference:
                         recorded_raw_inferences[scenario_key] = {
+                            "prompt_sha256": infer_res.prompt_sha256,
                             "text": infer_res.text,
                             "prompt_tokens": infer_res.prompt_tokens,
                             "completion_tokens": infer_res.completion_tokens,
@@ -519,7 +529,9 @@ class BenchmarkRunner:
                     "model": model_name,
                     "model_sha256": model_sha256,
                     "timestamp": time.time(),
-                    "inferences": recorded_raw_inferences,
+                    "provenance": provenance,
+                    "replay_safe": sanitize(recorded_raw_inferences) == recorded_raw_inferences,
+                    "inferences": sanitize(recorded_raw_inferences),
                 }, rf, indent=2)
 
         # Generate JSON run artifact
@@ -535,6 +547,7 @@ class BenchmarkRunner:
             model_sha256=model_sha256,
             evaluation_mode="system" if system_mode else "raw",
             system_metrics=system_metrics_dict,
+            provenance={**provenance, "raw_artifact_sha256": digest(runtime.replay_data) if replay_raw_inference else None},
         )
 
         # Generate HTML report

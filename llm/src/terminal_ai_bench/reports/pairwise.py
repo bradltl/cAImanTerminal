@@ -32,6 +32,13 @@ def generate_pairwise_comparison(
 
     oracle_scenarios = {s["scenario_id"]: s for s in oracle_data.get("scenarios", [])}
     runtime_scenarios = {s["scenario_id"]: s for s in runtime_data.get("scenarios", [])}
+    if not oracle_data.get("model_sha256") or oracle_data.get("model_sha256") != runtime_data.get("model_sha256"):
+        raise ValueError("Pairwise comparison requires identical model hashes")
+    if oracle_scenarios.keys() != runtime_scenarios.keys():
+        raise ValueError("Pairwise comparison requires identical scenario sets")
+    provenance = oracle_data.get("provenance") or {}
+    if not provenance.get("raw_artifact_sha256") or provenance != runtime_data.get("provenance"):
+        raise ValueError("Pairwise comparison requires identical corpus, templates and raw replay artifact hashes")
 
     all_ids = list(oracle_scenarios.keys())
 

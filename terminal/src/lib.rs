@@ -2,7 +2,11 @@ pub mod context;
 pub mod host;
 #[cfg(feature = "inference")]
 pub mod inference;
+pub mod intent;
+pub mod model_file;
+pub mod model_process;
 pub mod prompt;
+pub mod secrets;
 pub mod shell;
 #[cfg(feature = "desktop")]
 pub mod ui;
@@ -26,7 +30,6 @@ pub mod platform;
 pub mod settings;
 #[cfg(feature = "desktop")]
 pub mod settings_ui;
-#[cfg(feature = "desktop")]
 pub mod terminal_backend;
 
 mod command_profiles;

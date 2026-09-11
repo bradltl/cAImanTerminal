@@ -1,5 +1,8 @@
 # Runtime LLM harness
 
+See [security hardening](../../docs/terminal/13_Security_Hardening.md) for the
+authoritative current policy and new conformance/mutation/CI commands.
+
 The desktop, `--ask`, and these tests use `worker::process`: deterministic host
 hints, structured prompt, JSON contract, one shared repair, installed command
 validation, intent checks, and final risk assessment. Tests never execute model
@@ -46,7 +49,8 @@ GDK_BACKEND=x11 CAYMAN_TEST_X11_KEYS=1 cargo test --offline --lib ui::tests::des
   If these alone exceed the budget, the request fails explicitly.
 - Context truncation is marked in the envelope. Read-only file/editor guidance
   still bypasses inference while crossing host validation.
-- Malformed output, tone errors, and invalid commands share one repair budget.
+- Active malformed output, tone errors, and invalid commands share one repair budget.
+  Passive requests cannot repair or stage. Unknown intent fails closed.
   Risk rejection is final. Cancellation and a 45-second inference deadline apply
   during prompt evaluation and output generation.
 

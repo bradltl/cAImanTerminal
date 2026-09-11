@@ -157,22 +157,9 @@ class DeterministicCorrector:
                 )
 
         elif op == "downgrade_from_cache":
-            if exe == "pacman" or "mesa" in raw or "downgrade" in user_text.lower():
-                pkg = contract.parameters.get("package")
-                if not pkg:
-                    m = re.search(r"downgrade\s+([a-zA-Z0-9_\-]+)", user_text, re.IGNORECASE)
-                    if m:
-                        pkg = m.group(1)
-                if not pkg and ast.arguments:
-                    pkg = ast.arguments[-1]
-                if pkg:
-                    return DeterministicCorrection(
-                        available=True,
-                        original_command=raw,
-                        corrected_command=f"sudo pacman -U /var/cache/pacman/pkg/{pkg}*",
-                        source="pacman_downgrade",
-                        reason=f"Install previous cached version of package {pkg}",
-                    )
+            # The requested package is not an exact installed archive/version.
+            # A cache wildcard can select multiple versions; never invent one.
+            return DeterministicCorrection(available=False, reason="Exact cached archive required")
 
         elif op == "mkinitcpio":
             if exe in ("mkinitcpio", "pacman") or "initramfs" in user_text.lower():

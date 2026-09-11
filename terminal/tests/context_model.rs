@@ -57,8 +57,8 @@ fn distro_error_followup_with_local_model() {
             "known host errors must not wait for inference"
         );
         assert!(
-            answer.validation.is_some(),
-            "known system-update failures require an actionable command"
+            answer.validation.is_none(),
+            "passive system-update advice must not authorize staging"
         );
         println!(
             "{command}: {:?} ({} ms; repaired={})",

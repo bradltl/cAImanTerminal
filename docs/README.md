@@ -10,6 +10,7 @@ Reviewed for the split workspace on **2026-09-10**.
 - [Research scope and contracts](research/README.md)
 - [Local artifacts](../artifacts/README.md)
 - [Runtime harness](../terminal/tests/README.md)
+- [Security hardening, verification and remaining limits](terminal/13_Security_Hardening.md)
 
 ## Terminal product and implementation
 

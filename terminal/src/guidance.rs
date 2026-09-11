@@ -162,6 +162,13 @@ pub fn known_response(request: &Request, host: &Host) -> Option<Response> {
     } else {
         request.text.trim()
     };
+    if request.passive
+        && text.starts_with("find ")
+        && text.contains('*')
+        && host::parse_commands(text).is_err()
+    {
+        return Some(response(None, "Quote search patterns (for example '*.log') so Bash does not expand them before find runs. Use an explicit @ request to authorize a command.".into()));
+    }
     let commands = host::parse_commands(text).ok()?;
     if commands.len() != 1 {
         return None;
@@ -279,7 +286,7 @@ pub fn answer(request: &Request) -> Option<Result<Answer>> {
         Ok(Answer {
             response,
             validation,
-            source: String::new(),
+            source: "Host guidance".into(),
             elapsed_ms: start.elapsed().as_millis(),
             repaired: false,
         })

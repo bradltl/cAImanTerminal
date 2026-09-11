@@ -14,13 +14,18 @@ GTK4 VTE 0.76 or newer is required. Then:
 cargo build --locked --features desktop,inference
 ./target/debug/caiman-terminal
 ./target/debug/caiman-terminal --no-ai
-./target/debug/caiman-terminal --model /absolute/path/to/model.gguf
+./target/debug/caiman-terminal --model /absolute/path/to/model.gguf --model-sha256 TRUSTED_SHA256
 ```
 
 The default is `artifacts/models/qwen2.5-0.5b-instruct-sft-v2.gguf`. Weights are
 local artifacts and are not committed or downloaded at runtime. Missing model
 weights leave the terminal usable. `--ask` uses the final runtime validation
 pipeline and never executes a suggested command.
+
+Staging requires an explicit supported task or an exact literal command. Passive
+advice never repairs or stages. Assistance pauses inside all running/unknown
+programs, including SSH wrappers, until the original local Bash prompt returns.
+See [hardening and supported contracts](../docs/terminal/13_Security_Hardening.md).
 
 ## Install and settings
 

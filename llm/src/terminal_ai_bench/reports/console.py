@@ -8,6 +8,7 @@ from rich.panel import Panel
 
 from ..scoring import ScenarioScore
 from ..scenario import Domain
+from ..privacy import redact, sanitize
 
 
 def print_console_report(
@@ -27,8 +28,12 @@ def print_console_report(
     """Renders clean, structured terminal benchmark summary matching specification."""
     if console is None:
         console = Console()
+    model_name = redact(model_name)
+    system_metrics = sanitize(system_metrics)
+    scenario_scores = [ScenarioScore.model_validate(sanitize(s.model_dump())) for s in scenario_scores]
 
     console.print()
+    console.print("Python reference only; examined regression data, not desktop staging certification.", markup=False)
     mode_tag = " [bold green](System Mode)[/bold green]" if evaluation_mode == "system" else " [bold blue](Raw Mode)[/bold blue]"
     console.rule(f"[bold cyan]Benchmark Summary: {model_name}[/bold cyan]{mode_tag}")
     if model_sha256:

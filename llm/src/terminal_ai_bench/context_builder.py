@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 from .scenario import InteractionMode, Scenario
+from .privacy import redact
 
 
 class ContextBuilder:
@@ -71,4 +72,4 @@ class ContextBuilder:
             )
 
         full_prompt = f"{self.system_prompt}\n\n{user_part}"
-        return full_prompt
+        return redact(full_prompt)

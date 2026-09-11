@@ -79,9 +79,17 @@ def extract_json_candidate(text: str) -> str:
 
 def parse_response(raw_text: str) -> ParseResult:
     """Parse raw model output into validated AssistantResponse."""
+    if len(raw_text) > 16384:
+        return ParseResult(success=False, raw_text="[oversized response]", error="Response exceeds limit")
     cleaned = extract_json_candidate(raw_text)
     try:
-        data = json.loads(cleaned)
+        def unique_pairs(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result: raise ValueError("Duplicate JSON key")
+                result[key] = value
+            return result
+        data = json.loads(cleaned, object_pairs_hook=unique_pairs)
         if not isinstance(data, dict):
             return ParseResult(
                 success=False,

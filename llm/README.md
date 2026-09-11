@@ -5,6 +5,13 @@ scoring, SFT dataset generation, training and export. The desktop app is a separ
 Rust project in [`terminal/`](../terminal/README.md). Model weights and reports are
 shared local artifacts, not source files.
 
+Current scores describe an examined Python reference pipeline, not the Rust
+desktop's staging safety or an unseen holdout. Live Python documentation tools
+are disabled. New replay artifacts require matching prompt/corpus identities;
+legacy unbound replays are rejected. See the
+[hardening guide](../docs/terminal/13_Security_Hardening.md) for conformance,
+dataset overlap checks and current trust boundaries.
+
 ## Working directory and layout
 
 Run all commands in this guide from **`llm/`**.

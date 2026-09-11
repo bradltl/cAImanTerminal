@@ -29,6 +29,8 @@ class RuntimeIntentResolver:
         # Clean leading '@ ' if present in explicit interaction mode
         if user_text.startswith("@"):
             user_text = user_text[1:].strip()
+        if intent_input.remote_state or re.search(r"\b(?:do not|don't|never|without|explain|why)\b", user_text, re.I):
+            return RuntimeIntentResolution(status=RuntimeIntentStatus.UNKNOWN, contract=None, confidence=RuntimeIntentConfidence.LOW)
 
         # Step 1: Check for interaction typos / ghost completions
         typo_res = self._check_interaction_patterns(user_text, intent_input)

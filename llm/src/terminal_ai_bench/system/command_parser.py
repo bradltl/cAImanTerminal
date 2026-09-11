@@ -28,7 +28,8 @@ def check_shell_syntax(cmd: str) -> Tuple[bool, Optional[str]]:
         return False, "Empty command"
     try:
         res = subprocess.run(
-            ["bash", "-n", "-c", cmd],
+            ["/bin/bash", "--noprofile", "--norc", "-n", "-c", cmd],
+            env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
             capture_output=True,
             text=True,
             timeout=2.0,
@@ -38,7 +39,7 @@ def check_shell_syntax(cmd: str) -> Tuple[bool, Optional[str]]:
             return False, err
         return True, None
     except Exception as e:
-        return True, None  # Fallback gracefully if bash subprocess is unavailable
+        return False, "Shell syntax check unavailable"  # Unknown is never syntax-valid.
 
 
 def extract_command_substitutions(cmd: str) -> List[str]:

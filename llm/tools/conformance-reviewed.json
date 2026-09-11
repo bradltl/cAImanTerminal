@@ -1,0 +1,1025 @@
+{
+  "corpus_sha256": "8d21e806790c2e1bd04b89a59d2f6844871011f17ec6d7032acfda8f41a46427",
+  "cases": [
+    {
+      "id": "linefeed",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "carriage-return",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "escape",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "nul",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": false,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "tab",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "semicolon",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "and",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "or",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "background",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "substitution",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "backtick",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "process-substitution",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "heredoc",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "redirect",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "assignment",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "bash-wrapper",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "absolute-wrapper",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "sudo-absolute",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "elevated"
+      }
+    },
+    {
+      "id": "pipe-shell",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": false,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "find-exec",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "git-config",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "root-delete",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": false,
+        "risk": "caution"
+      }
+    },
+    {
+      "id": "system-delete",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": false,
+        "risk": "caution"
+      }
+    },
+    {
+      "id": "disk-write",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": false,
+        "risk": "elevated"
+      }
+    },
+    {
+      "id": "format",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": true,
+        "safety": false,
+        "risk": "elevated"
+      }
+    },
+    {
+      "id": "shadow",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "ssh-key",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "basic-auth",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": true
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": true,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "gitlab",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": true
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": true,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "slack",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": true
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": true,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "database",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": true
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": true,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "flag-password",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": true
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": true,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "private-key",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": true
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": true,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "split-key",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": true
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": true,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "sudo-options",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "elevated"
+      }
+    },
+    {
+      "id": "comment",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "invalid-quote",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": false,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "bidi",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "zwsp",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "unicode-line",
+      "rust": {
+        "intent": false,
+        "parser": false,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "env-wrapper",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "xargs",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "find-ok",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "eval",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "source",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "ssh",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "mosh",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "tmux",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "pkexec",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "doas",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": null,
+        "safety": false,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "negated-delete",
+      "rust": {
+        "intent": false,
+        "parser": true,
+        "risk": "elevated",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "caution"
+      }
+    },
+    {
+      "id": "explanatory",
+      "rust": {
+        "intent": false,
+        "parser": true,
+        "risk": "elevated",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "caution"
+      }
+    },
+    {
+      "id": "unknown",
+      "rust": {
+        "intent": false,
+        "parser": true,
+        "risk": "normal",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "operand-invention",
+      "rust": {
+        "intent": false,
+        "parser": true,
+        "risk": "caution",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "sudo-invention",
+      "rust": {
+        "intent": false,
+        "parser": true,
+        "risk": "elevated",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "elevated"
+      }
+    },
+    {
+      "id": "passive",
+      "rust": {
+        "intent": false,
+        "parser": true,
+        "risk": "normal",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "remote",
+      "rust": {
+        "intent": false,
+        "parser": true,
+        "risk": "caution",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "explicit",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": "normal",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "disk-task",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": "normal",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": true,
+        "safety": true,
+        "risk": "normal"
+      }
+    },
+    {
+      "id": "literal-quotes",
+      "rust": {
+        "intent": true,
+        "parser": true,
+        "risk": "caution",
+        "safety": true,
+        "secret": false
+      },
+      "python_reference": {
+        "parser": true,
+        "secret": false,
+        "intent": false,
+        "safety": true,
+        "risk": "normal"
+      }
+    }
+  ]
+}
