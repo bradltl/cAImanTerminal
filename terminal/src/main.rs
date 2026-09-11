@@ -4,6 +4,7 @@ use std::{
 };
 fn main() -> anyhow::Result<()> {
     let mut model: Option<PathBuf> = None;
+    let mut model_sha256 = None;
     let mut disabled = false;
     let mut theme = None;
     let mut ask = None;
@@ -11,6 +12,12 @@ fn main() -> anyhow::Result<()> {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--model-sha256" => {
+                model_sha256 =
+                    Some(args.next().ok_or_else(|| {
+                        anyhow::anyhow!("--model-sha256 requires a trusted SHA-256")
+                    })?)
+            }
             "--model" => {
                 model = Some(
                     args.next()
@@ -51,7 +58,7 @@ fn main() -> anyhow::Result<()> {
                 )
             }
             "--help" | "-h" => {
-                println!("{}\ncAIman Terminal 0.1\n\n  --model PATH  Local GGUF (default: SFT v2)\n  --no-ai       Plain terminal, no model load\n  --ask TEXT    Headless final-pipeline inference; never executes commands\n  --audit-report PATH  Replay a saved benchmark through host validation\n  --theme ID    Theme override for this window\n  --list-themes List bundled theme IDs\n  --version     Print version\n\nManual: man caiman-terminal", include_str!("../resources/caiman.txt"));
+                println!("{}\ncAIman Terminal 0.1\n\n  --model PATH  Local GGUF (default: SFT v2)\n  --model-sha256 HASH  Trusted digest required for custom weights\n  --no-ai       Plain terminal, no model load\n  --ask TEXT    Headless final-pipeline inference; never executes commands\n  --audit-report PATH  Replay a saved benchmark through host validation\n  --theme ID    Theme override for this window\n  --list-themes List bundled theme IDs\n  --version     Print version\n\nManual: man caiman-terminal", include_str!("../resources/caiman.txt"));
                 return Ok(());
             }
             _ => anyhow::bail!("Unknown option: {arg}"),
@@ -71,6 +78,10 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
     let mut settings = caiman_terminal::settings::load(&caiman_terminal::settings::path()?)?;
+    if let Some(hash) = model_sha256 {
+        settings.inference.model_sha256 = Some(hash);
+    }
+    settings.validate()?;
     let model = model.unwrap_or_else(|| settings.resolved_model());
     disabled |= !settings.ai_enabled;
     if let Some(id) = &theme {
@@ -82,7 +93,11 @@ fn main() -> anyhow::Result<()> {
     if let Some(text) = ask {
         #[cfg(feature = "inference")]
         {
-            let hash = caiman_terminal::host::model_hash(&model)?;
+            let hash = settings
+                .inference
+                .model_sha256
+                .clone()
+                .unwrap_or_else(|| caiman_terminal::model_file::DEFAULT_SHA256.into());
             let runtime = caiman_terminal::adapters::load_model(
                 &settings.model_backend,
                 &model,
@@ -105,9 +120,9 @@ fn main() -> anyhow::Result<()> {
             })?;
             println!(
                 "{}",
-                serde_json::to_string_pretty(
-                    &serde_json::json!({"model": model, "sha256": hash, "schema": "cayman-response-v1", "response": answer.response, "validation": answer.validation, "source": answer.source, "repaired": answer.repaired, "elapsed_ms": answer.elapsed_ms})
-                )?
+                serde_json::to_string_pretty(&caiman_terminal::secrets::sanitize_json(
+                    serde_json::json!({"model": model, "expected_sha256": hash, "schema": "cayman-response-v1", "response": answer.response, "validation": answer.validation, "source": answer.source, "repaired": answer.repaired, "elapsed_ms": answer.elapsed_ms})
+                ))?
             );
             return Ok(());
         }

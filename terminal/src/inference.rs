@@ -15,6 +15,7 @@ use std::{
 
 pub struct LocalModel {
     model: LlamaModel,
+    _verified: crate::model_file::VerifiedModel,
     backend: LlamaBackend,
     options: crate::settings::Inference,
 }
@@ -54,18 +55,23 @@ impl LocalModel {
     }
     pub fn load_with_options(path: &Path, options: crate::settings::Inference) -> Result<Self> {
         options.validate()?;
-        if !path.is_file() {
-            bail!("Model not found: {}. Choose a local GGUF with --model; terminal remains available.", path.display());
-        }
+        let verified = crate::model_file::VerifiedModel::open(
+            path,
+            options
+                .model_sha256
+                .as_deref()
+                .unwrap_or(crate::model_file::DEFAULT_SHA256),
+        )?;
         let mut backend = LlamaBackend::init()?;
         backend.void_logs();
         let model = LlamaModel::load_from_file(
             &backend,
-            path,
+            verified.path(),
             &LlamaModelParams::default().with_n_gpu_layers(0),
         )?;
         Ok(Self {
             model,
+            _verified: verified,
             backend,
             options,
         })

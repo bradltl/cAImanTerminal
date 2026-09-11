@@ -29,6 +29,7 @@ pub struct Settings {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Inference {
+    pub model_sha256: Option<String>,
     pub threads: i32,
     pub context_tokens: u32,
     pub output_tokens: usize,
@@ -39,6 +40,7 @@ pub struct Inference {
 impl Default for Inference {
     fn default() -> Self {
         Self {
+            model_sha256: None,
             threads: 4,
             context_tokens: 4096,
             output_tokens: 256,
@@ -108,6 +110,13 @@ impl Settings {
 }
 impl Inference {
     pub fn validate(&self) -> Result<()> {
+        if self
+            .model_sha256
+            .as_ref()
+            .is_some_and(|s| s.len() != 64 || !s.bytes().all(|b| b.is_ascii_hexdigit()))
+        {
+            bail!("Model SHA-256 must be 64 hexadecimal digits");
+        }
         if !(1..=64).contains(&self.threads) {
             bail!("Inference threads must be 1–64");
         }

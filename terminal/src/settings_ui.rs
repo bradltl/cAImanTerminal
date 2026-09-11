@@ -158,6 +158,11 @@ pub fn show(
         chooser.show();
     });
     let threads = spin(settings.inference.threads as f64, 1.0, 64.0, 1.0);
+    let digest = gtk::Entry::builder()
+        .placeholder_text("Trusted SHA-256; empty uses the bundled default digest")
+        .text(settings.inference.model_sha256.as_deref().unwrap_or(""))
+        .build();
+    row(&model, "Model SHA-256", &digest);
     row(&model, "CPU threads", &threads);
     let context = spin(
         settings.inference.context_tokens as f64,
@@ -239,6 +244,8 @@ pub fn show(
             Some(PathBuf::from(value.as_str()))
         };
         updated.inference.threads = threads.value_as_int();
+        updated.inference.model_sha256 =
+            (!digest.text().trim().is_empty()).then(|| digest.text().trim().to_string());
         updated.inference.context_tokens = context.value_as_int() as u32;
         updated.inference.output_tokens = output.value_as_int() as usize;
         updated.inference.timeout_seconds = timeout.value_as_int() as u64;

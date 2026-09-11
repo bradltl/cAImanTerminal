@@ -3,6 +3,7 @@ pub mod host;
 #[cfg(feature = "inference")]
 pub mod inference;
 pub mod intent;
+pub mod model_file;
 pub mod prompt;
 pub mod secrets;
 pub mod shell;
