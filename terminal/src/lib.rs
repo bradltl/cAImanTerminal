@@ -3,6 +3,7 @@ pub mod host;
 #[cfg(feature = "inference")]
 pub mod inference;
 pub mod prompt;
+pub mod secrets;
 pub mod shell;
 #[cfg(feature = "desktop")]
 pub mod ui;

@@ -1,20 +1,10 @@
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use std::sync::LazyLock;
 
 /// The journal is memory-only. Redaction happens at the model boundary, including
 /// commands and requests, because secrets can appear anywhere in terminal text.
 pub fn redact(text: &str) -> String {
-    static SECRET: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(
-        r#"(?i)([\w-]*(?:token|password|passwd|secret|api[_-]?key)[\w-]*\s*[=:]\s*)(?:"[^"]*"|'[^']*'|[^\s,;]+)|(?:gh[pousr]_[A-Za-z0-9_]+|sk-[A-Za-z0-9_-]{12,}|AKIA[A-Z0-9]{16})|Bearer\s+\S+"#
-    ).unwrap()
-    });
-    if text.contains("PRIVATE KEY-----") {
-        return "[private key material withheld]".into();
-    }
-    SECRET.replace_all(text, "[secret redacted]").into_owned()
+    crate::secrets::redact(text)
 }
 
 pub fn bounded(text: &str, chars: usize) -> String {
@@ -30,6 +20,31 @@ pub struct CommandRecord {
     pub output: String,
     pub timestamp: u64,
     pub ai_origin: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ContextBinding {
+    id: u64,
+    revision: u64,
+    cwd: String,
+    input: String,
+    remote: bool,
+    at_prompt: bool,
+}
+impl ContextBinding {
+    pub fn capture(session: &Session) -> Self {
+        Self {
+            id: session.id,
+            revision: session.revision,
+            cwd: session.cwd.clone(),
+            input: session.input.clone(),
+            remote: session.remote,
+            at_prompt: session.at_prompt,
+        }
+    }
+    pub fn matches(&self, session: &Session) -> bool {
+        self == &Self::capture(session) && session.at_prompt && !session.remote
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -94,6 +109,7 @@ impl Session {
         self.running_command = running.map(|command| bounded(&redact(command), 500));
     }
     pub fn record(&mut self, mut record: CommandRecord) {
+        record.cwd = bounded(&redact(&record.cwd), 1024);
         record.command = bounded(&redact(&record.command), 2048);
         record.output = bounded(&redact(&record.output), 2500);
         self.journal.push_back(record);

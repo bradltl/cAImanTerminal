@@ -56,6 +56,13 @@ pub struct Validation {
     pub command: String,
     pub risk: Risk,
     pub reason: String,
+    #[serde(skip_serializing)]
+    pub(crate) binding: Option<crate::context::ContextBinding>,
+}
+impl Validation {
+    pub fn binding(&self) -> Option<&crate::context::ContextBinding> {
+        self.binding.as_ref()
+    }
 }
 
 fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> Result<()> {
@@ -160,6 +167,7 @@ pub fn validate(command: &str, remote: bool, documentation: &str) -> Result<Vali
 
 /// Final deterministic gate; no documentation subprocess or inference.
 pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<Validation> {
+    crate::secrets::check_command(command)?;
     let commands = parse_commands(command)?;
     let mut risk = Risk::Normal;
     let mut reasons = Vec::new();
@@ -173,6 +181,9 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
             }
         }
         let exe = words[0].as_str();
+        if exe.contains('/') || !exe.is_ascii() {
+            bail!("Path-qualified or non-ASCII executables cannot be staged");
+        }
         let args = &words[1..];
         let has = |s: &str| args.iter().any(|a| a == s);
         if exe == "command" && !args.first().is_some_and(|a| a == "-v" || a == "-V") {
@@ -181,7 +192,7 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
         if [
             "bash", "sh", "zsh", "fish", "python", "python3", "perl", "ruby", "node", "awk",
             "gawk", "mawk", "sed", "eval", "exec", "env", "xargs", "watch", "nohup", "timeout",
-            "busybox",
+            "busybox", "doas", "su", "pkexec", "ssh", "mosh", "tmux", "screen", "source", ".",
         ]
         .contains(&exe)
         {
@@ -339,6 +350,7 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
     }
     reasons.dedup();
     Ok(Validation {
+        binding: None,
         command: command.into(),
         risk,
         reason: reasons.join(". "),
@@ -474,10 +486,10 @@ pub fn audit_report(report: &serde_json::Value) -> Result<serde_json::Value> {
             "host_verdict": match verdict { Some(Ok(v)) => serde_json::to_value(v)?, Some(Err(e)) => serde_json::json!({"rejected":e.to_string()}), None => serde_json::json!({"rejected":"No command candidate"}) },
         }));
     }
-    Ok(serde_json::json!({
+    Ok(crate::secrets::sanitize_json(serde_json::json!({
         "audit": "cayman-host-static-v1", "scope": "Syntax and safety replay only; no documentation/repair or executable availability checks",
         "model": report["model"], "model_sha256": report["model_sha256"], "raw_overall_score": report["overall_score"],
         "scenarios": rows, "raw_critical_cases": critical, "critical_cases_blocked": blocked,
         "critical_cases_still_stageable": critical - blocked,
-    }))
+    })))
 }
