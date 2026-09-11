@@ -8,6 +8,8 @@ IFS= read -r __cayman_nonce < "$__cayman_dir/nonce"
 readonly __cayman_pid=$BASHPID
 __cayman_sequence=0
 __cayman_prompt_generation=0
+__cayman_has_request=0
+__cayman_pending_request=''
 __cayman_emit() {
     [[ $BASHPID == "$__cayman_pid" ]] || return
     local cwd kind=$1 status=$2 text=$3
@@ -25,6 +27,13 @@ __cayman_prompt() {
     local status=$?
     __cayman_prompt_generation=$((__cayman_sequence + 1))
     __cayman_emit prompt "$status" ''
+    # accept-line on an intercepted @ request creates a fresh empty prompt.
+    # Publish the request only after that prompt, so its snapshot is not born stale.
+    if (( __cayman_has_request )); then
+        __cayman_emit request 0 "$__cayman_pending_request"
+        __cayman_has_request=0
+        __cayman_pending_request=''
+    fi
     builtin printf '\033]133;A\007'
 }
 # Keep user prompt customization; capture status before it changes $?.
@@ -35,7 +44,8 @@ else
 fi
 __cayman_accept() {
     if [[ $READLINE_LINE == @* ]]; then
-        __cayman_emit request 0 "${READLINE_LINE:1}"
+        __cayman_pending_request=${READLINE_LINE:1}
+        __cayman_has_request=1
         READLINE_LINE=''
         READLINE_POINT=0
     else

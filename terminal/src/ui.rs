@@ -1168,6 +1168,116 @@ mod tests {
         }
     }
     #[test]
+    #[ignore = "requires a graphical display; real Bash lifecycle and request races"]
+    fn lifecycle_boundary() {
+        gtk::init().unwrap();
+        let book = gtk::Notebook::new();
+        let window = gtk::Window::builder()
+            .child(&book)
+            .default_width(800)
+            .default_height(500)
+            .build();
+        let (tx, rx) = std::sync::mpsc::sync_channel(4);
+        let one = new_tab(&book, 1, tx.clone(), true, &Default::default()).unwrap();
+        window.present();
+        pump_until(|| one.borrow().session.at_prompt);
+        one.borrow().terminal.feed_child(b"@ ls\r");
+        let mut req = None;
+        pump_until(|| {
+            req = rx.try_recv().ok();
+            req.is_some()
+        });
+        let req = req.unwrap();
+        let settled = Instant::now() + Duration::from_millis(150);
+        pump_until(|| Instant::now() >= settled);
+        assert_eq!(
+            req.ticket,
+            one.borrow().cancellation.load(Ordering::Relaxed),
+            "@ request must bind to the resulting prompt"
+        );
+        assert_eq!(
+            req.session.prompt_generation,
+            one.borrow().session.prompt_generation
+        );
+        let answer = worker::process(&req, |_| {
+            Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+        })
+        .unwrap();
+        let valid = answer.validation.unwrap();
+        let old_generation = one.borrow().session.prompt_generation;
+        crate::shell::write_stage_bound(
+            one.borrow().dir.path(),
+            "echo stale",
+            "",
+            &one.borrow().session.cwd,
+            old_generation,
+        )
+        .unwrap();
+        one.borrow().terminal.feed_child(b"\r");
+        pump_until(|| one.borrow().session.prompt_generation != old_generation);
+        one.borrow()
+            .terminal
+            .send_integration_key(crate::terminal_backend::IntegrationKey::Stage);
+        let settled = Instant::now() + Duration::from_millis(100);
+        pump_until(|| Instant::now() >= settled);
+        assert!(
+            one.borrow().session.input.is_empty(),
+            "Bash must reject an old stage file even with matching CWD/input"
+        );
+        assert!(!valid.binding().unwrap().matches(&one.borrow().session));
+        let two = new_tab(&book, 2, tx, true, &Default::default()).unwrap();
+        pump_until(|| two.borrow().session.at_prompt);
+        assert!(one.borrow().pending.is_none());
+        // Actual alternate-screen application plus resize; no invented OSC state.
+        two.borrow()
+            .terminal
+            .feed_child(b"printf '\\033[?1049h'; /bin/sleep 0.2; printf '\\033[?1049l'\r");
+        pump_until(|| !two.borrow().session.at_prompt);
+        assert!(two.borrow().session.remote);
+        window.set_default_size(960, 640);
+        pump_until(|| two.borrow().session.at_prompt);
+        two.borrow().terminal.feed_child(b"cd /tmp\r");
+        pump_until(|| two.borrow().session.cwd == "/tmp");
+        // Delayed worker cancellation and closing the originating tab.
+        let mut session = one.borrow().session.clone();
+        session.at_prompt = true;
+        let token = one.borrow().cancellation.clone();
+        let ticket = token.load(Ordering::Relaxed);
+        let delayed = Request {
+            session,
+            text: "ls".into(),
+            ticket,
+            cancellation: token,
+            passive: false,
+        };
+        let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        let handle = std::thread::spawn(move || {
+            worker::process(&delayed, |_| {
+                entered_tx.send(()).unwrap();
+                release_rx.recv().unwrap();
+                Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+            })
+        });
+        entered_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        {
+            let mut tab = one.borrow_mut();
+            tab.closed = true;
+            tab.alive = false;
+            tab.invalidate();
+        }
+        release_tx.send(()).unwrap();
+        assert!(handle.join().unwrap().is_err());
+        two.borrow().terminal.feed_child(b"exit\r");
+        pump_until(|| !two.borrow().alive);
+        assert!(!two.borrow_mut().accept());
+        println!(
+            "{}",
+            serde_json::json!({"suite":"real-pty-lifecycle","passed":true,"stale_prompt":true,"request_binding":true,"alternate_screen":true,"resize":true,"delayed_close":true,"shell_death":true})
+        );
+        window.close();
+    }
+    #[test]
     #[ignore = "requires a graphical display; starts a real Bash PTY"]
     fn disabled_ai_hides_pane() {
         gtk::init().unwrap();
