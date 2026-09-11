@@ -20,6 +20,15 @@ artifacts/models/qwen2.5-0.5b-instruct-sft-v2.gguf relative to the working direc
 The local installer creates a launcher with an absolute model path.
 No model is downloaded automatically.
 .TP
+.BI "\-\-model-sha256 " HASH
+Require this trusted SHA-256 before native model loading. The default is the
+pinned v2 digest. Custom weights require a trusted digest, also configurable
+in Settings. Model bytes are sealed before loading in a supervised helper.
+.TP
+.B \-\-policy-check
+Read one JSON request/response fixture from stdin and evaluate the production
+worker without loading a model or executing candidates. Used for conformance.
+.TP
 .B \-\-no-ai
 Start a plain terminal without loading the model.
 .TP
@@ -59,7 +68,8 @@ At the normal Bash prompt, prefix a request with @ and press Enter:
 .PP
 .nf
   @ explain the error
-  @ find log files larger than 500 MB
+  @ show disk usage
+  @ find . -name '*.log' -size +500M
   @ continue
 .fi
 .PP
@@ -71,8 +81,13 @@ Pausing after eligible input requests assistance after approximately 250 ms;
 model inference and documentation lookup add processing time.
 .PP
 A trailing dash or flag prefix, such as ps \- or ps \-\-so, shows options from
-installed help or man pages. Bare find offers a simple file-search command.
+installed help or man pages. Bare find offers explanatory file-search guidance.
 Missing arguments receive guidance rather than invented values.
+.PP
+Passive advice cannot repair or stage commands. Staging requires an explicit
+supported task or the exact literal command. Unknown intent and explanatory
+questions do not authorize staging. Remote assistance is disabled: all running
+programs have unknown host identity until the original local Bash prompt returns.
 .PP
 Failed foreground commands and completed assistant suggestions can trigger a
 follow-up using recent command output and exit status. Interrupts and successful

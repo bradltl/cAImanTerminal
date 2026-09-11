@@ -52,6 +52,9 @@ staging, themes and centralized settings. Provider interfaces establish extensio
 points; other operating systems, terminal implementations and model backends are
 not implemented yet. Every suggested command still requires the user's Enter key.
 
+See the [security hardening and verification guide](docs/terminal/13_Security_Hardening.md)
+for the current staging contract, trust boundaries and benchmark limitations.
+
 Model quality is an active research concern. Raw model scores, host rejection,
 and a correct end-to-end answer are separate outcomes; passing unit tests is not
 proof of model correctness. See [status](docs/terminal/12_Project_Status.md) and
