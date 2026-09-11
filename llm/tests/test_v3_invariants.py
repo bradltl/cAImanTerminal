@@ -114,6 +114,7 @@ def test_replay_uses_identical_raw_outputs(tmp_path):
         "model": "test-model",
         "inferences": {
             "bash-030": {
+                "prompt_sha256": __import__("hashlib").sha256(b"dummy prompt").hexdigest(),
                 "text": '{"action": "suggest_command", "command": "wc -l audit.log"}',
                 "prompt_tokens": 10,
                 "completion_tokens": 5,

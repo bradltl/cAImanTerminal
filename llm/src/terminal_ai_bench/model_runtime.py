@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .scoring.performance import PerformanceMetrics, get_current_memory_mb
+from .provenance import prompt_digest
 
 
 def compute_file_sha256(path: Path | str, chunk_size: int = 1024 * 1024) -> str:
@@ -563,6 +564,10 @@ class LlamaCppRuntime(ModelRuntime):
             )
 
         start_time = time.perf_counter()
+        self.model_sha256 = compute_file_sha256(path_obj)
+        expected_sha256 = config.get("sha256")
+        if not expected_sha256 or self.model_sha256.lower() != expected_sha256.lower():
+            raise ValueError("A matching trusted model SHA-256 is required before native model loading")
         try:
             from llama_cpp import Llama
             self.model = Llama(
@@ -630,20 +635,8 @@ class LlamaCppRuntime(ModelRuntime):
             prompt_tokens = usage.get("prompt_tokens", len(prompt.split()))
             completion_tokens = usage.get("completion_tokens", len(text.split()))
 
-        except Exception:
-            # Fallback to direct completion
-            output = self.model(
-                prompt,
-                max_tokens=kwargs.get("max_tokens", 512),
-                temperature=kwargs.get("temperature", 0.1),
-                stop=stop_tokens,
-            )
-            total_latency = (time.perf_counter() - start) * 1000.0
-            choice = output["choices"][0]
-            text = choice["text"].strip()
-            usage = output.get("usage", {})
-            prompt_tokens = usage.get("prompt_tokens", 0)
-            completion_tokens = usage.get("completion_tokens", len(text.split()))
+        except Exception as exc:
+            raise RuntimeError("Model inference failed; no implicit second inference") from exc
 
         tps = (completion_tokens / (total_latency / 1000.0)) if total_latency > 0 else 0.0
 
@@ -651,7 +644,7 @@ class LlamaCppRuntime(ModelRuntime):
             text=text,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
-            ttft_ms=round(total_latency * 0.3, 2),
+            ttft_ms=0.0,  # Non-streaming API does not measure time to first token.
             total_latency_ms=round(total_latency, 2),
             tokens_per_second=round(tps, 2),
         )
@@ -677,6 +670,7 @@ class ReplayModelRuntime(ModelRuntime):
         self.model_id = self.replay_data.get("model", "replay-model")
         self.model_sha256 = self.replay_data.get("model_sha256", "replayed-inference-model-sha256")
         self.current_key: Optional[str] = None
+        self.consumed_keys = set()
         self._perf = PerformanceMetrics(
             model_load_time_s=0.01,
             resident_ram_mb=get_current_memory_mb(),
@@ -691,6 +685,8 @@ class ReplayModelRuntime(ModelRuntime):
 
     def infer(self, prompt: str, **kwargs) -> InferenceResult:
         inferences = self.replay_data.get("inferences", {})
+        if self.current_key in self.consumed_keys:
+            raise RuntimeError("Raw replay contains no repair inference; repair is unavailable")
         item = None
         if self.current_key and self.current_key in inferences:
             item = inferences[self.current_key]
@@ -698,6 +694,11 @@ class ReplayModelRuntime(ModelRuntime):
             item = inferences[prompt]
 
         if item:
+            if self.replay_data.get("replay_safe") is False:
+                raise ValueError("Sanitized artifact cannot replay original model output")
+            if item.get("prompt_sha256") != prompt_digest(prompt):
+                raise ValueError("Replay prompt mismatch or missing prompt identity")
+            self.consumed_keys.add(self.current_key)
             text = item.get("text", "")
             prompt_tokens = item.get("prompt_tokens", len(prompt.split()))
             completion_tokens = item.get("completion_tokens", len(text.split()))
@@ -714,14 +715,7 @@ class ReplayModelRuntime(ModelRuntime):
             )
 
         # Fallback if specific turn not found: look for repair prompt or default empty
-        return InferenceResult(
-            text='{"action": "no_action"}',
-            prompt_tokens=len(prompt.split()),
-            completion_tokens=5,
-            ttft_ms=10.0,
-            total_latency_ms=30.0,
-            tokens_per_second=40.0,
-        )
+        raise ValueError("Missing raw inference for the requested scenario; replay cannot synthesize responses")
 
     def unload(self) -> None:
         pass
