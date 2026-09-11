@@ -88,11 +88,13 @@ fn main() -> anyhow::Result<()> {
                 &model,
                 &settings.inference,
             )?;
+            let mut session = caiman_terminal::context::Session::new(
+                0,
+                std::env::current_dir()?.display().to_string(),
+            );
+            session.at_prompt = true;
             let request = caiman_terminal::worker::Request {
-                session: caiman_terminal::context::Session::new(
-                    0,
-                    std::env::current_dir()?.display().to_string(),
-                ),
+                session,
                 text,
                 ticket: 0,
                 cancellation: Arc::new(AtomicU64::new(0)),

@@ -9,8 +9,10 @@ use std::sync::{
 };
 
 fn request(text: &str) -> Request {
+    let mut session = Session::new(1, "/tmp".into());
+    session.at_prompt = true;
     Request {
-        session: Session::new(1, "/tmp".into()),
+        session,
         text: text.into(),
         ticket: 0,
         cancellation: Arc::new(AtomicU64::new(0)),
@@ -82,10 +84,14 @@ fn malformed_responses_share_one_repair_and_stale_results_are_rejected() {
 #[ignore = "loads the default GGUF; writes /tmp/cayman-model-harness.json"]
 fn default_model_harness() {
     use caiman_terminal::{context::CommandRecord, inference::LocalModel};
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .join(caiman_terminal::default_model());
+    let path = std::env::var_os("CAIMAN_TEST_MODEL")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| {
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .unwrap()
+                .join(caiman_terminal::default_model())
+        });
     let model = LocalModel::load(&path).unwrap();
     let mut req = request("Which filename did the last command print? Answer with the filename.");
     req.session.at_prompt = true;
@@ -112,6 +118,19 @@ fn default_model_harness() {
             && a.validation.is_none()
     });
     report.push(serde_json::json!({"case":"terminal_over_stale_chat", "passed":passed, "elapsed_ms":start.elapsed().as_millis(), "answer":format!("{answer:?}")}));
+    // Keep actual generation coverage even when observation questions are
+    // answered deterministically from the journal.
+    let disk = request("show disk usage");
+    let generated = worker::process(&disk, |prompt| {
+        model.generate(prompt, &disk.cancellation, 0)
+    });
+    let generated_passed = generated.as_ref().is_ok_and(|answer| {
+        answer
+            .validation
+            .as_ref()
+            .is_some_and(|v| ["df -h", "df -hT"].contains(&v.command.as_str()))
+    });
+    report.push(serde_json::json!({"case":"live_supported_intent", "passed":generated_passed, "answer":format!("{generated:?}")}));
     let mut large: Prompt = serde_json::from_str(&worker::build_prompt(&req, "")).unwrap();
     large.terminal = "输出 λ abc 1234\n".repeat(10000);
     large.conversation = vec!["unrelated history ".repeat(10000)];
@@ -131,6 +150,10 @@ fn default_model_harness() {
         "default model did not answer from terminal context; see report"
     );
     assert!(fits);
+    assert!(
+        generated_passed,
+        "Live model failed the supported-intent regression; see report"
+    );
 }
 
 #[test]

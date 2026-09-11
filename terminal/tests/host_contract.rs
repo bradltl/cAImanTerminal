@@ -195,9 +195,11 @@ fn staged_data_cannot_inject_enter_or_readline_control_sequences() {
 fn response_pipeline_validates_without_executing_candidate() {
     let dir = tempfile::tempdir().unwrap();
     let marker = dir.path().join("must-not-exist");
+    let mut session = Session::new(1, dir.path().display().to_string());
+    session.at_prompt = true;
     let req = Request {
-        session: Session::new(1, dir.path().display().to_string()),
-        text: "create marker".into(),
+        session,
+        text: format!("touch {}", marker.display()),
         ticket: 0,
         cancellation: Arc::new(AtomicU64::new(0)),
         passive: false,
@@ -281,8 +283,10 @@ fn followup_is_driven_by_failure_or_assistant_command_completion() {
 }
 
 fn pipeline_request() -> Request {
+    let mut session = Session::new(1, "/tmp".into());
+    session.at_prompt = true;
     Request {
-        session: Session::new(1, "/tmp".into()),
+        session,
         text: "show files".into(),
         ticket: 0,
         cancellation: Arc::new(AtomicU64::new(0)),
@@ -297,7 +301,9 @@ fn suggestion(command: &str) -> String {
 #[test]
 fn pipeline_repairs_unknown_flags_once_with_installed_help() {
     let mut calls = 0;
-    let answer = process(&pipeline_request(), |prompt| {
+    let mut request = pipeline_request();
+    request.text = "list files recursively".into();
+    let answer = process(&request, |prompt| {
         calls += 1;
         if calls == 1 {
             assert!(!prompt.contains("Source: /usr/bin/ls"));
@@ -358,7 +364,7 @@ fn repaired_candidate_crosses_risk_gate_and_new_command_help() {
     })
     .unwrap();
     assert!(answer.source.contains("/usr/bin/df"));
-    assert_eq!(answer.validation.unwrap().risk, Risk::Normal);
+    assert!(answer.validation.is_none(), "Changing from listing files to disk usage violates intent even after successful CLI validation");
 }
 
 #[test]

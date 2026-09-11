@@ -76,7 +76,13 @@ fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> R
             }
         }
         "command" => {
-            fn plain(node: Node<'_>) -> bool {
+            fn plain(node: Node<'_>, source: &str) -> bool {
+                // shlex does not expand globs, braces or tilde as Bash does.
+                if node.kind() == "word"
+                    && source[node.byte_range()].contains(['*', '?', '[', '{', '~'])
+                {
+                    return false;
+                }
                 if ![
                     "command",
                     "command_name",
@@ -92,10 +98,10 @@ fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> R
                     return false;
                 }
                 let mut cursor = node.walk();
-                let ok = node.named_children(&mut cursor).all(plain);
+                let ok = node.named_children(&mut cursor).all(|n| plain(n, source));
                 ok
             }
-            if !plain(node) {
+            if !plain(node, source) {
                 bail!("Embedded shell syntax is not supported for staging");
             }
             let text = &source[node.byte_range()];
@@ -116,7 +122,7 @@ fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> R
     Ok(())
 }
 pub fn parse_commands(command: &str) -> Result<Vec<Vec<String>>> {
-    if command.is_empty() || command.len() > 4096 || command.chars().any(char::is_control) {
+    if command.is_empty() || command.len() > 4096 || command.chars().any(|c| c.is_control() || matches!(c, '\u{061c}' | '\u{200b}'..='\u{200f}' | '\u{2028}'..='\u{202e}' | '\u{2060}'..='\u{206f}' | '\u{feff}')) {
         bail!("Commands must fit on one printable line");
     }
     let mut parser = Parser::new();
