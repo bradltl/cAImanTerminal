@@ -24,3 +24,6 @@ gtk = { package = "gtk4", version = "0.10", optional = true }
 vte = { package = "vte4", version = "0.9", features = ["v0_76"], optional = true }
 llama-cpp-2 = { version = "=0.1.156", default-features = false, optional = true }
 encoding_rs = { version = "0.8", optional = true }
+
+[dev-dependencies]
+proptest = { version = "1.11.0", default-features = false, features = ["std", "bit-set"] }
