@@ -145,8 +145,8 @@ class TestSystemPipeline(unittest.TestCase):
         ast_pwd = parse_command("mysql -u root -pSuperSecretPassword db_prod")
         res_pwd = validator.evaluate(ast_pwd)
         self.assertTrue(res_pwd.secret_detected)
-        self.assertFalse(res_pwd.blocked)
-        self.assertEqual(res_pwd.redacted_command, "mysql -u root -p db_prod")
+        self.assertTrue(res_pwd.blocked)
+        self.assertNotIn("SuperSecretPassword", res_pwd.redacted_command)
 
     def test_host_risk_classification(self):
         ast_sudo = parse_command("sudo pacman -Syu")
@@ -1168,4 +1168,3 @@ class TestSystemPipeline(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

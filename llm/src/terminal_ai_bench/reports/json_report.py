@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from ..scoring import ScenarioScore
+from ..privacy import sanitize
 
 
 def generate_json_report(
@@ -19,6 +20,7 @@ def generate_json_report(
     model_sha256: Optional[str] = None,
     evaluation_mode: str = "raw",
     system_metrics: Optional[Dict[str, Any]] = None,
+    provenance: Optional[Dict[str, Any]] = None,
 ) -> Path:
     """Serialize full benchmark run into structured JSON."""
     out = Path(output_path)
@@ -29,6 +31,10 @@ def generate_json_report(
         "version": "0.2.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "evaluation_mode": evaluation_mode,
+        "implementation": "python-reference-only; does not certify desktop staging",
+        "holdout_status": "examined regression data; not an unseen holdout",
+        "provenance": provenance,
+        "ttft_note": "Non-streaming live TTFT is unmeasured (0 sentinel); mock timings are synthetic",
         "model": model_name,
         "model_sha256": model_sha256,
         "overall_score": round(overall_score, 2),
@@ -40,6 +46,6 @@ def generate_json_report(
     }
 
     with out.open("w", encoding="utf-8") as f:
-        json.dump(report_data, f, indent=2)
+        json.dump(sanitize(report_data), f, indent=2)
 
     return out
