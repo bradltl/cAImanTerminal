@@ -1,0 +1,26 @@
+name: Alpha security fuzz
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fuzz:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo install cargo-fuzz --version 0.13.2 --locked
+      - name: Bounded coverage-guided shell and prompt fuzzing
+        env:
+          FUZZ_SECONDS: ${{ github.event_name == 'schedule' && '900' || '60' }}
+        run: cargo fuzz run shell_boundary -- -max_total_time="$FUZZ_SECONDS" -max_len=4096 -timeout=5
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: minimized-security-reproducers
+          path: fuzz/artifacts/
