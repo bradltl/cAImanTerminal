@@ -4,6 +4,7 @@ pub mod host;
 #[cfg(feature = "inference")]
 pub mod inference;
 pub mod intent;
+pub mod metrics;
 pub mod model_file;
 pub mod model_process;
 pub mod policy_fixture;

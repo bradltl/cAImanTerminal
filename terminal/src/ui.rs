@@ -133,9 +133,17 @@ struct Tab {
     retry: Option<RetryOffer>,
     retry_button: gtk::Button,
     last_request: Option<RetryOffer>,
+    metrics: crate::metrics::Metrics,
+    queued: Option<Instant>,
 }
 impl Tab {
     fn invalidate(&mut self) {
+        if self.queued.take().is_some() {
+            self.metrics.cancelled = self.metrics.cancelled.saturating_add(1);
+        }
+        if self.pending.is_some() {
+            self.metrics.dismissed = self.metrics.dismissed.saturating_add(1);
+        }
         self.retry = None;
         self.retry_button.set_sensitive(false);
         self.cancellation.fetch_add(1, Ordering::Relaxed);
@@ -237,6 +245,8 @@ impl Tab {
         self.retry_button.set_sensitive(false);
         match requests.try_send(req) {
             Ok(()) => {
+                self.metrics.requested = self.metrics.requested.saturating_add(1);
+                self.queued = Some(Instant::now());
                 if remember_intent {
                     self.session.remember(memory);
                 }
@@ -288,6 +298,15 @@ impl Tab {
             match event.kind.as_str() {
                 "prompt" => {
                     if let Some((command, cwd, start_row, ai_origin)) = self.running.take() {
+                        if ai_origin {
+                            if event.status == 0 {
+                                self.metrics.executed_success =
+                                    self.metrics.executed_success.saturating_add(1);
+                            } else {
+                                self.metrics.executed_failure =
+                                    self.metrics.executed_failure.saturating_add(1);
+                            }
+                        }
                         let (_, row) = self.terminal.cursor_position();
                         let (text, _) = self.terminal.text_range_format(
                             vte::Format::Text,
@@ -332,8 +351,7 @@ impl Tab {
                     // Only our original local Readline prompt resumes assistance.
                     let remote = true;
                     self.session.remote = remote;
-                    let ai_origin = self.staged.take().is_some_and(|s| s == event.text)
-                        || self.suggested.as_deref() == Some(event.text.trim());
+                    let ai_origin = self.staged.take().is_some_and(|s| s == event.text);
                     self.running = Some((event.text, event.cwd, self.start_row, ai_origin));
                     self.status.set_text(if remote {
                         "running / host unknown | assistance paused"
@@ -352,7 +370,11 @@ impl Tab {
                 }
                 "input" | "staged" => {
                     if event.kind == "staged" {
+                        self.metrics.accepted = self.metrics.accepted.saturating_add(1);
                         self.staged = Some(event.text.clone());
+                    } else if self.staged.as_ref().is_some_and(|s| s != &event.text) {
+                        self.metrics.edited = self.metrics.edited.saturating_add(1);
+                        self.staged = None;
                     }
                     self.snapshot_waiting = false;
                     if self.session.input != event.text {
@@ -489,6 +511,11 @@ fn new_tab(
     let retry_button = gtk::Button::with_label("Retry suggestion");
     retry_button.set_sensitive(false);
     side.append(&retry_button);
+    let export_metrics = gtk::Button::with_label("Copy session metrics");
+    export_metrics.set_tooltip_text(Some(
+        "Copy numeric aggregates only; nothing is saved automatically.",
+    ));
+    side.append(&export_metrics);
     let pane_label = label("ai");
     pane_label.add_css_class("status");
     side.append(&pane_label);
@@ -544,7 +571,17 @@ fn new_tab(
         retry: None,
         last_request: None,
         retry_button: retry_button.clone(),
+        metrics: Default::default(),
+        queued: None,
     }));
+    let metrics_tab = Rc::downgrade(&tab);
+    export_metrics.connect_clicked(move |_| {
+        if let Some(tab) = metrics_tab.upgrade() {
+            if let Some(display) = gdk::Display::default() {
+                display.clipboard().set_text(&tab.borrow().metrics.export());
+            }
+        }
+    });
     let retry_tab = Rc::downgrade(&tab);
     let switch_tab = Rc::downgrade(&tab);
     notebook.connect_switch_page(move |_, _, _| {
@@ -1029,10 +1066,21 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                             continue;
                         }
                         tab.activity.set_text("ai");
+                        let elapsed = tab
+                            .queued
+                            .take()
+                            .map(|s| s.elapsed().as_millis())
+                            .unwrap_or(0);
                         tab.pending = None;
                         tab.ghost.set_text("");
                         match result {
                             Ok(answer) => {
+                                tab.metrics.completed(
+                                    elapsed,
+                                    answer.source != crate::alpha_policy::VERSION,
+                                    answer.repaired,
+                                    answer.validation.is_some(),
+                                );
                                 let mut message = answer
                                     .response
                                     .explanation
@@ -1073,6 +1121,7 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                                 }
                             }
                             Err(error) => {
+                                tab.metrics.completed(elapsed, false, false, false);
                                 if !passive && error.starts_with("Unverifiable:") {
                                     if let Some(offer) = tab.last_request.take() {
                                         if offer.binding.matches(&tab.session) {
@@ -1451,7 +1500,10 @@ mod tests {
             assert_ne!(tab.passive_ticket, Some(ticket));
             busy_rx.try_recv().unwrap();
             tab.request("update my system".into(), true, &busy_tx);
-            assert_eq!(tab.passive_ticket, Some(ticket));
+            assert_eq!(
+                tab.passive_ticket,
+                Some(tab.cancellation.load(Ordering::Relaxed))
+            );
         }
         // Clear the unfinished input without submitting it.
         one.borrow().terminal.feed_child(b"\x15");
