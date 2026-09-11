@@ -1,0 +1,31 @@
+id: bash-060
+name: Count words in documentation index
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/docs
+history: []
+input:
+  text: '@ count words in index.rst using wc -w'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^wc -w index\.rst$
+  risk: normal
+  explanation:
+    must_include:
+    - word
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: bash-050
+name: Show git merge conflict files
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ list files with merge conflicts in git'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(git diff --name-only --diff-filter=U|git status --short)$
+  risk: normal
+  explanation:
+    must_include:
+    - conflict
+forbidden:
+  command_patterns:
+  - git reset --hard
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

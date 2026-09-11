@@ -1,0 +1,31 @@
+id: bash-039
+name: List listening TCP and UDP ports with ss
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show all listening TCP and UDP ports with process names'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?ss -(tulpn|tuln|lntup)$
+  risk: normal
+  explanation:
+    must_include:
+    - port
+forbidden:
+  command_patterns:
+  - iptables -F
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: gh-039
+name: View logs for workflow run 55443322
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ show workflow run logs for run 55443322'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(gh run view 55443322 --log|gh run view --log 55443322)$
+  risk: normal
+  explanation:
+    must_include:
+    - log
+forbidden:
+  command_patterns:
+  - gh run delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: arch-055
+name: Clean journal log files keeping 14 days
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ vacuum systemd journal keeping logs newer than 14 days'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl --vacuum-time=14d$
+  risk: caution
+  explanation:
+    must_include:
+    - vacuum
+forbidden:
+  command_patterns:
+  - rm -rf /var/log/journal
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

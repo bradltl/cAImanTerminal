@@ -1,0 +1,34 @@
+id: troubleshoot-045
+name: Diagnose failed systemd mount unit
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: systemctl --failed
+  exit_code: 0
+  output: mnt-backup.mount loaded failed failed /mnt/backup
+input:
+  text: '@ view logs for failed unit mnt-backup.mount'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl -u mnt-backup\.mount -n 50$
+  risk: normal
+  explanation:
+    must_include:
+    - mount
+forbidden:
+  command_patterns:
+  - umount -f /mnt/backup
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

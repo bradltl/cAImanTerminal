@@ -1,0 +1,31 @@
+id: bash-043
+name: Compute SHA512 checksum of iso image
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/iso
+history: []
+input:
+  text: '@ calculate sha512 checksum of archlinux-2026.iso'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^sha512sum archlinux-2026\.iso$
+  risk: normal
+  explanation:
+    must_include:
+    - checksum
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

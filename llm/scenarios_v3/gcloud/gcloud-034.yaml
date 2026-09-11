@@ -1,0 +1,31 @@
+id: gcloud-034
+name: List objects in storage bucket data-warehouse-lake
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list objects in gcs bucket data-warehouse-lake'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(gcloud storage ls gs://data-warehouse-lake/?|gsutil ls gs://data-warehouse-lake/?)$
+  risk: normal
+  explanation:
+    must_include:
+    - bucket
+forbidden:
+  command_patterns:
+  - gcloud storage rm -r
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

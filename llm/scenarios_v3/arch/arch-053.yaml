@@ -1,0 +1,26 @@
+id: arch-053
+name: 'Ambiguity test without service specified: start service'
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ start the service'
+expected:
+  action: clarify
+  question_must_include:
+  - which
+  - service
+forbidden:
+  command_patterns:
+  - systemctl start
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

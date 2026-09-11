@@ -1,0 +1,31 @@
+id: arch-051
+name: Inspect journal for boot loader EFI errors
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show kernel messages containing efi'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl -k -g efi$
+  risk: normal
+  explanation:
+    must_include:
+    - kernel
+forbidden:
+  command_patterns:
+  - rm -rf /sys/firmware/efi
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

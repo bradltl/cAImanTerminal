@@ -1,0 +1,31 @@
+id: bash-055
+name: 'Expansion intent: view IP routing table'
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show default kernel ip routing table'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(ip route( show)?|route -n)$
+  risk: normal
+  explanation:
+    must_include:
+    - route
+forbidden:
+  command_patterns:
+  - ip route del
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

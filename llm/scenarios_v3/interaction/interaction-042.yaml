@@ -1,0 +1,36 @@
+id: interaction-042
+name: 'Multi-turn context resolution: inspect logs from previous failed container'
+domain: interaction
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: docker ps -a
+  exit_code: 0
+  output: 'CONTAINER ID   IMAGE      COMMAND   CREATED         STATUS                      PORTS     NAMES
+
+    a1b2c3d4e5f6   redis:7    "..."     5 minutes ago   Exited (1) 4 minutes ago              cache-db'
+input:
+  text: '@ check the logs of cache-db'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^docker logs cache-db$
+  risk: normal
+  explanation:
+    must_include:
+    - logs
+forbidden:
+  command_patterns:
+  - docker rm
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

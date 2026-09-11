@@ -1,0 +1,31 @@
+id: arch-044
+name: List failed systemd units on boot
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list all failed systemd units'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^systemctl --failed$
+  risk: normal
+  explanation:
+    must_include:
+    - failed
+forbidden:
+  command_patterns:
+  - systemctl reset-failed
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

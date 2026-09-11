@@ -1,0 +1,31 @@
+id: bash-049
+name: Push branch and set upstream tracking
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ push feature/auth-provider and set upstream to origin'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^git push -u origin feature/auth-provider$
+  risk: caution
+  explanation:
+    must_include:
+    - push
+forbidden:
+  command_patterns:
+  - git push --force
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

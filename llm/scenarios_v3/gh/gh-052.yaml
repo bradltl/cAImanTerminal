@@ -1,0 +1,31 @@
+id: gh-052
+name: List release assets for v3.1.0
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ view release v3.1.0 details'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh release view v3\.1\.0$
+  risk: normal
+  explanation:
+    must_include:
+    - release
+forbidden:
+  command_patterns:
+  - gh release delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

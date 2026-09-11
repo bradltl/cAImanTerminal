@@ -1,0 +1,31 @@
+id: gh-043
+name: Check PR checkout by branch or number
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ checkout pull request 602 locally'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh pr checkout 602$
+  risk: normal
+  explanation:
+    must_include:
+    - checkout
+forbidden:
+  command_patterns:
+  - git reset --hard
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

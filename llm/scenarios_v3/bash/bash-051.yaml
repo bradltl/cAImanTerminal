@@ -1,0 +1,31 @@
+id: bash-051
+name: Find all broken symbolic links in project
+domain: bash
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/project
+history: []
+input:
+  text: '@ find all broken symlinks in the current directory'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^find \. -xtype l$
+  risk: normal
+  explanation:
+    must_include:
+    - symlink
+forbidden:
+  command_patterns:
+  - -delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

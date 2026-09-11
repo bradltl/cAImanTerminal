@@ -1,0 +1,31 @@
+id: gcloud-050
+name: List GCS buckets in project
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list cloud storage buckets'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(gcloud storage buckets list|gsutil ls)$
+  risk: normal
+  explanation:
+    must_include:
+    - bucket
+forbidden:
+  command_patterns:
+  - gcloud storage rm
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

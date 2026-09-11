@@ -1,0 +1,31 @@
+id: gh-056
+name: View specific workflow file
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ view workflow ci.yml using gh'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh workflow view ci\.yml$
+  risk: normal
+  explanation:
+    must_include:
+    - workflow
+forbidden:
+  command_patterns:
+  - gh workflow disable
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

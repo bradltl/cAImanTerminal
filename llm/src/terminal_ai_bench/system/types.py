@@ -308,6 +308,12 @@ class SystemEvaluation:
     intent_source: str = "oracle"
     runtime_intent_resolution: Optional[RuntimeIntentResolution] = None
     latencies: Dict[str, float] = field(default_factory=dict)
+    initial_model_inference_ms: float = 0.0
+    deterministic_host_processing_ms: float = 0.0
+    deterministic_correction_ms: float = 0.0
+    documentation_resolution_ms: float = 0.0
+    repair_model_inference_ms: float = 0.0
+    total_end_to_end_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -333,6 +339,12 @@ class SystemEvaluation:
             "intent_source": self.intent_source,
             "runtime_intent_resolution": self.runtime_intent_resolution.to_dict() if self.runtime_intent_resolution else None,
             "latencies": {k: round(v, 1) for k, v in self.latencies.items()},
+            "initial_model_inference_ms": round(self.initial_model_inference_ms, 1),
+            "deterministic_host_processing_ms": round(self.deterministic_host_processing_ms, 1),
+            "deterministic_correction_ms": round(self.deterministic_correction_ms, 1),
+            "documentation_resolution_ms": round(self.documentation_resolution_ms, 1),
+            "repair_model_inference_ms": round(self.repair_model_inference_ms, 1),
+            "total_end_to_end_ms": round(self.total_end_to_end_ms, 1),
         }
 
 
@@ -451,8 +463,27 @@ class SystemMetrics:
     llm_repair_path_p95_ms: float = 0.0
     host_only_p50_ms: float = 0.0
     host_only_p95_ms: float = 0.0
+    host_overhead_p50_ms: float = 0.0
+    host_overhead_p95_ms: float = 0.0
+    initial_inference_p50_ms: float = 0.0
+    initial_inference_p95_ms: float = 0.0
+    total_end_to_end_p50_ms: float = 0.0
+    total_end_to_end_p95_ms: float = 0.0
     latency_p50_ms: float = 0.0
     latency_p95_ms: float = 0.0
+    staged_command_cli_valid_rate: float = 100.0
+    staged_command_intent_satisfied_rate: float = 100.0
+    false_ambiguity_count: int = 0
+    incorrect_medium_confidence_count: int = 0
+    context_resolution_attempts: int = 0
+    context_resolution_successes: int = 0
+    incorrect_context_resolutions: int = 0
+    supported_intent_count: int = 0
+    expansion_intent_count: int = 0
+    supported_intent_coverage: float = 0.0
+    supported_intent_precision: float = 0.0
+    expansion_intent_coverage: float = 0.0
+    expansion_intent_precision: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -578,6 +609,25 @@ class SystemMetrics:
             "llm_repair_path_p95_ms": round(self.llm_repair_path_p95_ms, 1),
             "host_only_p50_ms": round(self.host_only_p50_ms, 1),
             "host_only_p95_ms": round(self.host_only_p95_ms, 1),
+            "host_overhead_p50_ms": round(self.host_overhead_p50_ms, 1),
+            "host_overhead_p95_ms": round(self.host_overhead_p95_ms, 1),
+            "initial_inference_p50_ms": round(self.initial_inference_p50_ms, 1),
+            "initial_inference_p95_ms": round(self.initial_inference_p95_ms, 1),
+            "total_end_to_end_p50_ms": round(self.total_end_to_end_p50_ms, 1),
+            "total_end_to_end_p95_ms": round(self.total_end_to_end_p95_ms, 1),
             "latency_p50_ms": round(self.latency_p50_ms, 1),
             "latency_p95_ms": round(self.latency_p95_ms, 1),
+            "staged_command_cli_valid_rate": round(self.staged_command_cli_valid_rate, 1),
+            "staged_command_intent_satisfied_rate": round(self.staged_command_intent_satisfied_rate, 1),
+            "false_ambiguity_count": self.false_ambiguity_count,
+            "incorrect_medium_confidence_count": self.incorrect_medium_confidence_count,
+            "context_resolution_attempts": self.context_resolution_attempts,
+            "context_resolution_successes": self.context_resolution_successes,
+            "incorrect_context_resolutions": self.incorrect_context_resolutions,
+            "supported_intent_count": self.supported_intent_count,
+            "expansion_intent_count": self.expansion_intent_count,
+            "supported_intent_coverage": round(self.supported_intent_coverage, 1),
+            "supported_intent_precision": round(self.supported_intent_precision, 1),
+            "expansion_intent_coverage": round(self.expansion_intent_coverage, 1),
+            "expansion_intent_precision": round(self.expansion_intent_precision, 1),
         }

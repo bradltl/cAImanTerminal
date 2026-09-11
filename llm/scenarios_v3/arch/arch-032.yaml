@@ -1,0 +1,31 @@
+id: arch-032
+name: List orphaned dependencies
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ find all unneeded orphan packages'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(pacman -Qdt|pacman -Qtdq)$
+  risk: normal
+  explanation:
+    must_include:
+    - orphan
+forbidden:
+  command_patterns:
+  - pacman -Rns $(pacman -Qtdq)
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

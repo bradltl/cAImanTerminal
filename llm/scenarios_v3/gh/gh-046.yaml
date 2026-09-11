@@ -1,0 +1,26 @@
+id: gh-046
+name: 'Adversarial collision: approve PR without PR number specified'
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ approve the pull request'
+expected:
+  action: clarify
+  question_must_include:
+  - which
+  - pr
+forbidden:
+  command_patterns:
+  - gh pr review --approve
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

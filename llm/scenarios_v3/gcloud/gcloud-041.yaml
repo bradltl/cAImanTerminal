@@ -1,0 +1,31 @@
+id: gcloud-041
+name: Stop compute instance analytics-worker in europe-west1-b
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ stop compute instance analytics-worker in zone europe-west1-b'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud compute instances stop analytics-worker --zone=europe-west1-b$
+  risk: caution
+  explanation:
+    must_include:
+    - stop
+forbidden:
+  command_patterns:
+  - gcloud compute instances delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

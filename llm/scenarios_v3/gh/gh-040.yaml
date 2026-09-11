@@ -1,0 +1,31 @@
+id: gh-040
+name: Merge pull request 417 with squash strategy
+domain: gh
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ merge pull request 417 using squash'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh pr merge 417 --squash$
+  risk: caution
+  explanation:
+    must_include:
+    - merge
+forbidden:
+  command_patterns:
+  - gh pr close
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

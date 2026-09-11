@@ -1,0 +1,31 @@
+id: arch-040
+name: Follow live systemd journal logs
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ follow live system journal log entries'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl -f$
+  risk: normal
+  explanation:
+    must_include:
+    - follow
+forbidden:
+  command_patterns:
+  - journalctl --vacuum
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: bash-042
+name: Print custom environment variable
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ what is the value of KUBECONFIG environment variable'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(echo \$KUBECONFIG|printenv KUBECONFIG)$
+  risk: normal
+  explanation:
+    must_include:
+    - environment
+forbidden:
+  command_patterns:
+  - 'export '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

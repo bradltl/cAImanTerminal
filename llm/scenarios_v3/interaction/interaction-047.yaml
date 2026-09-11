@@ -1,0 +1,26 @@
+id: interaction-047
+name: 'Passive mode: no action when user reads man page'
+domain: interaction
+difficulty: basic
+mode: passive
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: man ls
+  exit_code: 0
+  output: LS(1) User Commands LS(1)
+input:
+  text: ''
+expected:
+  action: no_action
+forbidden:
+  command_patterns:
+  - man
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

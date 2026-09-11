@@ -1,0 +1,31 @@
+id: gcloud-033
+name: Deploy container to Cloud Run
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ deploy image gcr.io/my-proj/auth:v1 to cloud run service auth-service'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud run deploy auth-service --image gcr\.io/my-proj/auth:v1
+  risk: caution
+  explanation:
+    must_include:
+    - deploy
+forbidden:
+  command_patterns:
+  - gcloud run services delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

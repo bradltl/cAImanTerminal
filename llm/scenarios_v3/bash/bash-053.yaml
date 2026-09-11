@@ -1,0 +1,31 @@
+id: bash-053
+name: Adversarial collision git branch named feature/log-fix
+domain: bash
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ create new branch feature/log-fix'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(git checkout -b feature/log-fix|git switch -c feature/log-fix)$
+  risk: normal
+  explanation:
+    must_include:
+    - branch
+forbidden:
+  command_patterns:
+  - journalctl
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

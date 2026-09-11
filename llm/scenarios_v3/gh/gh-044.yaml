@@ -1,0 +1,31 @@
+id: gh-044
+name: List pull requests assigned to me
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ list pull requests assigned to @me'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh pr list --assignee @me$
+  risk: normal
+  explanation:
+    must_include:
+    - pr
+forbidden:
+  command_patterns:
+  - gh pr close
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

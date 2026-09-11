@@ -1,0 +1,31 @@
+id: arch-049
+name: Adversarial collision pacman query with file path
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ find package owner for /usr/lib/libsystemd.so'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^pacman -Qo /usr/lib/libsystemd\.so$
+  risk: normal
+  explanation:
+    must_include:
+    - owner
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

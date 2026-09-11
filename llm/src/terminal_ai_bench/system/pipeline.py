@@ -157,6 +157,7 @@ class SystemEvaluationPipeline:
     ) -> Tuple[ParseResult, SystemEvaluation]:
         latencies: Dict[str, float] = {"initial_infer_ms": initial_latency_ms}
         system_eval = SystemEvaluation(latencies=latencies, intent_source=self.intent_source.value)
+        t_host_start = time.perf_counter()
 
         # 1. Intent Extraction & Contract creation (Oracle or Runtime)
         t0 = time.perf_counter()
@@ -536,13 +537,18 @@ class SystemEvaluationPipeline:
                 current_ast = parse_command(secret_res.redacted_command)
 
         # 7. Final Deterministic Safety Gate Scan
-        t0 = time.perf_counter()
-        safety_res = self.safety_validator.evaluate(
-            current_ast, intent_contract=contract, user_intent=user_intent_text
-        )
-        latencies["safety_validator_ms"] = latencies.get("safety_validator_ms", 0.0) + ((time.perf_counter() - t0) * 1000.0)
-        system_eval.final_safety = safety_res
-        system_eval.safety = safety_res
+        if initial_safety.blocked:
+            safety_res = initial_safety
+            system_eval.final_safety = initial_safety
+            system_eval.safety = initial_safety
+        else:
+            t0 = time.perf_counter()
+            safety_res = self.safety_validator.evaluate(
+                current_ast, intent_contract=contract, user_intent=user_intent_text
+            )
+            latencies["safety_validator_ms"] = latencies.get("safety_validator_ms", 0.0) + ((time.perf_counter() - t0) * 1000.0)
+            system_eval.final_safety = safety_res
+            system_eval.safety = safety_res
 
         if safety_res.blocked:
             # Dangerous/Catastrophic command BLOCKED!
@@ -639,7 +645,19 @@ class SystemEvaluationPipeline:
         system_eval.final_command = current_response.command
         system_eval.final_action = current_response.action.value
         system_eval.final_response = current_response
-        latencies["total_system_ms"] = sum(latencies.values())
+
+        t_host_end = time.perf_counter()
+        total_host_elapsed_ms = (t_host_end - t_host_start) * 1000.0
+        repair_ms = system_eval.repair.latency_ms if (system_eval.repair and system_eval.repair.attempted) else 0.0
+        system_eval.initial_model_inference_ms = initial_latency_ms
+        system_eval.repair_model_inference_ms = repair_ms
+        system_eval.deterministic_host_processing_ms = max(0.0, total_host_elapsed_ms - repair_ms)
+        system_eval.deterministic_correction_ms = latencies.get("deterministic_correction_ms", 0.0)
+        system_eval.documentation_resolution_ms = latencies.get("docs_resolver_ms", 0.0)
+        system_eval.total_end_to_end_ms = initial_latency_ms + total_host_elapsed_ms
+        latencies["deterministic_host_processing_ms"] = system_eval.deterministic_host_processing_ms
+        latencies["total_end_to_end_ms"] = system_eval.total_end_to_end_ms
+        latencies["total_system_ms"] = system_eval.total_end_to_end_ms
 
         # Verify pipeline invariants
         verify_pipeline_invariants(scenario, system_eval)
@@ -961,15 +979,21 @@ def compute_system_metrics(
         p95 = slats[min(len(slats) - 1, int(len(slats) * 0.95))]
         return p50, p95
 
-    normal_lats = [e.latencies.get("total_system_ms", 0.0) for e in evaluations if e.pipeline_path == "normal"]
-    det_lats = [e.latencies.get("total_system_ms", 0.0) for e in evaluations if e.pipeline_path == "deterministic_correction"]
-    llm_lats = [e.latencies.get("total_system_ms", 0.0) for e in evaluations if e.pipeline_path == "llm_repair"]
-    host_lats = [e.latencies.get("total_system_ms", 0.0) for e in evaluations if e.pipeline_path in ("normal", "deterministic_correction", "blocked", "passive_skip")]
+    initial_infer_lats = [e.initial_model_inference_ms for e in evaluations if e.initial_model_inference_ms > 0]
+    host_overhead_lats = [e.deterministic_host_processing_ms for e in evaluations]
+    normal_lats = [e.total_end_to_end_ms for e in evaluations if e.pipeline_path == "normal"]
+    det_lats = [e.total_end_to_end_ms for e in evaluations if e.pipeline_path == "deterministic_correction"]
+    llm_lats = [e.total_end_to_end_ms for e in evaluations if e.pipeline_path == "llm_repair"]
+    host_lats = [e.deterministic_host_processing_ms for e in evaluations if e.pipeline_path in ("normal", "deterministic_correction", "blocked", "passive_skip")]
+    total_lats = [e.total_end_to_end_ms for e in evaluations]
 
+    init_p50, init_p95 = _p50_p95(initial_infer_lats)
+    host_ovh_p50, host_ovh_p95 = _p50_p95(host_overhead_lats)
     norm_p50, norm_p95 = _p50_p95(normal_lats)
     det_p50, det_p95 = _p50_p95(det_lats)
     llm_p50, llm_p95 = _p50_p95(llm_lats)
     host_p50, host_p95 = _p50_p95(host_lats)
+    tot_p50, tot_p95 = _p50_p95(total_lats)
 
     # Runtime Intent Metrics Calculation
     intent_src = "oracle"
@@ -992,6 +1016,18 @@ def compute_system_metrics(
     incorrect_high_conf = 0
     incorrect_high_conf_cases: List[Dict[str, Any]] = []
     confusion_matrix: Dict[str, Dict[str, int]] = {}
+
+    false_ambiguity = 0
+    incorrect_med_conf = 0
+    ctx_attempts = 0
+    ctx_successes = 0
+    ctx_incorrect = 0
+    supported_cnt = 0
+    supported_resolved = 0
+    supported_accurate = 0
+    expansion_cnt = 0
+    expansion_resolved = 0
+    expansion_accurate = 0
 
     gold_contracts_by_id = {s.id: extract_intent(s) for s in scenarios}
 
@@ -1090,12 +1126,66 @@ def compute_system_metrics(
                     rt_accurate += 1
                 rt_ambiguous_gold_count += 1
 
+        # Surface separation (supported vs expansion)
+        is_expansion = (
+            getattr(s, "domain", "") == "expansion"
+            or "expansion" in s.id
+            or getattr(s, "is_expansion", False)
+        )
+        if is_expansion:
+            expansion_cnt += 1
+            if rt_res and rt_res.status in (RuntimeIntentStatus.RESOLVED, RuntimeIntentStatus.AMBIGUOUS):
+                expansion_resolved += 1
+                if dom_match and op_match:
+                    expansion_accurate += 1
+        else:
+            supported_cnt += 1
+            if rt_res and rt_res.status in (RuntimeIntentStatus.RESOLVED, RuntimeIntentStatus.AMBIGUOUS):
+                supported_resolved += 1
+                if dom_match and op_match:
+                    supported_accurate += 1
+
+        # Context resolution tracking
+        has_context_evidence = any(ev.get("source") == "previous_command" or ev.get("type") == "previous_command" for ev in rt_res.evidence) if rt_res else False
+        if bool(s.history) or (s.turns and len(s.turns) > 1):
+            ctx_attempts += 1
+            if has_context_evidence and dom_match and op_match:
+                ctx_successes += 1
+            elif has_context_evidence and not (dom_match and op_match):
+                ctx_incorrect += 1
+
+        # False ambiguity tracking
+        if rt_res and rt_res.status == RuntimeIntentStatus.AMBIGUOUS:
+            if gold_c.is_command_contract and gold_c.required_parameters:
+                if all(param in rt_res.resolved_slots for param in gold_c.required_parameters):
+                    false_ambiguity += 1
+
+        # Incorrect medium confidence tracking
+        if rt_res and rt_res.status == RuntimeIntentStatus.RESOLVED and rt_res.confidence == RuntimeIntentConfidence.MEDIUM:
+            if not (dom_match and op_match):
+                incorrect_med_conf += 1
+
     rt_res_rate = ((rt_resolved + rt_ambiguous) / total_scenarios * 100.0) if total_scenarios else 0.0
     rt_accuracy = min(100.0, (rt_accurate / total_scenarios * 100.0)) if total_scenarios else 0.0
     rt_dom_acc_rate = min(100.0, (rt_domain_acc / total_scenarios * 100.0)) if total_scenarios else 0.0
     rt_op_acc_rate = (rt_op_acc / total_scenarios * 100.0) if total_scenarios else 0.0
     rt_slot_acc = (rt_slot_matches / rt_total_slots * 100.0) if rt_total_slots else 100.0
     rt_missing_slot_acc = (rt_missing_slot_correct / rt_ambiguous_gold_count * 100.0) if rt_ambiguous_gold_count else 100.0
+
+    staged_evals = [e for e in evaluations if e.staging_eligible]
+    if staged_evals:
+        staged_cli_valid = sum(1 for e in staged_evals if e.final_validation and e.final_validation.status == ValidationStatus.VALID)
+        staged_cmd_cli_valid_rate = (staged_cli_valid / len(staged_evals)) * 100.0
+        staged_intent_sat = sum(1 for e in staged_evals if e.final_intent_validation and e.final_intent_validation.status == IntentStatus.SATISFIED)
+        staged_cmd_intent_satisfied_rate = (staged_intent_sat / len(staged_evals)) * 100.0
+    else:
+        staged_cmd_cli_valid_rate = 100.0
+        staged_cmd_intent_satisfied_rate = 100.0
+
+    supported_cov = (supported_resolved / supported_cnt * 100.0) if supported_cnt else 100.0
+    supported_prec = (supported_accurate / supported_resolved * 100.0) if supported_resolved else 100.0
+    expansion_cov = (expansion_resolved / expansion_cnt * 100.0) if expansion_cnt else 0.0
+    expansion_prec = (expansion_accurate / expansion_resolved * 100.0) if expansion_resolved else 0.0
 
     return SystemMetrics(
         raw_overall_score=raw_overall,
@@ -1211,6 +1301,25 @@ def compute_system_metrics(
         llm_repair_path_p95_ms=llm_p95,
         host_only_p50_ms=host_p50,
         host_only_p95_ms=host_p95,
+        host_overhead_p50_ms=host_ovh_p50,
+        host_overhead_p95_ms=host_ovh_p95,
+        initial_inference_p50_ms=init_p50,
+        initial_inference_p95_ms=init_p95,
+        total_end_to_end_p50_ms=tot_p50,
+        total_end_to_end_p95_ms=tot_p95,
         latency_p50_ms=p50_lat,
         latency_p95_ms=p95_lat,
+        staged_command_cli_valid_rate=staged_cmd_cli_valid_rate,
+        staged_command_intent_satisfied_rate=staged_cmd_intent_satisfied_rate,
+        false_ambiguity_count=false_ambiguity,
+        incorrect_medium_confidence_count=incorrect_med_conf,
+        context_resolution_attempts=ctx_attempts,
+        context_resolution_successes=ctx_successes,
+        incorrect_context_resolutions=ctx_incorrect,
+        supported_intent_count=supported_cnt,
+        expansion_intent_count=expansion_cnt,
+        supported_intent_coverage=supported_cov,
+        supported_intent_precision=supported_prec,
+        expansion_intent_coverage=expansion_cov,
+        expansion_intent_precision=expansion_prec,
     )

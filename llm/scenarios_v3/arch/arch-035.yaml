@@ -1,0 +1,31 @@
+id: arch-035
+name: Update mirrorlist using reflector with rate filter
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ update pacman mirrorlist using reflector sorted by download rate'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?reflector --latest 10 --sort rate --save /etc/pacman\.d/mirrorlist$
+  risk: caution
+  explanation:
+    must_include:
+    - mirror
+forbidden:
+  command_patterns:
+  - rm /etc/pacman.d/mirrorlist
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

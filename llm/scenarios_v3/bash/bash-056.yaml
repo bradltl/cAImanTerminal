@@ -1,0 +1,31 @@
+id: bash-056
+name: 'Expansion intent: list running docker containers'
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list all active docker containers'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(docker ps|docker container ls)$
+  risk: normal
+  explanation:
+    must_include:
+    - container
+forbidden:
+  command_patterns:
+  - docker stop
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

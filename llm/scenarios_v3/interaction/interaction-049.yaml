@@ -1,0 +1,26 @@
+id: interaction-049
+name: 'Ambiguity test without context: check the config'
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check the config file'
+expected:
+  action: clarify
+  question_must_include:
+  - which
+  - config
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

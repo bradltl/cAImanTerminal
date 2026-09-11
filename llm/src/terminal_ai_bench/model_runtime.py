@@ -663,6 +663,73 @@ class LlamaCppRuntime(ModelRuntime):
         return self._perf
 
 
+class ReplayModelRuntime(ModelRuntime):
+    """
+    Deterministic replay model runtime.
+    Loads saved raw inferences and replays them deterministically without executing LLM inference.
+    """
+
+    def __init__(self, raw_data_path: Path | str):
+        self.raw_data_path = Path(raw_data_path)
+        with open(self.raw_data_path, "r", encoding="utf-8") as f:
+            self.replay_data: Dict[str, Any] = json.load(f)
+
+        self.model_id = self.replay_data.get("model", "replay-model")
+        self.model_sha256 = self.replay_data.get("model_sha256", "replayed-inference-model-sha256")
+        self.current_key: Optional[str] = None
+        self._perf = PerformanceMetrics(
+            model_load_time_s=0.01,
+            resident_ram_mb=get_current_memory_mb(),
+            peak_ram_mb=get_current_memory_mb(),
+        )
+
+    def set_scenario_key(self, scenario_key: str) -> None:
+        self.current_key = scenario_key
+
+    def load(self, model_id: str, config: Dict[str, Any]) -> None:
+        pass
+
+    def infer(self, prompt: str, **kwargs) -> InferenceResult:
+        inferences = self.replay_data.get("inferences", {})
+        item = None
+        if self.current_key and self.current_key in inferences:
+            item = inferences[self.current_key]
+        elif prompt in inferences:
+            item = inferences[prompt]
+
+        if item:
+            text = item.get("text", "")
+            prompt_tokens = item.get("prompt_tokens", len(prompt.split()))
+            completion_tokens = item.get("completion_tokens", len(text.split()))
+            ttft_ms = item.get("ttft_ms", 15.0)
+            total_latency_ms = item.get("total_latency_ms", 50.0)
+            tps = item.get("tokens_per_second", 40.0)
+            return InferenceResult(
+                text=text,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                ttft_ms=ttft_ms,
+                total_latency_ms=total_latency_ms,
+                tokens_per_second=tps,
+            )
+
+        # Fallback if specific turn not found: look for repair prompt or default empty
+        return InferenceResult(
+            text='{"action": "no_action"}',
+            prompt_tokens=len(prompt.split()),
+            completion_tokens=5,
+            ttft_ms=10.0,
+            total_latency_ms=30.0,
+            tokens_per_second=40.0,
+        )
+
+    def unload(self) -> None:
+        pass
+
+    def metrics(self) -> PerformanceMetrics:
+        return self._perf
+
+
 def create_model_runtime(model_name: str, config: Dict[str, Any], mock_mode: bool = False, persona: str = "perfect") -> ModelRuntime:
     """Factory to instantiate runtime based on configuration or flags."""
     if mock_mode or model_name == "mock" or config.get("architecture") == "mock":

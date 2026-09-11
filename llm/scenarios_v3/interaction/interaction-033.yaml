@@ -1,0 +1,31 @@
+id: interaction-033
+name: Ghost completion for docker exec interactive bash
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: docker exec -it
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^docker exec -it .* /bin/bash$
+  risk: normal
+  explanation:
+    must_include:
+    - container
+forbidden:
+  command_patterns:
+  - docker kill
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

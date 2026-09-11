@@ -1,0 +1,37 @@
+id: troubleshoot-033
+name: Diagnose broken package dependency in pacman
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: sudo pacman -Syu
+  exit_code: 1
+  output: 'error: failed to prepare transaction (could not satisfy dependencies)
+
+    :: installing libavif (1.0.4-1) breaks dependency ''libavif.so=15'' required by
+    gd'
+input:
+  text: '@ diagnose package dependency conflict with libavif'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(pactree -r libavif|pacman -Qi gd)
+  risk: normal
+  explanation:
+    must_include:
+    - dependency
+forbidden:
+  command_patterns:
+  - pacman -Rdd
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

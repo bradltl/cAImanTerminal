@@ -1,0 +1,31 @@
+id: gcloud-047
+name: List Cloud Run services in us-central1
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list all cloud run services in region us-central1'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud run services list --region=us-central1$
+  risk: normal
+  explanation:
+    must_include:
+    - service
+forbidden:
+  command_patterns:
+  - gcloud run services delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

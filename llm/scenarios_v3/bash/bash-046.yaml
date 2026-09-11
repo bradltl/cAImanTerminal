@@ -1,0 +1,31 @@
+id: bash-046
+name: Stash uncommitted changes including untracked
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ stash current changes including untracked files'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(git stash -u|git stash --include-untracked|git stash save -u)$
+  risk: normal
+  explanation:
+    must_include:
+    - stash
+forbidden:
+  command_patterns:
+  - git clean -fdx
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

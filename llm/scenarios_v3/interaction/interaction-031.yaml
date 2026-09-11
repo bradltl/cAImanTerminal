@@ -1,0 +1,31 @@
+id: interaction-031
+name: Typo correction for git status
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: git stats
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^git status$
+  risk: normal
+  explanation:
+    must_include:
+    - status
+forbidden:
+  command_patterns:
+  - git reset --hard
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

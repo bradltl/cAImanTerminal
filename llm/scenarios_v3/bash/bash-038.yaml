@@ -1,0 +1,31 @@
+id: bash-038
+name: Create compressed tarball of logs directory
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /var
+history: []
+input:
+  text: '@ compress the log directory into /backup/log_archive.tar.gz'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?tar -czf /backup/log_archive\.tar\.gz log/?$
+  risk: normal
+  explanation:
+    must_include:
+    - tar
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

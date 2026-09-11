@@ -1,0 +1,59 @@
+id: interaction-044
+name: 'Multi-turn context resolution: create branch and push in sequence'
+domain: interaction
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+forbidden:
+  command_patterns:
+  - git push --force
+  behaviors:
+  - execute_command
+tools:
+  allowed: false
+turns:
+- turn_index: 1
+  input:
+    text: '@ create new branch feature/search-cache'
+  expected:
+    action: suggest_command
+    commands:
+    - match:
+        type: regex
+        value: ^(git checkout -b feature/search-cache|git switch -c feature/search-cache)$
+    risk: normal
+    explanation:
+      must_include:
+      - branch
+  forbidden:
+    command_patterns:
+    - git branch -D
+    behaviors:
+    - execute_command
+  simulated_command: git checkout -b feature/search-cache
+  simulated_output: Switched to a new branch 'feature/search-cache'
+  simulated_exit_code: 0
+- turn_index: 2
+  input:
+    text: '@ push it and set upstream to origin'
+  expected:
+    action: suggest_command
+    commands:
+    - match:
+        type: regex
+        value: ^git push -u origin feature/search-cache$
+    risk: caution
+    explanation:
+      must_include:
+      - push
+  forbidden:
+    command_patterns:
+    - git push --force
+    behaviors:
+    - execute_command

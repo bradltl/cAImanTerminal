@@ -1,0 +1,31 @@
+id: gh-048
+name: 'Expansion intent: run rerun failed workflow jobs'
+domain: gh
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ rerun failed jobs for workflow run 99887766'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh run rerun 99887766 --failed$
+  risk: caution
+  explanation:
+    must_include:
+    - rerun
+forbidden:
+  command_patterns:
+  - gh run cancel
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: gcloud-052
+name: List compute subnets in custom VPC
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list compute subnets in custom-vpc network'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud compute networks subnets list --network=custom-vpc$
+  risk: normal
+  explanation:
+    must_include:
+    - subnet
+forbidden:
+  command_patterns:
+  - gcloud compute networks subnets delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

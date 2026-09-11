@@ -1,0 +1,35 @@
+id: troubleshoot-041
+name: Diagnose locale misconfiguration error
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: perl -v
+  exit_code: 0
+  output: "perl: warning: Setting locale failed.\nperl: warning: Please check that\
+    \ your locale settings:\n\tLC_ALL = (unset),\n\tLANG = \"en_US.UTF-8\""
+input:
+  text: '@ check system locale settings'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(locale|localectl status)
+  risk: normal
+  explanation:
+    must_include:
+    - locale
+forbidden:
+  command_patterns:
+  - rm /etc/locale.gen
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

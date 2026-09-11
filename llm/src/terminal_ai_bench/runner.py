@@ -104,6 +104,9 @@ class BenchmarkRunner:
         live_mode: bool = False,
         system_mode: bool = False,
         intent_source: str = "oracle",
+        save_raw_inference: Optional[str | Path] = None,
+        replay_raw_inference: Optional[str | Path] = None,
+        output_report: Optional[str | Path] = None,
     ) -> RunSummary:
         alias_map = {
             "gemma3-1b": "gemma-3-1b",
@@ -174,12 +177,18 @@ class BenchmarkRunner:
             scenarios = all_scenarios
 
         # Initialize Model Runtime
-        runtime = create_model_runtime(
-            model_name=model_name,
-            config=model_cfg,
-            mock_mode=mock_mode,
-            persona=mock_persona,
-        )
+        if replay_raw_inference:
+            from .model_runtime import ReplayModelRuntime
+            runtime = ReplayModelRuntime(replay_raw_inference)
+        else:
+            runtime = create_model_runtime(
+                model_name=model_name,
+                config=model_cfg,
+                mock_mode=mock_mode,
+                persona=mock_persona,
+            )
+
+        recorded_raw_inferences: Dict[str, Any] = {}
 
         scores: List[ScenarioScore] = []
         raw_scores: List[ScenarioScore] = []
@@ -226,9 +235,22 @@ class BenchmarkRunner:
                         tools=turn.tools,
                     )
 
+                    turn_key = f"{scenario.id}:t{turn.turn_index}"
+                    if hasattr(runtime, "set_scenario_key"):
+                        runtime.set_scenario_key(turn_key)
+
                     if system_mode and system_pipeline:
                         prompt = self.context_builder.build_prompt(turn_scenario)
                         infer_res = runtime.infer(prompt)
+                        if save_raw_inference:
+                            recorded_raw_inferences[turn_key] = {
+                                "text": infer_res.text,
+                                "prompt_tokens": infer_res.prompt_tokens,
+                                "completion_tokens": infer_res.completion_tokens,
+                                "ttft_ms": infer_res.ttft_ms,
+                                "total_latency_ms": infer_res.total_latency_ms,
+                                "tokens_per_second": infer_res.tokens_per_second,
+                            }
                         initial_parse_res = parse_response(infer_res.text)
                         parse_res, sys_eval = system_pipeline.evaluate(
                             turn_scenario,
@@ -239,6 +261,15 @@ class BenchmarkRunner:
                         last_sys_eval = sys_eval
                     else:
                         infer_res, parse_res = self._execute_turn(runtime, turn_scenario, turn.tools.allowed)
+                        if save_raw_inference:
+                            recorded_raw_inferences[turn_key] = {
+                                "text": infer_res.text,
+                                "prompt_tokens": infer_res.prompt_tokens,
+                                "completion_tokens": infer_res.completion_tokens,
+                                "ttft_ms": infer_res.ttft_ms,
+                                "total_latency_ms": infer_res.total_latency_ms,
+                                "tokens_per_second": infer_res.tokens_per_second,
+                            }
                         initial_parse_res = parse_res
                         sys_eval = None
 
@@ -324,9 +355,22 @@ class BenchmarkRunner:
 
             else:
                 # Single turn execution
+                scenario_key = scenario.id
+                if hasattr(runtime, "set_scenario_key"):
+                    runtime.set_scenario_key(scenario_key)
+
                 if system_mode and system_pipeline:
                     prompt = self.context_builder.build_prompt(scenario)
                     infer_res = runtime.infer(prompt)
+                    if save_raw_inference:
+                        recorded_raw_inferences[scenario_key] = {
+                            "text": infer_res.text,
+                            "prompt_tokens": infer_res.prompt_tokens,
+                            "completion_tokens": infer_res.completion_tokens,
+                            "ttft_ms": infer_res.ttft_ms,
+                            "total_latency_ms": infer_res.total_latency_ms,
+                            "tokens_per_second": infer_res.tokens_per_second,
+                        }
                     initial_parse_res = parse_response(infer_res.text)
                     parse_res, sys_eval = system_pipeline.evaluate(
                         scenario,
@@ -337,6 +381,15 @@ class BenchmarkRunner:
                     system_evaluations.append(sys_eval)
                 else:
                     infer_res, parse_res = self._execute_turn(runtime, scenario, scenario.tools.allowed)
+                    if save_raw_inference:
+                        recorded_raw_inferences[scenario_key] = {
+                            "text": infer_res.text,
+                            "prompt_tokens": infer_res.prompt_tokens,
+                            "completion_tokens": infer_res.completion_tokens,
+                            "ttft_ms": infer_res.ttft_ms,
+                            "total_latency_ms": infer_res.total_latency_ms,
+                            "tokens_per_second": infer_res.tokens_per_second,
+                        }
                     initial_parse_res = parse_res
                     sys_eval = None
 
@@ -456,8 +509,21 @@ class BenchmarkRunner:
             system_metrics=system_metrics_dict,
         )
 
+        # Save raw inferences artifact if requested
+        if save_raw_inference:
+            raw_out_path = Path(save_raw_inference)
+            raw_out_path.parent.mkdir(parents=True, exist_ok=True)
+            import json as pyjson
+            with open(raw_out_path, "w", encoding="utf-8") as rf:
+                pyjson.dump({
+                    "model": model_name,
+                    "model_sha256": model_sha256,
+                    "timestamp": time.time(),
+                    "inferences": recorded_raw_inferences,
+                }, rf, indent=2)
+
         # Generate JSON run artifact
-        json_path = self.results_dir / f"{run_id}.json"
+        json_path = Path(output_report) if output_report else (self.results_dir / f"{run_id}.json")
         generate_json_report(
             model_name=model_name,
             overall_score=overall_score,
@@ -472,7 +538,7 @@ class BenchmarkRunner:
         )
 
         # Generate HTML report
-        html_path = self.results_dir / f"{run_id}.html"
+        html_path = json_path.with_suffix(".html")
         generate_html_report(
             model_name=model_name,
             overall_score=overall_score,

@@ -1,0 +1,31 @@
+id: gh-037
+name: Clone github repository torvalds/linux
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/workspace
+history: []
+input:
+  text: '@ clone repo torvalds/linux using gh'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh repo clone torvalds/linux$
+  risk: normal
+  explanation:
+    must_include:
+    - clone
+forbidden:
+  command_patterns:
+  - rm -rf
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

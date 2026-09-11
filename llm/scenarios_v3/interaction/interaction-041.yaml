@@ -1,0 +1,35 @@
+id: interaction-041
+name: 'Multi-turn context resolution: restart service from previous failed status'
+domain: interaction
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: systemctl status redis.service
+  exit_code: 3
+  output: "\u25CF redis.service - Redis in-memory data store\n   Loaded: loaded\n\
+    \   Active: failed"
+input:
+  text: '@ restart it'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?systemctl restart redis(\.service)?$
+  risk: elevated
+  explanation:
+    must_include:
+    - redis
+forbidden:
+  command_patterns:
+  - systemctl stop
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

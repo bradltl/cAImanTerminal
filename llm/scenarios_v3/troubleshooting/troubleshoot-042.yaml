@@ -1,0 +1,31 @@
+id: troubleshoot-042
+name: Diagnose failed cron job execution
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check systemd journal logs for cron service'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl -u cron(ie)?(\.service)? -n 50$
+  risk: normal
+  explanation:
+    must_include:
+    - cron
+forbidden:
+  command_patterns:
+  - crontab -r
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

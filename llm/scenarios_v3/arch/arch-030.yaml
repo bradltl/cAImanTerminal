@@ -1,0 +1,31 @@
+id: arch-030
+name: Query user-installed packages on CachyOS
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list explicitly installed packages'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(pacman -Qe|pacman -Qqe)$
+  risk: normal
+  explanation:
+    must_include:
+    - explicit
+forbidden:
+  command_patterns:
+  - pacman -R
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

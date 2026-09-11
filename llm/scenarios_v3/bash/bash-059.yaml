@@ -1,0 +1,32 @@
+id: bash-059
+name: 'Expansion intent: show disk partition table using parted'
+domain: bash
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ print partition table for /dev/nvme0n1 with parted -l'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?parted -l$
+  risk: normal
+  explanation:
+    must_include:
+    - partition
+forbidden:
+  command_patterns:
+  - mkpart
+  - rm
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

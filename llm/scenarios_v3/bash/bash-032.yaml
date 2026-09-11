@@ -1,0 +1,31 @@
+id: bash-032
+name: Replace string in file using sed
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/src
+history: []
+input:
+  text: '@ replace all occurrences of localhost with 10.0.0.5 in app.conf'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^sed -i 's/localhost/10\.0\.0\.5/g' app\.conf$
+  risk: caution
+  explanation:
+    must_include:
+    - replace
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: bash-058
+name: 'Expansion intent: inspect network socket statistics'
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show summary statistics for network sockets with ss -s'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^ss -s$
+  risk: normal
+  explanation:
+    must_include:
+    - socket
+forbidden:
+  command_patterns:
+  - iptables
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

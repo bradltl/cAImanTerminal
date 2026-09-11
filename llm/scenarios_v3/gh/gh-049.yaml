@@ -1,0 +1,31 @@
+id: gh-049
+name: Close PR without merging
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ close pull request 319'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh pr close 319$
+  risk: caution
+  explanation:
+    must_include:
+    - close
+forbidden:
+  command_patterns:
+  - gh pr merge
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

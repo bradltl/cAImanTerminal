@@ -1,0 +1,34 @@
+id: interaction-050
+name: 'Multi-turn context resolution: restart service from previous log output'
+domain: interaction
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: journalctl -u postgresql.service -n 10
+  exit_code: 0
+  output: 'FATAL: could not open file ''pg_wal'': No space left on device'
+input:
+  text: '@ restart postgresql after space cleanup'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?systemctl restart postgresql(\.service)?$
+  risk: elevated
+  explanation:
+    must_include:
+    - postgresql
+forbidden:
+  command_patterns:
+  - systemctl stop
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

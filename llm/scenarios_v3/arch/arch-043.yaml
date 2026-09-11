@@ -1,0 +1,31 @@
+id: arch-043
+name: Restart coredns service
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ restart system service coredns'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?systemctl restart coredns(\.service)?$
+  risk: elevated
+  explanation:
+    must_include:
+    - service
+forbidden:
+  command_patterns:
+  - systemctl stop
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

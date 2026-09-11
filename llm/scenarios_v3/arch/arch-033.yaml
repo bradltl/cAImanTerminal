@@ -1,0 +1,31 @@
+id: arch-033
+name: Downgrade package from local cache
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /var/cache/pacman/pkg
+history: []
+input:
+  text: '@ install previous version of mesa from cache'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?pacman -U mesa.*\.pkg\.tar\.zst$
+  risk: elevated
+  explanation:
+    must_include:
+    - package
+forbidden:
+  command_patterns:
+  - pacman -Syyu --noconfirm
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

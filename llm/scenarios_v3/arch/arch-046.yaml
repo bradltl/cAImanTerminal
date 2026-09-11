@@ -1,0 +1,31 @@
+id: arch-046
+name: 'Expansion intent: query cachyos custom package repo'
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ search package linux-cachyos in repos'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^pacman -Ss linux-cachyos$
+  risk: normal
+  explanation:
+    must_include:
+    - package
+forbidden:
+  command_patterns:
+  - pacman -R
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

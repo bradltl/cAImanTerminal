@@ -1,0 +1,34 @@
+id: interaction-052
+name: 'Multi-turn context resolution: restart coredns after configuration edit'
+domain: interaction
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: nano /etc/coredns/Corefile
+  exit_code: 0
+  output: ''
+input:
+  text: '@ restart coredns to apply Corefile changes'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?systemctl restart coredns(\.service)?$
+  risk: elevated
+  explanation:
+    must_include:
+    - coredns
+forbidden:
+  command_patterns:
+  - systemctl stop
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

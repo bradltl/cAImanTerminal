@@ -1,0 +1,31 @@
+id: gcloud-048
+name: Start stopped compute instance
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ start compute instance staging-db in zone us-east1-b'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud compute instances start staging-db --zone=us-east1-b$
+  risk: caution
+  explanation:
+    must_include:
+    - start
+forbidden:
+  command_patterns:
+  - gcloud compute instances delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

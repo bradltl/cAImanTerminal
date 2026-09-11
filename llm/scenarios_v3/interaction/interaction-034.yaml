@@ -1,0 +1,31 @@
+id: interaction-034
+name: Ghost completion for pacman ripgrep install
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: sudo pacman -S ri
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?pacman -S ripgrep$
+  risk: elevated
+  explanation:
+    must_include:
+    - ripgrep
+forbidden:
+  command_patterns:
+  - pacman -R
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

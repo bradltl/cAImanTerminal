@@ -1,0 +1,31 @@
+id: arch-041
+name: View logs from current boot only
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show all logs from the current boot'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl -b$
+  risk: normal
+  explanation:
+    must_include:
+    - boot
+forbidden:
+  command_patterns:
+  - reboot
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

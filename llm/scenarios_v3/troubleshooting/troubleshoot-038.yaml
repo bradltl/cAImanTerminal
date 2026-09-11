@@ -1,0 +1,34 @@
+id: troubleshoot-038
+name: Diagnose segmentation fault crash via coredumpctl
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: ./custom_daemon
+  exit_code: 139
+  output: Segmentation fault (core dumped)
+input:
+  text: '@ diagnose segmentation fault of custom_daemon'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(coredumpctl info custom_daemon|coredumpctl list custom_daemon)
+  risk: normal
+  explanation:
+    must_include:
+    - coredump
+forbidden:
+  command_patterns:
+  - rm /var/lib/systemd/coredump/*
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: gcloud-044
+name: Describe VPC network default
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ describe compute network custom-vpc'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud compute networks describe custom-vpc$
+  risk: normal
+  explanation:
+    must_include:
+    - network
+forbidden:
+  command_patterns:
+  - gcloud compute networks delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

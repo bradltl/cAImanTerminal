@@ -1,0 +1,31 @@
+id: bash-030
+name: Count lines in auth log file
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /var/log
+history: []
+input:
+  text: '@ count how many lines are in audit.log'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(wc -l audit\.log|wc -l < audit\.log)$
+  risk: normal
+  explanation:
+    must_include:
+    - line
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

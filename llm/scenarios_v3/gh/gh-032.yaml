@@ -1,0 +1,31 @@
+id: gh-032
+name: Create new issue for database timeout
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ create a new issue titled ''Postgres connection timeout on worker nodes'''
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh issue create --title ['"]Postgres connection timeout on worker nodes['"]
+  risk: normal
+  explanation:
+    must_include:
+    - issue
+forbidden:
+  command_patterns:
+  - gh issue delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: bash-047
+name: Pop newest git stash entry
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ apply and drop the latest git stash'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^git stash pop$
+  risk: normal
+  explanation:
+    must_include:
+    - stash
+forbidden:
+  command_patterns:
+  - git stash drop
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

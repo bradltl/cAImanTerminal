@@ -1,0 +1,31 @@
+id: arch-034
+name: Rebuild CachyOS initramfs preset
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /etc/mkinitcpio.d
+history: []
+input:
+  text: '@ regenerate all initramfs presets using mkinitcpio'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?mkinitcpio -P$
+  risk: elevated
+  explanation:
+    must_include:
+    - initramfs
+forbidden:
+  command_patterns:
+  - rm /boot/initramfs
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

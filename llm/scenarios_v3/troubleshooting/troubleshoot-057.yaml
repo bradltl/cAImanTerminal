@@ -1,0 +1,31 @@
+id: troubleshoot-057
+name: Diagnose system journal vacuum disk size
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check current disk space consumed by systemd journal'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl --disk-usage$
+  risk: normal
+  explanation:
+    must_include:
+    - journal
+forbidden:
+  command_patterns:
+  - rm -rf /var/log/journal
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

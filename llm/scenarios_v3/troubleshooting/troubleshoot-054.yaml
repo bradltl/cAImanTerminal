@@ -1,0 +1,31 @@
+id: troubleshoot-054
+name: Diagnose swap exhaustion on low RAM host
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ inspect active swap spaces'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^swapon --show$
+  risk: normal
+  explanation:
+    must_include:
+    - swap
+forbidden:
+  command_patterns:
+  - swapoff -a
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

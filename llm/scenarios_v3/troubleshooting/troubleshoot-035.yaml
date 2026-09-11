@@ -1,0 +1,31 @@
+id: troubleshoot-035
+name: Diagnose slow disk I/O with iotop
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ diagnose which process is causing high disk i/o wait'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo iotop -b -n 1|sudo iotop -o -b -n 1|iostat -xz 1 2)$
+  risk: normal
+  explanation:
+    must_include:
+    - io
+forbidden:
+  command_patterns:
+  - kill -9
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: arch-054
+name: Check pacman config syntax and active repositories
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show active pacman repositories from /etc/pacman.conf'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^grep -E '^\[.*\]' /etc/pacman\.conf$
+  risk: normal
+  explanation:
+    must_include:
+    - pacman
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

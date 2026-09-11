@@ -1,0 +1,31 @@
+id: gcloud-038
+name: Describe Cloud SQL instance prod-db-replica
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ describe cloud sql instance prod-db-replica'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud sql instances describe prod-db-replica$
+  risk: normal
+  explanation:
+    must_include:
+    - instance
+forbidden:
+  command_patterns:
+  - gcloud sql instances delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

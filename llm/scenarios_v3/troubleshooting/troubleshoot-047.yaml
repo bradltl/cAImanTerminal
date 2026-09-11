@@ -1,0 +1,31 @@
+id: troubleshoot-047
+name: Diagnose DNS resolution timeout with dig
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ test DNS lookup for example.com with dig'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^dig example\.com$
+  risk: normal
+  explanation:
+    must_include:
+    - dns
+forbidden:
+  command_patterns:
+  - rm /etc/resolv.conf
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

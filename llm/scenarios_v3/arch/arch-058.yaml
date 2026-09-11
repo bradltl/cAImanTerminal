@@ -1,0 +1,31 @@
+id: arch-058
+name: Show systemd service dependency tree
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list dependencies for systemd-networkd'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^systemctl list-dependencies systemd-networkd(\.service)?$
+  risk: normal
+  explanation:
+    must_include:
+    - dependency
+forbidden:
+  command_patterns:
+  - systemctl mask
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

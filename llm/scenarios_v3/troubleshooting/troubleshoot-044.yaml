@@ -1,0 +1,31 @@
+id: troubleshoot-044
+name: Diagnose zombie processes in process table
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list all zombie processes on the system'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^ps aux \| grep 'defunct'$
+  risk: normal
+  explanation:
+    must_include:
+    - zombie
+forbidden:
+  command_patterns:
+  - kill -9 1
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

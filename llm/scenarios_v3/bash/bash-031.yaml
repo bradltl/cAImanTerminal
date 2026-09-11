@@ -1,0 +1,31 @@
+id: bash-031
+name: Sort CSV by column 4 numerically
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/data
+history: []
+input:
+  text: '@ sort transactions.csv numerically on column 4 with comma delimiter'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^sort -t',' -k4,4n transactions\.csv$
+  risk: normal
+  explanation:
+    must_include:
+    - sort
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

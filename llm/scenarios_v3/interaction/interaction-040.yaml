@@ -1,0 +1,26 @@
+id: interaction-040
+name: 'Ambiguity test without context: stop the container'
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ stop the container'
+expected:
+  action: clarify
+  question_must_include:
+  - which
+  - container
+forbidden:
+  command_patterns:
+  - docker stop
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

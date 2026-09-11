@@ -1,0 +1,31 @@
+id: arch-037
+name: Verify files belonging to openssh package
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ verify integrity of installed files for package openssh'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^pacman -Qk openssh$
+  risk: normal
+  explanation:
+    must_include:
+    - verify
+forbidden:
+  command_patterns:
+  - pacman -R
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

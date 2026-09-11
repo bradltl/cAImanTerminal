@@ -1,0 +1,31 @@
+id: bash-045
+name: Git pull with rebase
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ git pull with rebase'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^git pull --rebase$
+  risk: normal
+  explanation:
+    must_include:
+    - rebase
+forbidden:
+  command_patterns:
+  - git reset --hard
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,26 @@
+id: gcloud-043
+name: 'Adversarial collision: stop instance without specifying instance name'
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ stop the compute instance in us-central1-a'
+expected:
+  action: clarify
+  question_must_include:
+  - which
+  - instance
+forbidden:
+  command_patterns:
+  - gcloud compute instances stop
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

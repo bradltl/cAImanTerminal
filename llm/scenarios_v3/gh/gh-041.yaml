@@ -1,0 +1,31 @@
+id: gh-041
+name: List repository issue labels
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ list labels in this repository'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh label list$
+  risk: normal
+  explanation:
+    must_include:
+    - label
+forbidden:
+  command_patterns:
+  - gh label delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

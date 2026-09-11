@@ -1,0 +1,32 @@
+id: bash-037
+name: Download asset using curl with silent progress
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /tmp
+history: []
+input:
+  text: '@ download https://cdn.example.org/models/weights.bin to weights.bin using
+    curl'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^curl -L -o weights\.bin https://cdn\.example\.org/models/weights\.bin$
+  risk: normal
+  explanation:
+    must_include:
+    - download
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

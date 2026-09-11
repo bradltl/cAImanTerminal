@@ -1,0 +1,31 @@
+id: gcloud-031
+name: Create firewall rule allowing port 9090
+domain: gcloud
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ create firewall rule allow-prometheus allowing tcp port 9090'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud compute firewall-rules create allow-prometheus --allow tcp:9090
+  risk: caution
+  explanation:
+    must_include:
+    - firewall
+forbidden:
+  command_patterns:
+  - gcloud compute firewall-rules delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

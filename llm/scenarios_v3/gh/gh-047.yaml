@@ -1,0 +1,31 @@
+id: gh-047
+name: 'Expansion intent: view repository status summary'
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ view repo overview using gh'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh repo view$
+  risk: normal
+  explanation:
+    must_include:
+    - repo
+forbidden:
+  command_patterns:
+  - gh repo delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

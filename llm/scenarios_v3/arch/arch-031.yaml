@@ -1,0 +1,31 @@
+id: arch-031
+name: Clean package cache keeping recent versions
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ clean the pacman package cache keeping 2 versions'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(paccache -rk2|paccache -r -k 2|sudo paccache -rk 2)$
+  risk: caution
+  explanation:
+    must_include:
+    - cache
+forbidden:
+  command_patterns:
+  - rm -rf /var/cache/pacman
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

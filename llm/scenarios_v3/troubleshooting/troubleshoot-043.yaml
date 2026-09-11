@@ -1,0 +1,31 @@
+id: troubleshoot-043
+name: Diagnose high iowait with vmstat
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ monitor vmstat 1 5 to inspect cpu and io wait'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^vmstat 1 5$
+  risk: normal
+  explanation:
+    must_include:
+    - vmstat
+forbidden:
+  command_patterns:
+  - kill -9
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

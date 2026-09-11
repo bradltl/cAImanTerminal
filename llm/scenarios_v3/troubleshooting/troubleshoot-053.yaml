@@ -1,0 +1,31 @@
+id: troubleshoot-053
+name: Diagnose system journal corruption verification
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ verify journal log file consistency'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl --verify$
+  risk: normal
+  explanation:
+    must_include:
+    - journal
+forbidden:
+  command_patterns:
+  - rm -rf /var/log/journal
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

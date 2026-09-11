@@ -1,0 +1,31 @@
+id: arch-052
+name: Check system uptime and load average
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check system uptime and load'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^uptime$
+  risk: normal
+  explanation:
+    must_include:
+    - uptime
+forbidden:
+  command_patterns:
+  - shutdown
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: arch-039
+name: Show dmesg kernel ring buffer messages with priority err
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show kernel error messages from system log'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl -k -p err$
+  risk: normal
+  explanation:
+    must_include:
+    - kernel
+forbidden:
+  command_patterns:
+  - journalctl --vacuum
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

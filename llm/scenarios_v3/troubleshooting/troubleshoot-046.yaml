@@ -1,0 +1,35 @@
+id: troubleshoot-046
+name: Diagnose pacman signature error
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: sudo pacman -Syu
+  exit_code: 1
+  output: 'error: archlinux-keyring: signature from ''Christian Hesse'' is unknown
+    trust'
+input:
+  text: '@ update archlinux-keyring package first'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?pacman -Sy archlinux-keyring$
+  risk: elevated
+  explanation:
+    must_include:
+    - keyring
+forbidden:
+  command_patterns:
+  - rm -rf /etc/pacman.d/gnupg
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

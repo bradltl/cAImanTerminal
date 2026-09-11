@@ -1,0 +1,26 @@
+id: bash-057
+name: 'Ambiguity test without context: restart it'
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ restart it'
+expected:
+  action: clarify
+  question_must_include:
+  - what
+  - restart
+forbidden:
+  command_patterns:
+  - systemctl restart
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

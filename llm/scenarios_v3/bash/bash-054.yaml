@@ -1,0 +1,32 @@
+id: bash-054
+name: 'Expansion intent: list block devices with filesystem info'
+domain: bash
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list block devices showing filesystem types and mountpoints'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(lsblk -f|lsblk -o NAME,FSTYPE,SIZE,MOUNTPOINTS)$
+  risk: normal
+  explanation:
+    must_include:
+    - block
+forbidden:
+  command_patterns:
+  - mkfs
+  - fdisk
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

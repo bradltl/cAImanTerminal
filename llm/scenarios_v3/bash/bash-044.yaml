@@ -1,0 +1,32 @@
+id: bash-044
+name: Check disk usage of current directory items
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /var/lib/docker
+history: []
+input:
+  text: '@ check human-readable disk usage of items in current directory sorted by
+    size'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(du -sh \* \| sort -h|du -h --max-depth=1 \| sort -h)$
+  risk: normal
+  explanation:
+    must_include:
+    - disk
+forbidden:
+  command_patterns:
+  - rm -rf
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

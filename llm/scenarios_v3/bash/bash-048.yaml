@@ -1,0 +1,31 @@
+id: bash-048
+name: Create and switch to new git feature branch
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ create and switch to new branch feature/auth-provider'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(git checkout -b feature/auth-provider|git switch -c feature/auth-provider)$
+  risk: normal
+  explanation:
+    must_include:
+    - branch
+forbidden:
+  command_patterns:
+  - git branch -D
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

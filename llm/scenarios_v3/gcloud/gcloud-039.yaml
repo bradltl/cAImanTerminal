@@ -1,0 +1,31 @@
+id: gcloud-039
+name: List available machine types in zone europe-west3-a
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list available compute machine types in zone europe-west3-a'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud compute machine-types list --zones=europe-west3-a$
+  risk: normal
+  explanation:
+    must_include:
+    - machine
+forbidden:
+  command_patterns:
+  - gcloud compute instances delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

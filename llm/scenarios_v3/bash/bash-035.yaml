@@ -1,0 +1,31 @@
+id: bash-035
+name: Create relative symbolic link
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/docs
+history: []
+input:
+  text: '@ create a symlink named latest.pdf pointing to report_v3.pdf'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^ln -s report_v3\.pdf latest\.pdf$
+  risk: normal
+  explanation:
+    must_include:
+    - symlink
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

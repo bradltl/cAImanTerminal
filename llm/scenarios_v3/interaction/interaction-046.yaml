@@ -1,0 +1,24 @@
+id: interaction-046
+name: 'Passive mode: model should produce no_action on plain user comment'
+domain: interaction
+difficulty: basic
+mode: passive
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: just finished writing documentation for the new release
+expected:
+  action: no_action
+forbidden:
+  command_patterns:
+  - git commit
+  - git push
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

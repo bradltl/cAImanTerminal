@@ -1,0 +1,31 @@
+id: gcloud-046
+name: Check active gcloud configuration
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list gcloud configurations'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud config configurations list$
+  risk: normal
+  explanation:
+    must_include:
+    - config
+forbidden:
+  command_patterns:
+  - gcloud config configurations delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

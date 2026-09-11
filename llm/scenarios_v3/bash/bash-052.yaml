@@ -1,0 +1,31 @@
+id: bash-052
+name: Adversarial collision sort by column 4 vs filesystem
+domain: bash
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ sort records.tsv by fourth column numerically'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^sort -k4,4n records\.tsv$
+  risk: normal
+  explanation:
+    must_include:
+    - sort
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

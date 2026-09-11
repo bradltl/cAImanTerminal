@@ -1,0 +1,31 @@
+id: troubleshoot-052
+name: Diagnose core dump pattern configuration
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check core pattern kernel setting'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^sysctl kernel\.core_pattern$
+  risk: normal
+  explanation:
+    must_include:
+    - core
+forbidden:
+  command_patterns:
+  - sysctl -w
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

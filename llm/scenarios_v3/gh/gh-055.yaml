@@ -1,0 +1,31 @@
+id: gh-055
+name: Create draft pull request
+domain: gh
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ create a draft pull request with title ''WIP: payment processor refactor'''
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: '^gh pr create --draft --title [''"]WIP: payment processor refactor[''"]'
+  risk: caution
+  explanation:
+    must_include:
+    - draft
+forbidden:
+  command_patterns:
+  - gh pr close
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

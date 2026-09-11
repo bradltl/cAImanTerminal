@@ -1,0 +1,31 @@
+id: arch-050
+name: CachyOS kernel sysctl tuning inspection
+domain: arch
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ view kernel parameter vm.swappiness'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^sysctl vm\.swappiness$
+  risk: normal
+  explanation:
+    must_include:
+    - sysctl
+forbidden:
+  command_patterns:
+  - sysctl -w
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

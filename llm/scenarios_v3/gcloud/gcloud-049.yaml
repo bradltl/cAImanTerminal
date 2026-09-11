@@ -1,0 +1,31 @@
+id: gcloud-049
+name: Describe compute instance details
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ describe compute instance web-node-1 in zone us-central1-b'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud compute instances describe web-node-1 --zone=us-central1-b$
+  risk: normal
+  explanation:
+    must_include:
+    - instance
+forbidden:
+  command_patterns:
+  - gcloud compute instances delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: bash-034
+name: Periodically monitor nvidia-smi with watch
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ watch nvidia-smi every 1 second'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^watch -n 1 nvidia-smi$
+  risk: normal
+  explanation:
+    must_include:
+    - watch
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: arch-056
+name: Check pacman database locks safely with lsof
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ inspect processes holding pacman database lock using lsof'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?lsof /var/lib/pacman/db\.lck$
+  risk: normal
+  explanation:
+    must_include:
+    - lock
+forbidden:
+  command_patterns:
+  - rm -f /var/lib/pacman/db.lck
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

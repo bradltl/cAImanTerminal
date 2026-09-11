@@ -1,0 +1,31 @@
+id: troubleshoot-058
+name: Diagnose system load average with uptime
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check load average with w command'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^w$
+  risk: normal
+  explanation:
+    must_include:
+    - load
+forbidden:
+  command_patterns:
+  - pkill
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

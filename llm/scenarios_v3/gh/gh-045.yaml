@@ -1,0 +1,31 @@
+id: gh-045
+name: Check authentication status with gh auth status
+domain: gh
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check github cli authentication status'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh auth status$
+  risk: normal
+  explanation:
+    must_include:
+    - auth
+forbidden:
+  command_patterns:
+  - gh auth logout
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

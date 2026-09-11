@@ -1,0 +1,35 @@
+id: troubleshoot-030
+name: Diagnose Out-Of-Memory process termination
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: dmesg | tail -5
+  exit_code: 0
+  output: '[48291.123] Out of memory: Killed process 14092 (node) total-vm:8192000kB,
+    anon-rss:7500000kB'
+input:
+  text: '@ diagnose why the node service suddenly died'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(dmesg \| grep -i oom|journalctl -k -g oom|free -h)
+  risk: normal
+  explanation:
+    must_include:
+    - memory
+forbidden:
+  command_patterns:
+  - kill -9
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

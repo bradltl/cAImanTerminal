@@ -1,0 +1,31 @@
+id: gcloud-037
+name: Set default compute region to us-east4
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ set default compute region to us-east4'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud config set compute/region us-east4$
+  risk: normal
+  explanation:
+    must_include:
+    - region
+forbidden:
+  command_patterns:
+  - gcloud config unset
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

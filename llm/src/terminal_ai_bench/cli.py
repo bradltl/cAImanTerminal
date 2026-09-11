@@ -28,6 +28,8 @@ def main():
 @click.option("--system", is_flag=True, help="Evaluate complete cAIman Terminal system inference pipeline")
 @click.option("--intent-source", default="oracle", type=click.Choice(["oracle", "runtime"]), help="Intent contract resolution source: oracle or runtime")
 @click.option("--runtime-system", is_flag=True, help="Shortcut to evaluate complete system pipeline with runtime intent resolver")
+@click.option("--save-raw-inference", default=None, help="Path to save raw model inferences for replay")
+@click.option("--output-report", default=None, help="Custom output path for benchmark report JSON")
 def run_command(
     model: str,
     domain: Optional[str],
@@ -38,6 +40,8 @@ def run_command(
     system: bool,
     intent_source: str,
     runtime_system: bool,
+    save_raw_inference: Optional[str],
+    output_report: Optional[str],
 ):
     """Run benchmark against a candidate model."""
     if runtime_system:
@@ -54,10 +58,49 @@ def run_command(
             mock_persona=persona,
             system_mode=system,
             intent_source=intent_source,
+            save_raw_inference=save_raw_inference,
+            output_report=output_report,
         )
     except Exception as exc:
         console = Console()
         console.print(f"[bold red]Benchmark Error:[/bold red] {exc}")
+        raise click.Abort()
+
+
+@main.command(name="replay")
+@click.argument("raw_file")
+@click.option("--scenarios-dir", default="scenarios", help="Path to scenarios directory")
+@click.option("--system", is_flag=True, default=True, help="Evaluate complete cAIman Terminal system inference pipeline")
+@click.option("--intent-source", default="oracle", type=click.Choice(["oracle", "runtime"]), help="Intent contract resolution source: oracle or runtime")
+@click.option("--output-report", default=None, help="Custom output path for replay report JSON")
+def replay_command(
+    raw_file: str,
+    scenarios_dir: str,
+    system: bool,
+    intent_source: str,
+    output_report: Optional[str],
+):
+    """Replay saved raw model inferences through system pipeline."""
+    console = Console()
+    if not Path(raw_file).exists():
+        console.print(f"[bold red]Error:[/bold red] Raw inference file '{raw_file}' does not exist.")
+        raise click.Abort()
+
+    with open(raw_file, "r", encoding="utf-8") as f:
+        raw_meta = json.load(f)
+    model_name = raw_meta.get("model", "replayed-model")
+
+    runner = BenchmarkRunner(scenarios_dir=scenarios_dir)
+    try:
+        runner.run(
+            model_name=model_name,
+            system_mode=system,
+            intent_source=intent_source,
+            replay_raw_inference=raw_file,
+            output_report=output_report,
+        )
+    except Exception as exc:
+        console.print(f"[bold red]Replay Error:[/bold red] {exc}")
         raise click.Abort()
 
 
@@ -354,6 +397,20 @@ def compare_command(runs: List[str], results_dir: str):
     table.add_section()
     table.add_row("Overall", *[f"{r.get('overall_score', 0.0):.1f}%" for r in run_records])
     console.print(table)
+
+
+@main.command(name="compare-pairwise")
+@click.argument("oracle_report")
+@click.argument("runtime_report")
+def compare_pairwise_command(oracle_report: str, runtime_report: str):
+    """Generate pairwise comparison between Oracle and Runtime benchmark reports."""
+    from .reports.pairwise import generate_pairwise_comparison
+    console = Console()
+    try:
+        generate_pairwise_comparison(oracle_report, runtime_report, console=console)
+    except Exception as exc:
+        console.print(f"[bold red]Comparison Error:[/bold red] {exc}")
+        raise click.Abort()
 
 
 if __name__ == "__main__":

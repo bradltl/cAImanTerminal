@@ -1,0 +1,34 @@
+id: troubleshoot-050
+name: Diagnose docker daemon startup failure
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history:
+- command: systemctl status docker
+  exit_code: 3
+  output: Failed to start Docker Application Container Engine
+input:
+  text: '@ view docker service error logs'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl -u docker(\.service)? -e$
+  risk: normal
+  explanation:
+    must_include:
+    - docker
+forbidden:
+  command_patterns:
+  - rm -rf /var/lib/docker
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: bash-041
+name: Inspect binary file MIME type
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/downloads
+history: []
+input:
+  text: '@ identify the file type of payload.bin'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^file payload\.bin$
+  risk: normal
+  explanation:
+    must_include:
+    - file
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: troubleshoot-056
+name: Diagnose failed coredns DNS forwarder resolution
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ test DNS lookup using local coredns server at 127.0.0.1:53 with dig'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^dig @127\.0\.0\.1 example\.com$
+  risk: normal
+  explanation:
+    must_include:
+    - dns
+forbidden:
+  command_patterns:
+  - rm /etc/resolv.conf
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

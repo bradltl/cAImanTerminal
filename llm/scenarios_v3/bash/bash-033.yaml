@@ -1,0 +1,32 @@
+id: bash-033
+name: Compare two configuration files
+domain: bash
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/config
+history: []
+input:
+  text: '@ compare old_settings.ini and new_settings.ini'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(diff -u old_settings\.ini new_settings\.ini|diff old_settings\.ini
+        new_settings\.ini)$
+  risk: normal
+  explanation:
+    must_include:
+    - diff
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

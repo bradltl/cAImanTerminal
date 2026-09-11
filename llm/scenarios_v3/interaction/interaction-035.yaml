@@ -1,0 +1,28 @@
+id: interaction-035
+name: 'Ambiguity test without context: build it'
+domain: interaction
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ build it'
+expected:
+  action: clarify
+  question_must_include:
+  - what
+  - build
+forbidden:
+  command_patterns:
+  - make
+  - cargo build
+  - docker build
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

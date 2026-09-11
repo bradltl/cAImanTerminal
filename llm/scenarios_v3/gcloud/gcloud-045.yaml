@@ -1,0 +1,31 @@
+id: gcloud-045
+name: List disks across project
+domain: gcloud
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list persistent disks in compute'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gcloud compute disks list$
+  risk: normal
+  explanation:
+    must_include:
+    - disk
+forbidden:
+  command_patterns:
+  - gcloud compute disks delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

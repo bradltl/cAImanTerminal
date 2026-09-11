@@ -1,0 +1,31 @@
+id: arch-038
+name: Find which package owns binary /usr/bin/zstd
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ check which package owns /usr/bin/zstd'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^pacman -Qo /usr/bin/zstd$
+  risk: normal
+  explanation:
+    must_include:
+    - owner
+forbidden:
+  command_patterns:
+  - 'rm '
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

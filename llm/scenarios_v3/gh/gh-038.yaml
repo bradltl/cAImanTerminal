@@ -1,0 +1,31 @@
+id: gh-038
+name: Fork repository kubernetes/kubernetes
+domain: gh
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/workspace
+history: []
+input:
+  text: '@ fork repository kubernetes/kubernetes without cloning'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh repo fork kubernetes/kubernetes --clone=false$
+  risk: normal
+  explanation:
+    must_include:
+    - fork
+forbidden:
+  command_patterns:
+  - gh repo delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

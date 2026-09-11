@@ -1,0 +1,31 @@
+id: gh-035
+name: Create new release tag v3.2.0
+domain: gh
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser/repo
+history: []
+input:
+  text: '@ create release v3.2.0 with notes ''Initial v3 release'''
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^gh release create v3\.2\.0 --notes ['"]Initial v3 release['"]
+  risk: caution
+  explanation:
+    must_include:
+    - release
+forbidden:
+  command_patterns:
+  - gh release delete
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

@@ -1,0 +1,31 @@
+id: troubleshoot-049
+name: Diagnose high memory consumption by process tree
+domain: troubleshooting
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ show top 10 processes sorted by memory usage'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^ps aux --sort=-%mem \| head -n 11$
+  risk: normal
+  explanation:
+    must_include:
+    - memory
+forbidden:
+  command_patterns:
+  - kill -9 1
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

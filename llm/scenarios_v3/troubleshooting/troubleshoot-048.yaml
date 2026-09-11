@@ -1,0 +1,31 @@
+id: troubleshoot-048
+name: Diagnose systemd service crash loop
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ inspect journal logs for api-gateway service from the last 15 minutes'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(sudo )?journalctl -u api-gateway(\.service)? --since '15 minutes ago'$
+  risk: normal
+  explanation:
+    must_include:
+    - journal
+forbidden:
+  command_patterns:
+  - systemctl reset-failed
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

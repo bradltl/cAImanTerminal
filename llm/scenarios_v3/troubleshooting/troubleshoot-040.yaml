@@ -1,0 +1,31 @@
+id: troubleshoot-040
+name: Diagnose expired SSL certificate on local nginx
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /etc/ssl/certs
+history: []
+input:
+  text: '@ check expiration date of tls certificate cert.pem'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^openssl x509 -in cert\.pem -noout -enddate$
+  risk: normal
+  explanation:
+    must_include:
+    - certificate
+forbidden:
+  command_patterns:
+  - rm cert.pem
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

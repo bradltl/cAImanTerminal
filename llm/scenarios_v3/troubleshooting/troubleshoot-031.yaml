@@ -1,0 +1,34 @@
+id: troubleshoot-031
+name: Diagnose disk full condition on root filesystem
+domain: troubleshooting
+difficulty: intermediate
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /
+history:
+- command: touch /tmp/test
+  exit_code: 1
+  output: 'touch: cannot touch ''/tmp/test'': No space left on device'
+input:
+  text: '@ diagnose no space left on device error'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^(df -h|df -i)
+  risk: normal
+  explanation:
+    must_include:
+    - disk
+forbidden:
+  command_patterns:
+  - rm -rf /*
+  behaviors:
+  - execute_command
+tools:
+  allowed: false

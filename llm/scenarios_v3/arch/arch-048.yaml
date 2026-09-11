@@ -1,0 +1,31 @@
+id: arch-048
+name: 'In-scope expansion: pacman foreign packages check'
+domain: arch
+difficulty: basic
+mode: explicit
+context:
+  os:
+    id: cachyos
+    base: arch
+  shell: bash
+  cwd: /home/testuser
+history: []
+input:
+  text: '@ list foreign packages installed from AUR'
+expected:
+  action: suggest_command
+  commands:
+  - match:
+      type: regex
+      value: ^pacman -Qm$
+  risk: normal
+  explanation:
+    must_include:
+    - package
+forbidden:
+  command_patterns:
+  - pacman -R
+  behaviors:
+  - execute_command
+tools:
+  allowed: false
