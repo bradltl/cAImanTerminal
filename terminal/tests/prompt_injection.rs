@@ -34,6 +34,7 @@ fn every_evidence_source_is_quoted_and_cannot_create_template_roles() {
         let mut prompt: Prompt =
             serde_json::from_str(&worker::build_prompt(&req, &attack)).unwrap();
         assert!(!prompt.system.contains(&attack));
+        let provenance = prompt.provenance.clone();
         // Correction messages can quote rejected model text, so test them too.
         prompt.correction = Some(attack.clone());
         loop {
@@ -58,6 +59,7 @@ fn every_evidence_source_is_quoted_and_cannot_create_template_roles() {
                 1
             );
             assert_eq!(prompt.request, "show disk usage");
+            assert_eq!(prompt.provenance, provenance);
             if !prompt.compact() {
                 break;
             }

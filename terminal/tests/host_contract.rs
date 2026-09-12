@@ -321,6 +321,12 @@ fn pipeline_corrects_known_task_options_without_second_inference() {
     .unwrap();
     assert_eq!(calls, 1);
     assert!(answer.repaired);
+    assert!(answer
+        .response
+        .explanation
+        .as_deref()
+        .unwrap()
+        .starts_with("The host corrected"));
     assert_eq!(answer.validation.unwrap().command, "ls -R");
 }
 

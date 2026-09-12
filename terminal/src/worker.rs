@@ -142,6 +142,7 @@ pub fn build_prompt(request: &Request, docs: &str) -> String {
         "command running or shell state unknown"
     };
     crate::prompt::Prompt {
+        provenance: crate::prompt::evidence_provenance(),
         context_version: 1,
         system: format!("OS: {os}\nShell: bash"),
         conversation: conversation.into_iter().map(|s| redact(&s)).collect(),
@@ -258,6 +259,10 @@ pub fn process(
         let trace = check_candidate(request, command, &crate::alpha_policy::HostFacts::local());
         if let Some(command) = trace.final_command {
             answer.repaired |= trace.correction.is_some();
+            if trace.correction.is_some() {
+                answer.response.explanation = Some("The host corrected the options for your requested task. Review the final command before pressing Enter.".into());
+                answer.response.plan = None;
+            }
             answer.validation = Some(host::assess_risk(&command, false, "")?);
             answer.response.command = Some(command);
         } else {
@@ -406,6 +411,10 @@ fn process_inner(
         let trace = check_candidate(request, command, &crate::alpha_policy::HostFacts::local());
         if let Some(command) = trace.final_command {
             repaired = trace.correction.is_some();
+            if repaired {
+                response.explanation = Some("The host corrected the options for your requested task. Review the final command before pressing Enter.".into());
+                response.plan = None;
+            }
             response.command = Some(command);
         } else if trace.initial.cli != "valid" {
             anyhow::bail!(
