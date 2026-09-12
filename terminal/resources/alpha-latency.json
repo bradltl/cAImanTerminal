@@ -1,0 +1,12 @@
+[
+  "show disk usage",
+  "show memory usage",
+  "show git status",
+  "list files",
+  "show current directory",
+  "list files recursively",
+  "df -hT",
+  "free -h",
+  "git status --short",
+  "echo 'hello world'"
+]

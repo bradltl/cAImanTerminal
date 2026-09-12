@@ -11,9 +11,11 @@ fn main() -> anyhow::Result<()> {
     let mut audit = None;
     let mut policy_check = false;
     let mut model_worker = false;
+    let mut alpha_benchmark = false;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--alpha-benchmark" => alpha_benchmark = true,
             "--policy-check" => policy_check = true,
             "--model-worker" => model_worker = true,
             "--model-sha256" => {
@@ -72,6 +74,14 @@ fn main() -> anyhow::Result<()> {
         #[cfg(feature = "inference")]
         return caiman_terminal::model_process::serve(
             &model.ok_or_else(|| anyhow::anyhow!("Missing model path"))?,
+        );
+        #[cfg(not(feature = "inference"))]
+        anyhow::bail!("Inference is not enabled");
+    }
+    if alpha_benchmark {
+        #[cfg(feature = "inference")]
+        return caiman_terminal::benchmark::run(
+            model.unwrap_or_else(|| caiman_terminal::default_model().into()),
         );
         #[cfg(not(feature = "inference"))]
         anyhow::bail!("Inference is not enabled");

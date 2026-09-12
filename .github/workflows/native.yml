@@ -26,6 +26,8 @@ jobs:
       - run: cargo clippy --locked --all-targets -- -D warnings
       - name: Real GTK and Bash, including physical-key staging and OSC isolation
         run: dbus-run-session -- xvfb-run -a env GDK_BACKEND=x11 GSK_RENDERER=cairo CAYMAN_TEST_X11_KEYS=1 cargo test --locked --lib ui::tests::desktop_flow -- --ignored --nocapture
+      - name: Real PTY lifecycle and delayed request boundaries
+        run: dbus-run-session -- xvfb-run -a env GDK_BACKEND=x11 GSK_RENDERER=cairo cargo test --locked --lib ui::tests::lifecycle_boundary -- --ignored --nocapture
       - name: AI-disabled desktop
         run: dbus-run-session -- xvfb-run -a env GDK_BACKEND=x11 GSK_RENDERER=cairo cargo test --locked --lib ui::tests::disabled_ai_hides_pane -- --ignored --nocapture
       - name: Settings desktop
@@ -50,3 +52,12 @@ jobs:
       - run: cargo test --locked --test llm_harness default_model_harness -- --ignored --nocapture
       - run: cargo build --locked
       - run: ./target/debug/caiman-terminal --model "$CAIMAN_TEST_MODEL" --ask 'show disk usage'
+      - run: cargo build --release --locked
+      - name: Strict alpha latency gate, three runs of 200 warm requests
+        shell: bash
+        run: ./target/release/caiman-terminal --model "$CAIMAN_TEST_MODEL" --alpha-benchmark > alpha-latency.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: alpha-latency
+          path: alpha-latency.json
