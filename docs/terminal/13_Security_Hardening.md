@@ -33,8 +33,8 @@ Supported natural-language staging contracts are intentionally small:
 The versioned alpha CLI manifest limits which literals can be verified; installed
 programs outside it cannot stage. An explicit literal authorizes only that exact command, operands and privileges;
 every other gate still applies. Questions, negation and unsupported tasks cannot
-authorize a generated command. Exact destructive commands outside protected
-targets can still receive an Elevated warning: review them. Aliases, functions,
+authorize a generated command. Destructive commands outside alpha CLI coverage
+cannot stage, even when the legacy risk-only API reports Elevated. Aliases, functions,
 PATH, startup files and local executables remain trusted user configuration;
 the host cannot guarantee their standard semantics.
 
@@ -45,7 +45,7 @@ the host cannot guarantee their standard semantics.
 | Generic intent / passive repairs | Typed fail-closed registry, immutable borrowed mode, final binding | adversarial, guidance and host tests |
 | Secret-bearing candidates | Shared scan before repair, pending and stage write; no redact-and-stage | Rust adversarial and Python security tests |
 | Prompt provenance | OS/shell only in system facts; bounded and labelled untrusted CWD, history, docs/output | hostile-context and context tests |
-| Python versus shipping policy | `--policy-check` uses Rust worker; 60 paired gate cases | `llm/tools/conformance.py` |
+| Python versus shipping policy | Versioned worker traces and independent Python alpha profile; exact decisions | `llm/tools/conformance.py` |
 | Path/wrapper bypass | Reject path-qualified/non-ASCII executables, expansion, interpreters/wrappers | corpus and generated wrapper tests |
 | SSH heuristics | Pause for **all** running/unknown programs; only original local Bash prompt resumes | GTK wrapper/OSC tests; remote worker rejects before inference |
 | Event log/forgery/replay | Private 0600 FIFO, random 256-bit nonce, strict sequence/UTF-8/size; no append log | partial-write, wrong-nonce and replay tests |
@@ -79,14 +79,13 @@ deadline-supervised helper. Each inference gets fresh KV state.
 
 ## Evaluation honesty
 
-Python is a research reference, not a staging authority. The reviewed manifest
-records parser, intent, secret, safety and risk decisions for both implementations.
-Python permits broader Bash syntax and has different intent/risk semantics;
-Rust's composite safety check also includes secrets and capability restrictions.
-Rust `null` risk means rejection, not Normal. Changed decisions fail conformance
-until reviewed. This finite corpus is not general equivalence or a safety proof.
-The current 60-case baseline has 56 per-case differences in at least one gate;
-these are recorded explicitly, not counted as Python/Rust equivalence successes.
+Python is not a staging authority. Its explicitly selected alpha profile now
+independently compares complete deterministic candidate decisions with production
+Rust, including contracts, CLI validation and corrections. The broader research
+profile remains separate. The old 60-case manifest with 56 disagreements is
+retired; exact alpha comparisons fail on any discrepancy without a record/bypass
+mode. This finite corpus is not general equivalence or a safety proof. See the
+[alpha contract and evidence](14_Alpha_Conformance.md).
 
 All existing suites have been examined. Exact-request auditing finds v3 overlaps
 for `gh-045`, `interaction-033`, and `interaction-043` against checked-in training
