@@ -12,7 +12,8 @@ use std::sync::{atomic::AtomicU64, Arc};
 pub struct Fixture {
     pub policy: String,
     pub request: String,
-    pub candidate: String,
+    pub candidate: Option<String>,
+    pub response: Option<String>,
     pub context: Session,
     pub host: HostFacts,
     #[serde(default)]
@@ -20,8 +21,35 @@ pub struct Fixture {
     #[serde(default)]
     pub cancelled: bool,
 }
-pub fn evaluate(fixture: Fixture) -> anyhow::Result<crate::alpha_policy::DecisionTrace> {
+pub fn evaluate(fixture: Fixture) -> anyhow::Result<serde_json::Value> {
     anyhow::ensure!(fixture.policy == VERSION, "Unsupported policy version");
+    anyhow::ensure!(
+        fixture.candidate.is_some() != fixture.response.is_some(),
+        "Supply exactly one candidate or response"
+    );
+    let raw_response = fixture.response.is_some();
+    let candidate = if let Some(raw) = fixture.response {
+        match crate::host::Response::parse(&raw).and_then(|response| {
+            crate::guidance::check_response(&response)?;
+            Ok(response)
+        }) {
+            Ok(response) => match response.command {
+                Some(command) => command,
+                None => {
+                    return Ok(
+                        serde_json::json!({"response_schema":"valid","trace":null,"stageable":false}),
+                    )
+                }
+            },
+            Err(_) => {
+                return Ok(
+                    serde_json::json!({"response_schema":"invalid","trace":null,"stageable":false}),
+                )
+            }
+        }
+    } else {
+        fixture.candidate.unwrap()
+    };
     let ticket = fixture.context.request_id;
     let request = Request {
         session: fixture.context,
@@ -34,9 +62,10 @@ pub fn evaluate(fixture: Fixture) -> anyhow::Result<crate::alpha_policy::Decisio
             ticket
         })),
     };
-    Ok(worker::check_candidate(
-        &request,
-        &fixture.candidate,
-        &fixture.host,
-    ))
+    let trace = worker::check_candidate(&request, &candidate, &fixture.host);
+    Ok(if raw_response {
+        serde_json::json!({"response_schema":"valid","stageable":trace.stageable,"trace":trace})
+    } else {
+        serde_json::to_value(trace)?
+    })
 }

@@ -15,13 +15,18 @@ def fixture(case):
     context.update(case.get("context", {}))
     host = dict(package_manager="pacman", root=False, installed=list(POLICY["commands"]) + ["sudo"], documentation={})
     host.update(case.get("host", {}))
-    return dict(policy="alpha-v1", request=case["request"], candidate=case["command"], context=context, host=host, passive=case.get("passive", False), cancelled=case.get("cancelled", False))
+    result = dict(policy="alpha-v1", request=case["request"], context=context, host=host, passive=case.get("passive", False), cancelled=case.get("cancelled", False))
+    result.update({"response":case["response"]} if "response" in case else {"candidate":case["command"]})
+    return result
 
 def cases():
     corpus = json.loads((ROOT / "terminal/tests/adversarial.json").read_text())
     corpus += json.loads((ROOT / "terminal/tests/alpha-conformance.json").read_text())
     base = dict(request="show disk usage", command="df -h", stageable=False)
     corpus += [dict(base, id="not-at-prompt", context={"at_prompt": False}), dict(base, id="cancelled", cancelled=True)]
+    for index, response in enumerate(['{', '{"action":"suggest_command","command":"ls","command":"pwd"}', '{"action":"execute","command":"ls"}', '{"action":"suggest_command","command":"ls","risk":"normal"}', '{"action":"suggest_command","command":"ls\\n"}']):
+        corpus.append(dict(id=f"response-{index}", request="ls", response=response, stageable=False))
+    corpus.append(dict(id="response-positive", request="ls", response='{"action":"suggest_command","command":"ls"}', stageable=True))
     return corpus
 
 def evaluate(binary, case):

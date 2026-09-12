@@ -39,7 +39,7 @@ fn adversarial_production_pipeline_corpus() {
             "{}: {answer:?}",
             case["id"]
         );
-        assert!(calls <= if req.passive { 1 } else { 2 });
+        assert!(calls <= 1, "No request may automatically infer twice");
         if let Ok(answer) = answer {
             if let Some(validation) = answer.validation {
                 assert!(validation.binding().unwrap().matches(&req.session));

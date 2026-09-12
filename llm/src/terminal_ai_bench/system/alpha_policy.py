@@ -164,6 +164,34 @@ def check(candidate, contract, host):
 
 def evaluate(fixture):
     if fixture["policy"] != VERSION: raise ValueError("Unsupported policy version")
+    if "response" in fixture:
+        def unique(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result: raise ValueError("duplicate field")
+                result[key] = value
+            return result
+        try:
+            raw = fixture["response"]
+            if len(raw.encode()) > 16384: raise ValueError("oversized response")
+            response = json.loads(raw, object_pairs_hook=unique)
+            if not isinstance(response, dict) or set(response) - {"action", "command", "explanation", "question", "plan"}: raise ValueError("schema")
+            for field in ("command", "explanation", "question"):
+                if response.get(field) is not None and not isinstance(response[field], str): raise ValueError("type")
+            if response.get("plan") is not None and (not isinstance(response["plan"], list) or not all(isinstance(s, str) for s in response["plan"])): raise ValueError("plan")
+            action = response.get("action")
+            required = {"suggest_command":"command", "explain":"explanation", "clarify":"question"}.get(action)
+            if not required or not (response.get(required) or "").strip(): raise ValueError("action")
+            if action != "suggest_command" and response.get("command") is not None: raise ValueError("command")
+            prose = " ".join([response.get("explanation") or "", response.get("question") or "", " ".join(response.get("plan") or [])]).lower()
+            if any(phrase in prose for phrase in ["what did you expect", "what do you expect", "you should know", "obviously", "as i already told you", "when i run", "i ran ", "i executed "]): raise ValueError("prose contract")
+        except (ValueError, TypeError, AttributeError):
+            return dict(response_schema="invalid", trace=None, stageable=False)
+        if response.get("command") is None: return dict(response_schema="valid", trace=None, stageable=False)
+        nested = {k:v for k,v in fixture.items() if k != "response"}
+        nested["candidate"] = response["command"]
+        trace = evaluate(nested)
+        return dict(response_schema="valid", trace=trace, stageable=trace["stageable"])
     request, candidate, context, host = (fixture[k] for k in ("request", "candidate", "context", "host"))
     passive = fixture.get("passive", False)
     contract = resolve(request, context, host, passive)
