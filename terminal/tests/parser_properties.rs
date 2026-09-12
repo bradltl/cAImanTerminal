@@ -20,6 +20,20 @@ fn level(command: &str) -> u8 {
         },
     }
 }
+#[test]
+fn unicode_never_reaches_the_native_bash_scanner() {
+    // Seed 18 reached native isdigit(U+5635B), which segfaulted in the debugger.
+    // Retain the original input and the reduced unsafe lookahead class.
+    for command in [
+        "{\u{5635b}燡{🕴:_\u{49a2e}",
+        "{\u{5635b}",
+        "echo 'café'",
+        "ls ./🦀",
+    ] {
+        assert!(host::parse_commands(command).is_err());
+    }
+    assert!(host::parse_commands("echo 'ascii data'").is_ok());
+}
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(512))]
     #[test]

@@ -122,6 +122,12 @@ fn visit_commands(node: Node<'_>, source: &str, out: &mut Vec<Vec<String>>) -> R
     Ok(())
 }
 pub fn parse_commands(command: &str) -> Result<Vec<Vec<String>>> {
+    // The native Bash scanner applies narrow ctype functions to wide codepoints
+    // (e.g. brace-range lookahead). Keep alpha command syntax ASCII-only before
+    // entering native code; Unicode evidence and terminal input remain intact.
+    if !command.is_ascii() {
+        bail!("Alpha command staging supports ASCII commands only");
+    }
     if command.is_empty() || command.len() > 4096 || command.chars().any(|c| c.is_control() || matches!(c, '\u{061c}' | '\u{200b}'..='\u{200f}' | '\u{2028}'..='\u{202e}' | '\u{2060}'..='\u{206f}' | '\u{feff}')) {
         bail!("Commands must fit on one printable line");
     }

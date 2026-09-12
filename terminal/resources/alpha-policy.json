@@ -1,5 +1,6 @@
 {
   "version": "alpha-v1",
+  "command_encoding": "printable-ascii",
   "commands": {
     "ls": {"flags": ["-a", "-l", "-h", "-R", "--all", "--recursive"], "min_operands": 0, "max_operands": 1},
     "df": {"flags": ["-h", "-T", "--human-readable", "--print-type"], "min_operands": 0, "max_operands": 1},

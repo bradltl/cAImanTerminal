@@ -17,6 +17,8 @@
   {"id":"literal-pipe","request":"ls | cat -n -","command":"ls | cat -n -","stageable":true},
   {"id":"negated-pipeline","request":"! ls | cat -n -","command":"! ls | cat -n -","stageable":false},
   {"id":"quoted-negation-data","request":"echo '!'","command":"echo '!'","stageable":true},
+  {"id":"native-unicode-brace-crash","request":"{\ud918\udf5b","command":"{\ud918\udf5b","stageable":false},
+  {"id":"unicode-operand-unsupported","request":"echo 'café'","command":"echo 'café'","stageable":false},
   {"id":"literal-short-cluster","request":"ls -lah","command":"ls -lah","stageable":true},
   {"id":"literal-end-options","request":"cat -- ./-file","command":"cat -- ./-file","stageable":true},
   {"id":"missing-operand","request":"cat","command":"cat","stageable":false},

@@ -19,7 +19,7 @@ VERSION = "alpha-v1"
 
 
 def parse(text):
-    if not text or len(text.encode()) > 4096 or "$" in text or "`" in text:
+    if not text or not text.isascii() or len(text.encode()) > 4096 or "$" in text or "`" in text:
         return None
     if any(unicodedata.category(c) == "Cc" or ord(c) in (0x61c, 0xfeff) or 0x200b <= ord(c) <= 0x200f or 0x2028 <= ord(c) <= 0x202e or 0x2060 <= ord(c) <= 0x206f for c in text):
         return None
