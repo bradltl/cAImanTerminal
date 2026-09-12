@@ -14,6 +14,7 @@ use std::{
 };
 
 pub struct LocalModel {
+    timings: std::cell::RefCell<crate::metrics::GenerationTimings>,
     model: LlamaModel,
     _verified: crate::model_file::VerifiedModel,
     backend: LlamaBackend,
@@ -54,6 +55,7 @@ impl LocalModel {
         Self::load_with_options(path, crate::settings::Inference::default())
     }
     pub fn load_with_options(path: &Path, options: crate::settings::Inference) -> Result<Self> {
+        let loaded = Instant::now();
         options.validate()?;
         let verified = crate::model_file::VerifiedModel::open(
             path,
@@ -70,6 +72,10 @@ impl LocalModel {
             &LlamaModelParams::default().with_n_gpu_layers(0),
         )?;
         Ok(Self {
+            timings: std::cell::RefCell::new(crate::metrics::GenerationTimings {
+                load_ms: loaded.elapsed().as_secs_f64() * 1000.0,
+                ..Default::default()
+            }),
             model,
             _verified: verified,
             backend,
@@ -78,11 +84,19 @@ impl LocalModel {
     }
     pub fn generate(&self, input: &str, cancellation: &AtomicU64, ticket: u64) -> Result<String> {
         let started = Instant::now();
+        let load_ms = self.timings.borrow().load_ms;
+        *self.timings.borrow_mut() = crate::metrics::GenerationTimings {
+            load_ms,
+            ..Default::default()
+        };
         if cancellation.load(Ordering::Relaxed) != ticket {
             bail!("Request cancelled");
         }
         let (prompt, _, _) = self.prepare_prompt(input)?;
         let tokens = self.model.str_to_token(&prompt, AddBos::Never)?;
+        self.timings.borrow_mut().input_tokens = tokens.len();
+        self.timings.borrow_mut().prepare_ms = started.elapsed().as_secs_f64() * 1000.0;
+        let prefill = Instant::now();
         // Fresh KV state prevents leakage between tabs. The expensive model
         // weights stay loaded for the lifetime of the single inference worker.
         let params = LlamaContextParams::default()
@@ -108,6 +122,8 @@ impl LocalModel {
             }
             ctx.decode(&mut batch)?;
         }
+        self.timings.borrow_mut().prefill_ms = prefill.elapsed().as_secs_f64() * 1000.0;
+        let decoding = Instant::now();
         let mut sampler = LlamaSampler::chain_simple([
             LlamaSampler::grammar(
                 &self.model,
@@ -129,6 +145,13 @@ impl LocalModel {
                 );
             }
             let token = sampler.sample(&ctx, batch.n_tokens() - 1);
+            let mut timing = self.timings.borrow_mut();
+            timing.decode_ms = decoding.elapsed().as_secs_f64() * 1000.0;
+            if timing.output_tokens == 0 {
+                timing.first_token_ms = started.elapsed().as_secs_f64() * 1000.0;
+            }
+            timing.output_tokens += 1;
+            drop(timing);
             // sample() already accepts the token in this pinned llama.cpp API.
             // Accepting twice advances grammar state twice and can abort in C++.
             if self.model.is_eog_token(token) {
@@ -143,5 +166,8 @@ impl LocalModel {
             ctx.decode(&mut batch)?;
         }
         bail!("Model response exceeded the generation limit")
+    }
+    pub fn timings(&self) -> crate::metrics::GenerationTimings {
+        self.timings.borrow().clone()
     }
 }

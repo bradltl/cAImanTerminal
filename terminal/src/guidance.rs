@@ -284,6 +284,7 @@ pub fn answer(request: &Request) -> Option<Result<Answer>> {
             None
         };
         Ok(Answer {
+            timings: None,
             response,
             validation,
             source: "Host guidance".into(),

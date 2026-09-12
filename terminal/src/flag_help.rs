@@ -130,6 +130,7 @@ pub fn answer(request: &Request) -> Option<Answer> {
     let candidate = shlex::try_join(words.iter().map(String::as_str)).ok()?;
     let docs = crate::command_validation::flag_documentation(&candidate);
     Some(Answer {
+        timings: None,
         response: host::Response {
             action: "explain".into(),
             command: None,

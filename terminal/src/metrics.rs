@@ -1,6 +1,17 @@
 //! Bounded, memory-only aggregates. No API accepts commands, paths, prose or IDs.
 use serde::Serialize;
 
+#[derive(Debug, Clone, Default, Serialize, serde::Deserialize)]
+pub struct GenerationTimings {
+    pub load_ms: f64,
+    pub prepare_ms: f64,
+    pub prefill_ms: f64,
+    pub decode_ms: f64,
+    pub first_token_ms: f64,
+    pub input_tokens: usize,
+    pub output_tokens: usize,
+}
+
 #[derive(Default, Serialize)]
 pub struct Metrics {
     pub requested: u64,

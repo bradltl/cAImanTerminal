@@ -30,6 +30,7 @@ pub enum Event {
 }
 #[derive(Debug)]
 pub struct Answer {
+    pub timings: Option<crate::metrics::GenerationTimings>,
     pub response: Response,
     pub validation: Option<Validation>,
     pub source: String,
@@ -203,8 +204,15 @@ pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Set
                 {
                     continue;
                 }
+                let mut timings = None;
                 let result = process(&request, |prompt| {
-                    model.generate(prompt, &request.cancellation, request.ticket)
+                    let result = model.generate(prompt, &request.cancellation, request.ticket);
+                    timings = model.timings();
+                    result
+                })
+                .map(|mut answer| {
+                    answer.timings = timings;
+                    answer
                 })
                 .map(Box::new)
                 .map_err(|e| e.to_string());
@@ -340,6 +348,7 @@ fn process_inner(
         };
         if let Some(explanation) = observed {
             return Ok(Answer {
+                timings: None,
                 response: Response {
                     action: "explain".into(),
                     command: None,
@@ -411,6 +420,7 @@ fn process_inner(
         .map(|c| host::assess_risk(c, request.session.remote, ""))
         .transpose()?;
     Ok(Answer {
+        timings: None,
         response,
         validation,
         source: crate::alpha_policy::VERSION.into(),
