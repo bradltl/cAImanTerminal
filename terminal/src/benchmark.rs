@@ -10,7 +10,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 struct Sample {
     case: usize,
     elapsed_ms: f64,
@@ -121,8 +121,20 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
         let p95 = percentile(&records, 95);
         let failures = records.iter().filter(|s| !s.valid).count();
         passed &= failures == 0 && p50 <= 750.0 && p95 <= 1500.0;
+        let mut paths = serde_json::Map::new();
+        for path in [
+            "normal_model",
+            "deterministic",
+            "deterministic_correction",
+            "rejected",
+        ] {
+            let group: Vec<_> = records.iter().filter(|s| s.path == path).cloned().collect();
+            if !group.is_empty() {
+                paths.insert(path.into(), serde_json::json!({"count":group.len(),"p50_ms":percentile(&group,50),"p95_ms":percentile(&group,95)}));
+            }
+        }
         measured.push(
-            serde_json::json!({"p50_ms":p50,"p95_ms":p95,"failures":failures,"samples":records}),
+            serde_json::json!({"p50_ms":p50,"p95_ms":p95,"failures":failures,"paths":paths,"samples":records}),
         );
     }
     use sha2::{Digest, Sha256};

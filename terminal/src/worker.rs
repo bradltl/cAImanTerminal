@@ -163,7 +163,15 @@ pub fn build_prompt(request: &Request, docs: &str) -> String {
         docs: redact(&bounded(docs, 1500)),
         observations: redact(&observed),
         request: redact(user_request.trim().trim_start_matches('@').trim()),
-        correction: None,
+        correction: match crate::intent::IntentContract::resolve(request) {
+            crate::intent::IntentContract::Alternatives(commands) => Some(format!(
+                "Authorized task alternatives; choose one exactly: {}", serde_json::to_string(&commands).unwrap()
+            )),
+            crate::intent::IntentContract::ExactCommand(command) if crate::alpha_policy::evaluate(request, &command, &crate::alpha_policy::HostFacts::local()).stageable => Some(format!(
+                "The user supplied an exact command. Preserve every byte, including quoting: {}", serde_json::to_string(&redact(&command)).unwrap()
+            )),
+            _ => None,
+        },
         context_trimmed: false,
     }
     .encode()
