@@ -135,6 +135,7 @@ struct Tab {
     last_request: Option<RetryOffer>,
     metrics: crate::metrics::Metrics,
     queued: Option<Instant>,
+    completed_ticket: Option<u64>,
 }
 impl Tab {
     fn invalidate(&mut self) {
@@ -243,9 +244,10 @@ impl Tab {
         });
         self.retry = None;
         self.retry_button.set_sensitive(false);
+        let category = crate::intent::IntentContract::resolve(&req);
         match requests.try_send(req) {
             Ok(()) => {
-                self.metrics.requested = self.metrics.requested.saturating_add(1);
+                self.metrics.requested(&category);
                 self.queued = Some(Instant::now());
                 if remember_intent {
                     self.session.remember(memory);
@@ -266,6 +268,99 @@ impl Tab {
                 self.passive_ticket = Some(ticket);
                 self.assistant
                     .response("AI unavailable. Restart to reload the model.", passive);
+            }
+        }
+    }
+    fn complete(
+        &mut self,
+        ticket: u64,
+        passive: bool,
+        result: Result<Box<worker::Answer>, String>,
+    ) {
+        if !self.enabled
+            || !self.alive
+            || self.closed
+            || self.completed_ticket == Some(ticket)
+            || ticket != self.cancellation.load(Ordering::Relaxed)
+        {
+            return;
+        }
+        self.completed_ticket = Some(ticket);
+        self.activity.set_text("ai");
+        let elapsed = self
+            .queued
+            .take()
+            .map(|s| s.elapsed().as_millis())
+            .unwrap_or(0);
+        self.pending = None;
+        self.ghost.set_text("");
+        match result {
+            Ok(answer) => {
+                self.metrics.completed(
+                    elapsed,
+                    answer.source != crate::alpha_policy::VERSION,
+                    answer.repaired,
+                    answer.validation.is_some(),
+                );
+                let mut message = answer
+                    .response
+                    .explanation
+                    .clone()
+                    .or(answer.response.question.clone())
+                    .unwrap_or_default();
+                if let Some(plan) = &answer.response.plan {
+                    message.push_str(&format!("\n\n{}", plan.join("\n")));
+                }
+                if let Some(v) = answer.validation {
+                    let Some(binding) = v.binding().cloned() else {
+                        return;
+                    };
+                    if passive || !binding.matches(&self.session) {
+                        return;
+                    }
+                    message.push_str(&format!("\n\n$ {}", v.command));
+                    if v.risk != crate::host::Risk::Normal {
+                        message.push_str(&format!("\n\n{:?}: {}", v.risk, v.reason));
+                    }
+                    self.ghost.set_text(&format!("{}  [Tab]", v.command));
+                    self.ghost.set_visible(true);
+                    self.suggested = Some(v.command.clone());
+                    self.pending = Some(Suggestion {
+                        command: v.command,
+                        input: self.session.input.clone(),
+                        ticket,
+                        binding,
+                    });
+                }
+                if !answer.source.is_empty() {
+                    message.push_str(&format!("\n\n{}", answer.source));
+                }
+                if !message.is_empty() {
+                    self.assistant.response(&message, passive);
+                    self.session.remember(format!("Assistant: {message}"));
+                }
+            }
+            Err(error) => {
+                self.metrics.completed(elapsed, false, false, false);
+                if !passive && error.starts_with("Unverifiable:") {
+                    if let Some(offer) = self.last_request.take() {
+                        if offer.binding.matches(&self.session) {
+                            self.retry = Some(offer);
+                            self.retry_button.set_sensitive(true);
+                        }
+                    }
+                }
+                self.assistant.response(
+                    &format!(
+                        "{}\n\n{error}",
+                        if passive {
+                            "No verified suggestion."
+                        } else {
+                            "No command staged."
+                        }
+                    ),
+                    passive,
+                );
             }
         }
     }
@@ -573,6 +668,7 @@ fn new_tab(
         retry_button: retry_button.clone(),
         metrics: Default::default(),
         queued: None,
+        completed_ticket: None,
     }));
     let metrics_tab = Rc::downgrade(&tab);
     export_metrics.connect_clicked(move |_| {
@@ -586,7 +682,11 @@ fn new_tab(
     let switch_tab = Rc::downgrade(&tab);
     notebook.connect_switch_page(move |_, _, _| {
         if let Some(tab) = switch_tab.upgrade() {
-            tab.borrow_mut().invalidate();
+            // Removing a tab emits switch-page synchronously while its close
+            // handler holds the borrow. That handler has already invalidated it.
+            if let Ok(mut tab) = tab.try_borrow_mut() {
+                tab.invalidate();
+            }
         }
     });
     let retry_requests = requests.clone();
@@ -1058,91 +1158,7 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                         let Some(tab) = tab else {
                             continue;
                         };
-                        let mut tab = tab.borrow_mut();
-                        if !tab.enabled
-                            || !tab.alive
-                            || ticket != tab.cancellation.load(Ordering::Relaxed)
-                        {
-                            continue;
-                        }
-                        tab.activity.set_text("ai");
-                        let elapsed = tab
-                            .queued
-                            .take()
-                            .map(|s| s.elapsed().as_millis())
-                            .unwrap_or(0);
-                        tab.pending = None;
-                        tab.ghost.set_text("");
-                        match result {
-                            Ok(answer) => {
-                                tab.metrics.completed(
-                                    elapsed,
-                                    answer.source != crate::alpha_policy::VERSION,
-                                    answer.repaired,
-                                    answer.validation.is_some(),
-                                );
-                                let mut message = answer
-                                    .response
-                                    .explanation
-                                    .clone()
-                                    .or(answer.response.question.clone())
-                                    .unwrap_or_default();
-                                if let Some(plan) = &answer.response.plan {
-                                    message.push_str(&format!("\n\n{}", plan.join("\n")));
-                                }
-                                if let Some(v) = answer.validation {
-                                    let Some(binding) = v.binding().cloned() else {
-                                        continue;
-                                    };
-                                    if passive || !binding.matches(&tab.session) {
-                                        continue;
-                                    }
-                                    message.push_str(&format!("\n\n$ {}", v.command));
-                                    if v.risk != crate::host::Risk::Normal {
-                                        message
-                                            .push_str(&format!("\n\n{:?}: {}", v.risk, v.reason));
-                                    }
-                                    tab.ghost.set_text(&format!("{}  [Tab]", v.command));
-                                    tab.ghost.set_visible(true);
-                                    tab.suggested = Some(v.command.clone());
-                                    tab.pending = Some(Suggestion {
-                                        command: v.command,
-                                        input: tab.session.input.clone(),
-                                        ticket,
-                                        binding,
-                                    });
-                                }
-                                if !answer.source.is_empty() {
-                                    message.push_str(&format!("\n\n{}", answer.source));
-                                }
-                                if !message.is_empty() {
-                                    tab.assistant.response(&message, passive);
-                                    tab.session.remember(format!("Assistant: {message}"));
-                                }
-                            }
-                            Err(error) => {
-                                tab.metrics.completed(elapsed, false, false, false);
-                                if !passive && error.starts_with("Unverifiable:") {
-                                    if let Some(offer) = tab.last_request.take() {
-                                        if offer.binding.matches(&tab.session) {
-                                            tab.retry = Some(offer);
-                                            tab.retry_button.set_sensitive(true);
-                                        }
-                                    }
-                                }
-                                tab.assistant.response(
-                                    &format!(
-                                        "{}\n\n{error}",
-                                        if passive {
-                                            "No verified suggestion."
-                                        } else {
-                                            "No command staged."
-                                        }
-                                    ),
-                                    passive,
-                                );
-                            }
-                        }
+                        tab.borrow_mut().complete(ticket, passive, result);
                     }
                 }
             }
@@ -1204,6 +1220,64 @@ mod tests {
         })
         .unwrap();
         let valid = answer.validation.unwrap();
+        let good = worker::process(&req, |_| {
+            Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+        })
+        .unwrap();
+        one.borrow_mut()
+            .complete(req.ticket, false, Ok(Box::new(good)));
+        assert!(one.borrow().pending.is_some());
+        one.borrow_mut().request("ls".into(), false, &tx);
+        let blocked = rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        one.borrow_mut().complete(
+            blocked.ticket,
+            false,
+            Err("Credential access is blocked".into()),
+        );
+        assert!(
+            one.borrow().pending.is_none(),
+            "blocked replacement must clear the previous ghost"
+        );
+        assert!(
+            !one.borrow().retry_button.is_sensitive(),
+            "safety rejection cannot offer retry"
+        );
+        one.borrow_mut().request("ls".into(), false, &tx);
+        let failed = rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        one.borrow_mut()
+            .complete(failed.ticket, false, Err("Unverifiable: fixture".into()));
+        assert!(one.borrow().retry_button.is_sensitive());
+        let retry_button = one.borrow().retry_button.clone();
+        retry_button.emit_clicked();
+        let retry = rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        assert_eq!(retry.text, failed.text);
+        assert!(retry.ticket > req.ticket);
+        one.borrow_mut().complete(
+            retry.ticket,
+            false,
+            Err("Unverifiable: retry fixture".into()),
+        );
+        assert!(
+            !one.borrow().retry_button.is_sensitive(),
+            "one explicit retry only"
+        );
+        let late = worker::Answer {
+            timings: None,
+            response: crate::host::Response::parse(
+                r#"{"action":"suggest_command","command":"ls"}"#,
+            )
+            .unwrap(),
+            validation: Some(valid.clone()),
+            source: "fixture".into(),
+            elapsed_ms: 0,
+            repaired: false,
+        };
+        one.borrow_mut()
+            .complete(req.ticket, false, Ok(Box::new(late)));
+        assert!(
+            one.borrow().pending.is_none(),
+            "out-of-order result cannot restore ghost text"
+        );
         let old_generation = one.borrow().session.prompt_generation;
         crate::shell::write_stage_bound(
             one.borrow().dir.path(),
@@ -1268,6 +1342,23 @@ mod tests {
         }
         release_tx.send(()).unwrap();
         assert!(handle.join().unwrap().is_err());
+        let page = book.nth_page(Some(0)).unwrap();
+        let tab_label = book
+            .tab_label(&page)
+            .unwrap()
+            .downcast::<gtk::Box>()
+            .unwrap();
+        tab_label
+            .last_child()
+            .unwrap()
+            .downcast::<gtk::Button>()
+            .unwrap()
+            .emit_clicked();
+        assert_eq!(
+            book.n_pages(),
+            1,
+            "close button must not reenter a borrowed tab"
+        );
         two.borrow().terminal.feed_child(b"exit\r");
         pump_until(|| !two.borrow().alive);
         assert!(!two.borrow_mut().accept());

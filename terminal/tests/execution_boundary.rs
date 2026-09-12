@@ -21,6 +21,34 @@ impl TerminalSurface for RecordingTerminal {
 }
 
 #[test]
+fn assistant_modules_have_no_arbitrary_pty_write_capability() {
+    let ui = include_str!("../src/ui.rs")
+        .split("#[cfg(test)]\nmod tests")
+        .next()
+        .unwrap();
+    for source in [
+        ui,
+        include_str!("../src/worker.rs"),
+        include_str!("../src/staging.rs"),
+        include_str!("../src/inference.rs"),
+    ] {
+        assert!(
+            !source.contains(".feed_child("),
+            "Arbitrary PTY writes must stay outside assistant paths"
+        );
+    }
+    let adapter = include_str!("../src/terminal_backend.rs");
+    assert_eq!(adapter.matches(".feed_child(").count(), 1);
+    assert!(adapter.contains("self.feed_child(key.bytes())"));
+    for key in [IntegrationKey::Snapshot, IntegrationKey::Stage] {
+        assert!(!key
+            .bytes()
+            .iter()
+            .any(|b| [b'\r', b'\n', 0x1b, 0x0f].contains(b)));
+    }
+}
+
+#[test]
 fn production_stage_boundary_records_only_fixed_keys_and_rejects_every_stale_dimension() {
     let dir = tempfile::tempdir().unwrap();
     let mut session = Session::new(1, dir.path().display().to_string());

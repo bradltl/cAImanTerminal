@@ -1,4 +1,4 @@
-//! Bounded, memory-only aggregates. No API accepts commands, paths, prose or IDs.
+//! Bounded, memory-only aggregates. No commands, paths, prose or IDs are retained.
 use serde::Serialize;
 
 #[derive(Debug, Clone, Default, Serialize, serde::Deserialize)]
@@ -14,6 +14,8 @@ pub struct GenerationTimings {
 
 #[derive(Default, Serialize)]
 pub struct Metrics {
+    /// disk, memory, files, cwd, git, system-update, literal, explain/unknown.
+    pub scenario_categories: [u64; 8],
     pub requested: u64,
     pub deterministic: u64,
     pub model: u64,
@@ -30,6 +32,27 @@ pub struct Metrics {
     pub latency_buckets: [u64; 6],
 }
 impl Metrics {
+    pub fn requested(&mut self, contract: &crate::intent::IntentContract) {
+        use crate::intent::IntentContract;
+        let category = match contract {
+            IntentContract::Alternatives(commands) => {
+                match commands.first().map(String::as_str).unwrap_or("") {
+                    "df -h" => 0,
+                    "free -h" => 1,
+                    "ls" | "ls -R" => 2,
+                    "pwd" => 3,
+                    "git status" => 4,
+                    "pacman -Syu" | "sudo pacman -Syu" => 5,
+                    _ => 7,
+                }
+            }
+            IntentContract::ReadFile(_) => 2,
+            IntentContract::ExactCommand(_) => 6,
+            IntentContract::ExplainOrClarify => 7,
+        };
+        self.requested = self.requested.saturating_add(1);
+        self.scenario_categories[category] = self.scenario_categories[category].saturating_add(1);
+    }
     pub fn completed(
         &mut self,
         elapsed_ms: u128,
@@ -72,7 +95,7 @@ mod tests {
         let value: serde_json::Value = serde_json::from_str(&metrics.export()).unwrap();
         assert!(value.as_object().unwrap().values().all(|v| v.is_u64()
             || v.as_array()
-                .is_some_and(|a| a.len() == 6 && a.iter().all(|n| n.is_u64()))));
+                .is_some_and(|a| [6, 8].contains(&a.len()) && a.iter().all(|n| n.is_u64()))));
         assert_eq!(metrics.latency_buckets[2], 10000);
         assert!(metrics.export().len() < 1024);
     }
