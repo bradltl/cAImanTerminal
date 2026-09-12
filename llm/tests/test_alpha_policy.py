@@ -30,5 +30,5 @@ def test_untrusted_evidence_does_not_change_authorization():
 
 def test_quoted_operators_are_data_but_submission_bytes_are_not():
     assert parse("echo 'hello | ; world'") == [["echo", "hello | ; world"]]
-    for text in ["ls && id", "echo $(id)", "ls\n", "ls\r", "ls\x1b[200~", "cat <<EOF"]:
+    for text in ["ls && id", "echo $(id)", "ls\n", "ls\r", "ls\x1b[200~", "cat <<EOF", "! ls", "! ls | cat -n -"]:
         assert parse(text) is None

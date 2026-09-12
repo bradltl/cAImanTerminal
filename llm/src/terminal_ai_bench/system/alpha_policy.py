@@ -39,6 +39,8 @@ def parse(text):
         if c == "|": parts.append(text[start:i]); start = i + 1
     if quote or escaped: return None
     parts.append(text[start:])
+    # Bash pipeline negation is syntax, not an executable named "!".
+    if any(re.match(r"\s*!(?:\s|$)", part) for part in parts): return None
     try:
         commands = [shlex.split(p) for p in parts]
     except ValueError:
