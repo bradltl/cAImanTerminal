@@ -73,11 +73,11 @@ fn file_guidance(request: &Request, intent: FileIntent) -> Response {
             continue;
         }
         let lower = name.to_lowercase();
-        let named = query.contains(&lower)
+        let named = crate::intent::names_file(&query, &name)
             && [".md", ".markdown", ".txt"]
                 .iter()
                 .any(|suffix| lower.ends_with(suffix));
-        let readme = query.contains("readme")
+        let readme = crate::intent::generic_readme(&query)
             && ["readme", "readme.md", "readme.txt", "readme.markdown"].contains(&lower.as_str());
         if named || readme {
             names.push(name);

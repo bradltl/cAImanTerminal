@@ -71,6 +71,13 @@ def resolve(request, context, host, passive):
     return {"kind": "exact_command", "value": text} if parse(text) else explain
 
 
+def names_file(query, name):
+    try: words = shlex.split(query)
+    except ValueError: words = []
+    if any((word[2:] if word.startswith("./") else word).lower() == name.lower() for word in words): return True
+    return any(c.isspace() for c in name) and re.search(r"(?<![\w./-])" + re.escape(name.lower()) + r"(?![\w./-])", query.lower()) is not None
+
+
 def intent_matches(contract, candidate, commands):
     kind, value = contract["kind"], contract.get("value")
     if kind == "exact_command": return candidate == value
@@ -79,7 +86,9 @@ def intent_matches(contract, candidate, commands):
         name = commands[0][1]
         if not name.startswith("./"): return False
         name = name[2:]
-        return bool(name) and "/" not in name and (name.lower() in value or ("readme" in value and name.lower() == "readme.md"))
+        try: generic_readme = any(word.lower() == "readme" for word in shlex.split(value))
+        except ValueError: generic_readme = False
+        return bool(name) and "/" not in name and (names_file(value, name) or (generic_readme and name.lower() == "readme.md"))
     return False
 
 

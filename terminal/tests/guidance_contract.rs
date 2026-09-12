@@ -161,6 +161,13 @@ fn file_guidance_handles_missing_ambiguous_and_quoted_names() {
     for name in ["README.md", "README.txt"] {
         std::fs::write(dir.path().join(name), "").unwrap();
     }
+    req.text = "read README.md.tmp".into();
+    let mismatch = worker::process(&req, |_| panic!("known file guidance must not infer")).unwrap();
+    assert!(
+        mismatch.validation.is_none(),
+        "filename prefix must not select a different file"
+    );
+    req.text = "read the readme file".into();
     let answer = worker::process(&req, |_| panic!("no inference")).unwrap();
     assert!(answer.validation.is_none());
     assert!(answer.response.explanation.unwrap().contains("Which file"));

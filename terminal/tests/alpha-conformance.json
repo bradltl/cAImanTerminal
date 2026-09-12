@@ -1,4 +1,6 @@
 [
+  {"id":"filename-prefix-not-authority","request":"read README.md.tmp","command":"cat ./README.md","stageable":false},
+  {"id":"quoted-filename-suffix-not-authority","request":"read 'README.md'.tmp","command":"cat ./README.md","stageable":false},
   {"id":"recursive-correction","request":"list files recursively","command":"ls --recursivee","stageable":true},
   {"id":"literal-no-correction","request":"ls --recursivee","command":"ls --recursivee","stageable":false},
   {"id":"disk-correction","request":"show disk usage","command":"df --invented","stageable":true},
