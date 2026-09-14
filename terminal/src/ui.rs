@@ -296,6 +296,14 @@ impl Tab {
         self.ghost.set_text("");
         match result {
             Ok(answer) => {
+                self.metrics.validation(
+                    if answer.validation.is_some() {
+                        crate::metrics::ValidatorOutcome::Verified
+                    } else {
+                        crate::metrics::ValidatorOutcome::Clarification
+                    },
+                    answer.validation.as_ref().map(|v| &v.risk),
+                );
                 self.metrics.completed(
                     elapsed,
                     answer.source != crate::alpha_policy::VERSION,
@@ -341,6 +349,14 @@ impl Tab {
                 }
             }
             Err(error) => {
+                self.metrics.validation(
+                    if error.starts_with("Unverifiable:") {
+                        crate::metrics::ValidatorOutcome::Unverifiable
+                    } else {
+                        crate::metrics::ValidatorOutcome::Rejected
+                    },
+                    None,
+                );
                 self.metrics.completed(elapsed, false, false, false);
                 if !passive && error.starts_with("Unverifiable:") {
                     if let Some(offer) = self.last_request.take() {
@@ -1126,6 +1142,7 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
             tabs.borrow_mut().retain(|tab| !tab.borrow().closed);
             while let Ok(event) = worker.events.try_recv() {
                 match event {
+                    Event::Measured { .. } => (),
                     Event::Status(status) => {
                         let text = if status.starts_with("Local AI ready") {
                             "Ready..".to_string()

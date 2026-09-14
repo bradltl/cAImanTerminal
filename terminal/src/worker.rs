@@ -21,6 +21,10 @@ pub struct Request {
 }
 pub enum Event {
     Status(String),
+    Measured {
+        ticket: u64,
+        timings: crate::metrics::PipelineTimings,
+    },
     Completed {
         id: u64,
         ticket: u64,
@@ -213,18 +217,34 @@ pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Set
                 {
                     continue;
                 }
+                let started = Instant::now();
+                CANDIDATE_VALIDATION_MS.set(0.0);
                 let mut timings = None;
+                let mut inference_ms = 0.0;
                 let result = process(&request, |prompt| {
+                    let inference_started = Instant::now();
                     let result = model.generate(prompt, &request.cancellation, request.ticket);
+                    inference_ms += inference_started.elapsed().as_secs_f64() * 1000.0;
                     timings = model.timings();
                     result
                 })
                 .map(|mut answer| {
-                    answer.timings = timings;
+                    answer.timings = timings.clone();
                     answer
                 })
                 .map(Box::new)
                 .map_err(|e| e.to_string());
+                let worker_ms = started.elapsed().as_secs_f64() * 1000.0;
+                let _ = event_tx.send(Event::Measured {
+                    ticket: request.ticket,
+                    timings: crate::metrics::PipelineTimings {
+                        worker_ms,
+                        inference_round_trip_ms: inference_ms,
+                        host_processing_ms: (worker_ms - inference_ms).max(0.0),
+                        candidate_validation_ms: CANDIDATE_VALIDATION_MS.get(),
+                        generation: timings,
+                    },
+                });
                 let _ = event_tx.send(Event::Completed {
                     id: request.session.id,
                     ticket: request.ticket,
@@ -446,6 +466,9 @@ fn process_inner(
     })
 }
 
+thread_local! {
+    static CANDIDATE_VALIDATION_MS: std::cell::Cell<f64> = const { std::cell::Cell::new(0.0) };
+}
 /// The candidate boundary is shared by generated and host-guided responses and
 /// fixture replay. Host facts are injectable; the decision code is production code.
 pub fn check_candidate(
@@ -453,6 +476,7 @@ pub fn check_candidate(
     command: &str,
     facts: &crate::alpha_policy::HostFacts,
 ) -> crate::alpha_policy::DecisionTrace {
+    let started = Instant::now();
     let mut trace = crate::alpha_policy::evaluate(request, command, facts);
     if request.session.journal.back().is_some_and(|r| {
         r.exit_code != 0 && Some(r.command.trim()) == trace.final_command.as_deref().map(str::trim)
@@ -461,5 +485,7 @@ pub fn check_candidate(
         trace.final_command = None;
         trace.context = "previous_failure".into();
     }
+    CANDIDATE_VALIDATION_MS
+        .set(CANDIDATE_VALIDATION_MS.get() + started.elapsed().as_secs_f64() * 1000.0);
     trace
 }

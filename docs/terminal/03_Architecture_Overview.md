@@ -1,5 +1,16 @@
 # Architecture overview
 
+## Alpha-v1 amendment
+
+See [the executable boundary map](14_Alpha_Conformance.md). Host facts are data
+injected into a shared production candidate gate, not precomputed verdicts.
+An independent Python alpha profile compares the complete deterministic trace.
+Staging binds session/request/context/prompt generations, CWD, input and local
+prompt state. Only fixed integration keys cross the assistant-to-VTE adapter;
+Bash reads candidate text as data and checks its own prompt generation again.
+Native inference reports numeric load/prefill/decode timings over bounded IPC.
+Session metrics have fixed-size counters only, with manual clipboard export.
+
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
 > Model research is documented in [llm/README.md](../../llm/README.md).

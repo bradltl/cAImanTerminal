@@ -12,10 +12,30 @@ pub struct GenerationTimings {
     pub output_tokens: usize,
 }
 
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct PipelineTimings {
+    pub worker_ms: f64,
+    pub inference_round_trip_ms: f64,
+    pub host_processing_ms: f64,
+    pub candidate_validation_ms: f64,
+    pub generation: Option<GenerationTimings>,
+}
+
+pub enum ValidatorOutcome {
+    Verified,
+    Clarification,
+    Unverifiable,
+    Rejected,
+}
+
 #[derive(Default, Serialize)]
 pub struct Metrics {
     /// disk, memory, files, cwd, git, system-update, literal, explain/unknown.
     pub scenario_categories: [u64; 8],
+    /// Verified, clarification/no command, unverifiable, hard rejection.
+    pub validator_outcomes: [u64; 4],
+    /// Normal, caution, elevated; only final validated candidates count.
+    pub validated_risk: [u64; 3],
     pub requested: u64,
     pub deterministic: u64,
     pub model: u64,
@@ -32,6 +52,18 @@ pub struct Metrics {
     pub latency_buckets: [u64; 6],
 }
 impl Metrics {
+    pub fn validation(&mut self, outcome: ValidatorOutcome, risk: Option<&crate::host::Risk>) {
+        let index = outcome as usize;
+        self.validator_outcomes[index] = self.validator_outcomes[index].saturating_add(1);
+        if let Some(risk) = risk {
+            let index = match risk {
+                crate::host::Risk::Normal => 0,
+                crate::host::Risk::Caution => 1,
+                crate::host::Risk::Elevated => 2,
+            };
+            self.validated_risk[index] = self.validated_risk[index].saturating_add(1);
+        }
+    }
     pub fn requested(&mut self, contract: &crate::intent::IntentContract) {
         use crate::intent::IntentContract;
         let category = match contract {
@@ -91,12 +123,15 @@ mod tests {
         let mut metrics = Metrics::default();
         for _ in 0..10000 {
             metrics.completed(800, false, false, true);
+            metrics.validation(ValidatorOutcome::Verified, Some(&crate::host::Risk::Normal));
         }
         let value: serde_json::Value = serde_json::from_str(&metrics.export()).unwrap();
         assert!(value.as_object().unwrap().values().all(|v| v.is_u64()
             || v.as_array()
-                .is_some_and(|a| [6, 8].contains(&a.len()) && a.iter().all(|n| n.is_u64()))));
+                .is_some_and(|a| [3, 4, 6, 8].contains(&a.len()) && a.iter().all(|n| n.is_u64()))));
         assert_eq!(metrics.latency_buckets[2], 10000);
+        assert_eq!(metrics.validator_outcomes, [10000, 0, 0, 0]);
+        assert_eq!(metrics.validated_risk, [10000, 0, 0]);
         assert!(metrics.export().len() < 1024);
     }
 }

@@ -17,6 +17,9 @@ struct Sample {
     valid: bool,
     path: &'static str,
     timings: Option<crate::metrics::GenerationTimings>,
+    pipeline: Option<crate::metrics::PipelineTimings>,
+    queue_and_delivery_ms: f64,
+    retryable: bool,
 }
 fn measure(
     worker: &worker::Worker,
@@ -24,7 +27,22 @@ fn measure(
     case: usize,
     ticket: u64,
 ) -> anyhow::Result<Sample> {
-    let mut session = Session::new(1, std::env::current_dir()?.display().to_string());
+    measure_at(
+        worker,
+        text,
+        case,
+        ticket,
+        std::env::current_dir()?.display().to_string(),
+    )
+}
+fn measure_at(
+    worker: &worker::Worker,
+    text: &str,
+    case: usize,
+    ticket: u64,
+    cwd: String,
+) -> anyhow::Result<Sample> {
+    let mut session = Session::new(1, cwd);
     session.at_prompt = true;
     session.request_id = ticket;
     let started = Instant::now();
@@ -36,17 +54,25 @@ fn measure(
         passive: false,
     })?;
     let deadline = started + Duration::from_secs(60);
+    let mut pipeline = None;
     loop {
         let remaining = deadline.saturating_duration_since(Instant::now());
         match worker.events.recv_timeout(remaining)? {
             Event::Status(_) => (),
+            Event::Measured {
+                ticket: received,
+                timings,
+            } => {
+                anyhow::ensure!(received == ticket, "Mismatched benchmark timing");
+                pipeline = Some(timings);
+            }
             Event::Completed {
                 ticket: received,
                 result,
                 ..
             } => {
                 anyhow::ensure!(received == ticket, "Mismatched benchmark result");
-                let (valid, path, timings) = match result {
+                let (valid, path, timings, retryable) = match result {
                     Ok(answer) => (
                         answer.validation.is_some(),
                         if answer.repaired {
@@ -57,15 +83,27 @@ fn measure(
                             "deterministic"
                         },
                         answer.timings,
+                        false,
                     ),
-                    Err(_) => (false, "rejected", None),
+                    Err(error) => (
+                        false,
+                        "rejected",
+                        pipeline.as_ref().and_then(|p| p.generation.clone()),
+                        error.starts_with("Unverifiable:"),
+                    ),
                 };
+                let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
                 return Ok(Sample {
                     case,
-                    elapsed_ms: started.elapsed().as_secs_f64() * 1000.0,
+                    elapsed_ms,
                     valid,
                     path,
                     timings,
+                    queue_and_delivery_ms: (elapsed_ms
+                        - pipeline.as_ref().map_or(0.0, |p| p.worker_ms))
+                    .max(0.0),
+                    pipeline,
+                    retryable,
                 });
             }
         }
@@ -101,18 +139,25 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
     let corpus: Vec<String> = serde_json::from_str(corpus_text)?;
     let worker = worker::spawn(model, false, settings.clone());
     let cold = measure(&worker, &corpus[0], 0, 0)?;
+    // Deliberate benchmark opt-in simulates clicking Retry suggestion once.
+    // Retries never replace first-attempt failures in the acceptance statistics.
+    let profile_retry = std::env::var("CAYMAN_BENCH_RETRY").as_deref() == Ok("1");
+    let mut next_ticket = 1;
+    let mut retries = Vec::new();
     let mut measured = Vec::new();
     let mut passed = samples >= 200 && runs == 3;
     for run in 0..runs {
         let mut records = Vec::new();
         for i in 0..samples {
             let case = (i + run) % corpus.len();
-            records.push(measure(
-                &worker,
-                &corpus[case],
-                case,
-                (1 + run * samples + i) as u64,
-            )?);
+            let sample = measure(&worker, &corpus[case], case, next_ticket)?;
+            next_ticket += 1;
+            if profile_retry && sample.retryable {
+                let retry = measure(&worker, &corpus[case], case, next_ticket)?;
+                next_ticket += 1;
+                retries.push(serde_json::json!({"run":run,"first_plus_retry_ms":sample.elapsed_ms + retry.elapsed_ms,"sample":retry}));
+            }
+            records.push(sample);
             if (i + 1) % 20 == 0 {
                 eprintln!("alpha latency run {}: {}/{}", run + 1, i + 1, samples);
             }
@@ -138,11 +183,68 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
         );
     }
     use sha2::{Digest, Sha256};
+    // Separate, frozen deterministic calibration: synthetic filename evidence,
+    // actual worker and gates, no inference or execution, no personal files.
+    let directory = tempfile::tempdir()?;
+    std::fs::write(
+        directory.path().join("README.md"),
+        "Synthetic benchmark fixture\n",
+    )?;
+    let mut deterministic = Vec::new();
+    for _ in 0..20 {
+        deterministic.push(measure_at(
+            &worker,
+            "read README.md",
+            0,
+            next_ticket,
+            directory.path().display().to_string(),
+        )?);
+        next_ticket += 1;
+    }
+    let deterministic_summary = serde_json::json!({
+        "fixture":"read_named_file_v1", "count":deterministic.len(),
+        "p50_ms":percentile(&deterministic,50), "p95_ms":percentile(&deterministic,95),
+        "failures":deterministic.iter().filter(|s| !s.valid).count(), "samples":deterministic
+    });
     let corpus_hash = format!("{:x}", Sha256::digest(corpus_text.as_bytes()));
     println!(
         "{}",
-        serde_json::json!({"policy":"alpha-v1","release_build":true,"corpus_sha256":corpus_hash,"model_sha256":crate::model_file::DEFAULT_SHA256,"threads":settings.inference.threads,"cold":cold,"runs":measured,"alpha_latency_passed":passed})
+        serde_json::json!({"policy":"alpha-v1","release_build":true,"corpus_sha256":corpus_hash,"model_sha256":crate::model_file::DEFAULT_SHA256,"threads":settings.inference.threads,"cold":cold,"runs":measured,"deterministic_calibration":deterministic_summary,"retry_profile_enabled":profile_retry,"retries":retries,"alpha_latency_passed":passed})
     );
     anyhow::ensure!(passed, "Alpha latency gate failed; dogfood remains blocked");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn failed_completion_keeps_diagnostics_but_never_becomes_a_fast_success() {
+        let (requests, receive) = std::sync::mpsc::sync_channel::<Request>(1);
+        let (send, events) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let request = receive.recv().unwrap();
+            send.send(Event::Measured {
+                ticket: request.ticket,
+                timings: crate::metrics::PipelineTimings {
+                    generation: Some(Default::default()),
+                    ..Default::default()
+                },
+            })
+            .unwrap();
+            send.send(Event::Completed {
+                id: request.session.id,
+                ticket: request.ticket,
+                passive: false,
+                result: Err("Unverifiable: synthetic validation failure".into()),
+            })
+            .unwrap();
+        });
+        let sample = measure(&worker::Worker { requests, events }, "ls", 0, 4).unwrap();
+        assert!(!sample.valid);
+        assert!(sample.retryable);
+        assert!(sample.timings.is_some());
+        assert!(sample.pipeline.is_some());
+        assert!(sample.queue_and_delivery_ms >= 0.0);
+    }
 }

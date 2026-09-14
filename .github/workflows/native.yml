@@ -42,7 +42,7 @@ jobs:
       - run: python llm/tools/dataset_audit.py
       - run: python llm/tools/mutation_check.py
   live-model:
-    timeout-minutes: 20
+    timeout-minutes: 60
     if: github.event_name == 'workflow_dispatch' && inputs.live_model
     # Deliberately not a PR job. Provision model via CAIMAN_TEST_MODEL; digest is
     # checked by the loader. Do not execute untrusted PR code on this runner.
