@@ -3,7 +3,7 @@ use llama_cpp_2::{
     context::params::LlamaContextParams,
     llama_backend::LlamaBackend,
     llama_batch::LlamaBatch,
-    model::{params::LlamaModelParams, AddBos, LlamaChatMessage, LlamaModel},
+    model::{params::LlamaModelParams, AddBos, LlamaChatMessage, LlamaChatTemplate, LlamaModel},
     sampling::LlamaSampler,
 };
 use std::{
@@ -14,6 +14,7 @@ use std::{
 };
 
 pub struct LocalModel {
+    template: LlamaChatTemplate,
     timings: std::cell::RefCell<crate::metrics::GenerationTimings>,
     model: LlamaModel,
     _verified: crate::model_file::VerifiedModel,
@@ -24,15 +25,18 @@ impl LocalModel {
     /// Use the real tokenizer and chat template, including system instructions.
     /// Reserve 396 tokens for generation/template overhead in the 4096-token KV.
     pub fn prepare_prompt(&self, input: &str) -> Result<(String, usize, bool)> {
+        let (rendered, tokens, trimmed) = self.prepare_tokens(input)?;
+        Ok((rendered, tokens.len(), trimmed))
+    }
+    fn prepare_tokens(
+        &self,
+        input: &str,
+    ) -> Result<(String, Vec<llama_cpp_2::token::LlamaToken>, bool)> {
         let mut envelope: crate::prompt::Prompt =
             serde_json::from_str(input).context("Expected a structured host context envelope")?;
-        let template = self
-            .model
-            .chat_template(None)
-            .context("GGUF has no supported chat template")?;
         loop {
             let rendered = self.model.apply_chat_template(
-                &template,
+                &self.template,
                 &[
                     LlamaChatMessage::new(
                         "system".into(),
@@ -42,9 +46,11 @@ impl LocalModel {
                 ],
                 true,
             )?;
-            let count = self.model.str_to_token(&rendered, AddBos::Never)?.len();
-            if count <= self.options.context_tokens as usize - self.options.output_tokens - 140 {
-                return Ok((rendered, count, envelope.context_trimmed));
+            let tokens = self.model.str_to_token(&rendered, AddBos::Never)?;
+            if tokens.len()
+                <= self.options.context_tokens as usize - self.options.output_tokens - 140
+            {
+                return Ok((rendered, tokens, envelope.context_trimmed));
             }
             if !envelope.compact() {
                 bail!("The current request and required host context exceed the model token budget. Shorten this request; opening a new tab is not necessary.");
@@ -72,6 +78,9 @@ impl LocalModel {
             &LlamaModelParams::default().with_n_gpu_layers(0),
         )?;
         Ok(Self {
+            template: model
+                .chat_template(None)
+                .context("GGUF has no supported chat template")?,
             timings: std::cell::RefCell::new(crate::metrics::GenerationTimings {
                 load_ms: loaded.elapsed().as_secs_f64() * 1000.0,
                 ..Default::default()
@@ -92,8 +101,7 @@ impl LocalModel {
         if cancellation.load(Ordering::Relaxed) != ticket {
             bail!("Request cancelled");
         }
-        let (prompt, _, _) = self.prepare_prompt(input)?;
-        let tokens = self.model.str_to_token(&prompt, AddBos::Never)?;
+        let (_, tokens, _) = self.prepare_tokens(input)?;
         self.timings.borrow_mut().input_tokens = tokens.len();
         self.timings.borrow_mut().prepare_ms = started.elapsed().as_secs_f64() * 1000.0;
         let prefill = Instant::now();
@@ -134,6 +142,7 @@ impl LocalModel {
         ]);
         let mut decoder = encoding_rs::UTF_8.new_decoder();
         let mut result = String::new();
+        let mut frame = crate::response_stream::JsonObject::default();
         for position in tokens.len()..tokens.len() + self.options.output_tokens {
             if cancellation.load(Ordering::Relaxed) != ticket {
                 bail!("Request cancelled");
@@ -155,11 +164,13 @@ impl LocalModel {
             // sample() already accepts the token in this pinned llama.cpp API.
             // Accepting twice advances grammar state twice and can abort in C++.
             if self.model.is_eog_token(token) {
-                return Ok(result);
+                return crate::response_stream::validate_complete(result);
             }
-            result.push_str(&self.model.token_to_piece(token, &mut decoder, true, None)?);
-            if serde_json::from_str::<serde_json::Value>(&result).is_ok() {
-                return Ok(result);
+            let piece = self.model.token_to_piece(token, &mut decoder, true, None)?;
+            result.push_str(&piece);
+            anyhow::ensure!(result.len() <= 16384, "Model response exceeds byte limit");
+            if frame.push(&piece)? {
+                return crate::response_stream::validate_complete(result);
             }
             batch.clear();
             batch.add(token, position as i32, &[0], true)?;
