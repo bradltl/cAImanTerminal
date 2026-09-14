@@ -4,3 +4,4 @@
 /corpus/shell_boundary/*
 !/corpus/shell_boundary/pipeline
 !/corpus/shell_boundary/wrapper
+!/corpus/shell_boundary/unicode_brace
