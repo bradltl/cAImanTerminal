@@ -9,6 +9,10 @@ validation, intent/secret checks, and final risk assessment. Tests never execute
 suggestions. Stale tickets are rejected before and after inference; GTK also
 checks the immutable session/request/prompt/CWD/input binding at completion and
 acceptance. Bash independently rejects stale prompt generation, CWD and input.
+Production also routes authorized task alternatives and verified literals without
+inference. Adversarial/model tests select `process_model_candidate` to exercise
+the same production model branch and final gates, without that shortcut. The
+live-model regression still performs actual generation.
 
 Run deterministic regressions:
 

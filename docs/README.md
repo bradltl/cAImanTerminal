@@ -30,6 +30,7 @@ the measured latency and model-correctness gates remain closed.
 12. [Current status and history](terminal/12_Project_Status.md)
 13. [Security hardening](terminal/13_Security_Hardening.md)
 14. [Alpha conformance and release gates](terminal/14_Alpha_Conformance.md)
+15. [Performance/correctness review, dispositions and measurements](terminal/15_Performance_Correctness_Review.md)
 
 ## Development guidance and archive
 

@@ -1,5 +1,16 @@
 # Decision log
 
+## 2026-09-14 — Evidence-led performance/correctness changes
+
+Use existing intent contracts to answer supported commands without inference,
+rechecking every final gate. Keep a separately selectable production model branch
+for diagnostics and adversarial tests. Do not count deterministic speed as model
+speed, relax release thresholds, cache mutable model digests, or trim away secret
+labels before scanning. Retain per-tab shell polling after a readiness-only
+prototype failed output-capture tests; use event-driven worker-result delivery.
+Measured model preparation is approximately 1 ms, not the review's estimated
+hundreds of milliseconds; CPU prefill and decoding remain the main model costs.
+
 ## 2026-09-14 — Acceptance evidence and native parser containment
 
 The three-by-200 target-workstation benchmark failed both latency thresholds and

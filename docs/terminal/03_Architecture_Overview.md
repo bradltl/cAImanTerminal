@@ -5,11 +5,17 @@
 See [the executable boundary map](14_Alpha_Conformance.md). Host facts are data
 injected into a shared production candidate gate, not precomputed verdicts.
 An independent Python alpha profile compares the complete deterministic trace.
+Before inference, explicit supported contracts and verified literal commands can
+produce deterministic candidates; the shared final pipeline still revalidates
+and binds them. Model-candidate diagnostics bypass this optimization, not policy.
 Staging binds session/request/context/prompt generations, CWD, input and local
 prompt state. Only fixed integration keys cross the assistant-to-VTE adapter;
 Bash reads candidate text as data and checks its own prompt generation again.
 Native inference reports numeric load/prefill/decode timings over bounded IPC.
 Session metrics have fixed-size counters only, with manual clipboard export.
+Worker events wake a GLib future rather than a repeating window timer. The per-tab
+60 ms shell poll remains: FIFO readiness alone did not ensure VTE had processed
+the corresponding output, so the attempted replacement failed real-PTY tests.
 
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.

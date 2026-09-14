@@ -1,5 +1,18 @@
 # Project status
 
+## Performance/correctness review — 2026-09-14
+
+Implemented validated review fixes and deterministic routing for already-authorized
+commands. The unchanged 600-request command corpus now validates 600/600 without
+inference; per-run worker p95 is below 0.3 ms. This is not keyboard-to-render
+latency or improved model quality. A separate 20-request model-path pilot remains
+at p50 3.14 s / p95 3.43 s with four unstageable responses. Alpha is not approved.
+Exact conformance now has 101 cases, with zero differences. Worker delivery is
+event-driven; the shell polling optimization was rejected after real PTY tests
+showed premature output capture. See [review and evidence](15_Performance_Correctness_Review.md).
+
+The earlier alpha-hardening measurements below are retained as history.
+
 ## Current alpha-hardening status — 2026-09-11
 
 Engineering preview only: **not alpha-ready**. The latest conformance suite has

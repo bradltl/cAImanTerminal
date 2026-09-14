@@ -1,5 +1,11 @@
 # Testing plan
 
+Performance-review regressions cover nested sudo, kill signal/PID positions,
+secret labels outside retained tails, Unicode quoting equivalence, incremental
+JSON framing, request-scoped timings and ordered UI event delivery. Generated
+candidate tests explicitly use `process_model_candidate` so a deterministic
+fast answer cannot mask rejection tests. See [measurements and retained limits](15_Performance_Correctness_Review.md).
+
 ## Alpha release gates
 
 Use [Alpha Hardening / Harness Conformance](14_Alpha_Conformance.md) for the current
