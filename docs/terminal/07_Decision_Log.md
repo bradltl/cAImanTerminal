@@ -1,5 +1,21 @@
 # Decision log
 
+## 2026-09-14 — Restore assistive priorities; remove alpha latency gate
+
+User direction supersedes the earlier numerical alpha gates: latency is an
+optimization metric, not a release requirement. Correctness, completeness and
+explanation quality are acceptance concerns; slow valid answers do not fail on
+timing, and fast invalid answers do not pass. Require model explanations again,
+label deterministic descriptions, and retain useful advice when staging cannot
+be verified. Expand the versioned audited CLI profile to ordinary literal file
+operations without granting unrelated commands or model-invented targets.
+
+Use noninteractive cursor-aligned GTK ghost text, keeping candidate bytes out of
+the PTY until the existing bound data-staging protocol handles user Tab. Enter
+remains separate. GPU offload is opt-in, CPU remains supported, and hardware
+absence/fallback must be reported honestly. This does not certify full original
+PRD coverage or waive secret, model-integrity, stale-state or execution boundaries.
+
 ## 2026-09-14 — Evidence-led performance/correctness changes
 
 Use existing intent contracts to answer supported commands without inference,

@@ -79,3 +79,16 @@ The response-type gate now rejects this unrelated command, including a repeated
 bad repair. The live semantic test exposes that model-quality limitation when v5 is selected;
 tokenizer compaction passes. The default is now v2 at the user’s request. Do not interpret safe rejection as a
 correct answer, or remove this regression to make the suite green.
+
+## Assistive alpha verification update
+
+Latency is diagnostic, not an alpha release requirement. The model generation
+contract now requires an explanation for suggestions; the live-model regression
+checks that field as well as command validity. `assistance_quality` verifies that
+useful unverified advice is retained without becoming a staged command;
+`assistive_policy` covers audited file operations and exact operand authorization.
+
+The desktop/lifecycle tests exercise inline ghost text, real Tab acceptance and
+a distinct physical Enter execution marker. Optional `gpu_runtime` verifies CPU
+and requested-GPU paths with the verified model; actual offload requires a real
+device and compatible build. See [GPU verification](../../docs/terminal/16_GPU_Acceleration.md).

@@ -1,13 +1,34 @@
 # cAIman Terminal — Product Requirements Document (PRD)
 
-## Alpha acceptance amendment — 2026-09-11
+## Assistive alpha amendment — 2026-09-14
 
-The [alpha conformance contract](14_Alpha_Conformance.md) supersedes broader MVP
+Alpha has **no latency acceptance threshold**. Measure completed-response timing
+and responsiveness, but prioritize correct, complete, useful assistance and clear
+explanations over token-count or latency optimizations. A fast refusal is not a
+successful answer. CPU remains supported; GPU offload is optional and explicitly
+enabled, with honest capability/fallback reporting.
+
+Validated suggestions belong inline at the active prompt, visually separate from
+typed input. Tab stages a visible suggestion; only a distinct user Enter executes
+it. Explanations, plans, uncertainty and host warnings belong in the assistant
+pane. The model must explain its recommendation; host-generated descriptions are
+labelled as such. Incomplete coverage must not discard otherwise useful advice
+or misrepresent an unverified proposal as a validated command.
+
+The versioned policy is `alpha-v1.1`, adding audited literal file operations.
+Ordinary risky operations can stage with warnings after all other checks pass;
+the current critical-operation blocks, secret protection, unsupported syntax and
+stale-state protections remain. Broad natural-language coverage, remote staging
+and complete semantic verification remain open work, not solved by this amendment.
+
+## Retained alpha conformance requirements
+
+The [alpha conformance contract](14_Alpha_Conformance.md) specifies current MVP
 staging claims for this release: narrow audited CLI coverage, no passive/remote
 staging, and one separately requested model retry after an unverifiable result.
 Safety/secret rejection never retries. Dogfood requires exact deterministic
-conformance, passing boundary/PTY/fuzz gates, and three 200-request warm runs each
-meeting p50 ≤750 ms and p95 ≤1500 ms with no unverified command successes.
+conformance and passing boundary/PTY/fuzz and assistance-quality gates, with no
+unverified command successes. Timings are diagnostic, not an alpha release gate.
 Dogfood metrics are memory-only; export is manual and aggregate-only. V4 remains
 deferred until real dogfooding and material stabilization.
 
@@ -278,7 +299,9 @@ An explicit AI request shall never directly execute the recommended user command
 
 ### FR-PASSIVE-001 — Debounce
 
-Passive AI evaluation shall occur only after a configurable short idle interval, initially approximately 650 ms.
+Passive AI evaluation shall occur only after a configurable short idle interval
+(current default 250 ms). This debounce is a behavior setting, not a response-time
+acceptance threshold.
 
 ### FR-PASSIVE-002 — Host eligibility gate
 
@@ -310,6 +333,9 @@ AI inference should normally be suppressed for:
 ### FR-PASSIVE-005 — Ghost text
 
 Passive command recommendations shall appear as ghost text rather than being inserted automatically.
+The display must be aligned with the active prompt/cursor, not a reserved strip
+below the terminal. When placement or context is uncertain, hide the ghost and
+preserve normal Bash completion; keep any useful explanation in the pane.
 
 ---
 
@@ -350,6 +376,11 @@ Target conceptual schema:
 ```
 
 The exact serialized schema may evolve during implementation.
+Generated suggestions require a nonempty explanation of purpose, important
+arguments, effects and uncertainty. A short optional plan may describe subsequent
+steps, but only one command is offered. Explainability means a useful rationale,
+not disclosure of hidden chain-of-thought. Deterministic descriptions must not
+be presented as model-generated reasoning.
 
 ### FR-MODEL-002 — Host-owned risk
 
@@ -747,7 +778,10 @@ The product shall function with CPU inference on supported target hardware.
 
 ### FR-RUNTIME-006 — Optional acceleration
 
-The application may detect and use supported GPU acceleration without making it a baseline requirement.
+The application shall support explicitly enabled GPU layer offload in compatible
+builds, without making GPU hardware a baseline requirement. CPU-only builds and
+unavailable-device fallback remain usable. GPU selection must preserve verified
+model loading, bounded supervision and fresh per-request inference state.
 
 ### FR-RUNTIME-007 — Replaceable model
 
@@ -781,12 +815,10 @@ These metrics are research baselines, not final product acceptance criteria. The
 
 ### PR-PERF-001 — Interactive responsiveness
 
-Explicit AI requests should target:
-
-- p50 <= 750 ms;
-- p95 <= 1500 ms;
-
-on the designated target development machine for typical short terminal interactions.
+There is no alpha p50/p95 requirement. Record end-to-end worker latency, queueing,
+model preparation/prefill/decoding and validation separately to guide optimization.
+Report desktop input-to-display measurements separately from worker timings.
+Latency alone must not fail alpha acceptance or justify incomplete explanations.
 
 ### PR-PERF-002 — Passive responsiveness
 
@@ -798,7 +830,9 @@ The baseline model/runtime combination should remain small enough to stay reside
 
 ### PR-PERF-004 — Bounded generation
 
-Terminal-assistant responses should be concise and use small generation limits to reduce latency.
+Terminal-assistant responses shall remain bounded and cancellable, with enough
+budget for a complete command, useful explanation and a concise plan when needed.
+Truncated responses are failures, regardless of how quickly they finish.
 
 ### PR-PERF-005 — No repeated model load
 

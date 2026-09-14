@@ -9,10 +9,11 @@ certified release.
 
 ## Required before wider dogfood
 
-Alpha is blocked: each of three 200-request runs had 40 unstageable responses,
-p50 3.10–3.12 s and p95 3.57–3.73 s. Required limits remain ≤750/1500 ms.
-See [evidence and release gates](14_Alpha_Conformance.md). Passing finite safety
-regressions does not waive correctness or latency. V4 stays deferred.
+Latency is no longer an alpha blocker. Historical model runs had 40 unstageable
+responses per 200; removing timing thresholds does not repair those quality
+failures. See [evidence and release gates](14_Alpha_Conformance.md). Useful task
+coverage, correct commands, grounded explanations and interactive reliability
+remain acceptance concerns. V4 stays deferred.
 
 - Extend shell integration beyond Emacs Readline; test custom prompts, nested
   shells, key bindings, history execution, multiline commands and bracketed paste.
@@ -31,18 +32,22 @@ regressions does not waive correctness or latency. V4 stays deferred.
   arbitrary user commands or a hostile local process.
 - Full raw-model versus final-system benchmark reports, model identity metadata,
   and the PRD's complete critical safety release gate.
-- Cursor-aligned ghost rendering; the initial UI uses a suggestion strip.
+- Extend inline ghost placement beyond the verified single-line ASCII/current-
+  cursor layout; wrapped, non-ASCII and mid-buffer cases currently stay pane-only.
 - Remote prompt integration and remote `@`/staging. Current SSH handling pauses
   local assistance and marks the session remote.
 - Explicit file context with a reviewed secret policy and source disclosure.
 - Verify close-window behavior with foreground jobs; tab close currently refuses
   while a command is running.
-- Improve release-mode latency and model correctness without weakening gates;
-  repeat the isolated target-hardware acceptance run after optimization.
+- Improve model correctness and completeness with a representative assistance
+  corpus, including explanations and multi-step follow-ups. Continue diagnostic
+  performance profiling without reinstating an alpha timing gate.
+- Verify optional GPU builds on real Vulkan/CUDA hardware, including memory
+  pressure, fallback and cancellation. CPU fallback is not a GPU speedup claim.
 - Restore non-ASCII command staging only after native Bash scanner Unicode
   safety is established. Unicode terminal text/evidence remains supported.
 
 ## Deferred product decisions
 
 Packaging/model distribution, stronger secret detection, broader shell grammar,
-optional GPU backends, persistent memory, richer undo, and non-Arch adapters.
+broader accelerated-device certification, persistent memory, richer undo, and non-Arch adapters.

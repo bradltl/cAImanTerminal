@@ -1,5 +1,15 @@
 # cAIman Terminal — Project Overview
 
+## Current alpha direction — 2026-09-14
+
+Correctness, useful coverage and explainability take priority over latency. There
+is no alpha latency threshold. The original assistive contract remains: a real
+local terminal, model reasoning where useful, inline ghost suggestions for review,
+and user Enter for every command. CPU is the baseline with explicitly enabled
+[optional GPU offload](16_GPU_Acceleration.md). Audited file operations extend
+staging coverage; unknown candidates remain clearly unverified advice. See the
+[PRD amendment](02_Product_PRD.md) for current acceptance and remaining limits.
+
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
 > Model research is documented in [llm/README.md](../../llm/README.md).
@@ -311,7 +321,7 @@ An unverifiable response ends the first inference. A separate Retry suggestion
 action permits one new inference for unchanged explicit request context, with
 every gate reapplied. Safety/secret rejection and passive requests never retry.
 The broader product vision below does not expand the narrow shipping
-[alpha-v1 policy and release gates](14_Alpha_Conformance.md).
+[versioned alpha policy and release gates](14_Alpha_Conformance.md).
 
 ---
 
@@ -534,7 +544,7 @@ Initial research targets:
 Aspirational targets:
 
 - deterministic completion: effectively instantaneous;
-- explicit AI requests: p50 <= 750 ms, p95 <= 1500 ms on target development hardware;
+- explicit AI requests: measure completed-response latency; no alpha p50/p95 threshold;
 - passive AI suggestions: low enough latency to feel immediate after the idle debounce;
 - AI memory footprint small enough to remain continuously loaded on a typical developer workstation.
 

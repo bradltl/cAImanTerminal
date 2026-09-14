@@ -46,11 +46,15 @@ training dependencies are documented in the research guide.
 
 ## Current status
 
-Alpha dogfooding is blocked by measured latency and unverifiable responses.
-The [alpha-v1 acceptance guide](docs/terminal/14_Alpha_Conformance.md) records the
-101-case exact conformance suite and executable safety gates. The
+Alpha has no latency release threshold; correctness, useful coverage and
+explainability remain acceptance concerns. The
+[alpha-v1.1 acceptance guide](docs/terminal/14_Alpha_Conformance.md) records exact
+conformance and executable boundary gates. The
 [performance review](docs/terminal/15_Performance_Correctness_Review.md) separates
-the now-fast deterministic command route from still-slow model generation.
+deterministic command route from model generation; its historical latency limits
+are superseded. Suggestions now render inline, model suggestions include an
+explanation, and [optional GPU offload](docs/terminal/16_GPU_Acceleration.md) is
+available in compatible builds when enabled.
 
 Engineering preview: Linux, GTK/VTE, Bash, local llama.cpp and Qwen SFT v2 by
 default. The app supports tabs, terminal-aware assistance, validated command
