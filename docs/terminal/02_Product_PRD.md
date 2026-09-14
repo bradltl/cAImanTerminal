@@ -1,5 +1,16 @@
 # cAIman Terminal — Product Requirements Document (PRD)
 
+## Alpha acceptance amendment — 2026-09-11
+
+The [alpha conformance contract](14_Alpha_Conformance.md) supersedes broader MVP
+staging claims for this release: narrow audited CLI coverage, no passive/remote
+staging, and one separately requested model retry after an unverifiable result.
+Safety/secret rejection never retries. Dogfood requires exact deterministic
+conformance, passing boundary/PTY/fuzz gates, and three 200-request warm runs each
+meeting p50 ≤750 ms and p95 ≤1500 ms with no unverified command successes.
+Dogfood metrics are memory-only; export is manual and aggregate-only. V4 remains
+deferred until real dogfooding and material stabilization.
+
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
 > Model research is documented in [llm/README.md](../../llm/README.md).
@@ -453,9 +464,13 @@ For supported command families, the application should validate known subcommand
 
 An invalid command shall not be presented as a trusted/ready ghost suggestion.
 
-### FR-VALID-006 — Repair attempt
+### FR-VALID-006 — Deterministic correction and explicit retry
 
-If a candidate command is invalid and relevant local documentation can resolve the issue, the application may perform one bounded repair inference.
+Alpha permits automatic deterministic correction only for audited task-option
+rules, followed by every validation gate. An unverifiable first response ends
+with clarification or verification failure. A separate Retry suggestion action
+permits one new inference bound to unchanged request context. Safety/secret
+rejection is never repairable, and passive requests never retry.
 
 ### FR-VALID-007 — Repair remains non-executing
 
@@ -691,9 +706,12 @@ AI inference shall execute locally.
 
 The application shall not require network access to reason about terminal context.
 
-### FR-PRIV-003 — No telemetry by default
+### FR-PRIV-003 — Memory-only aggregate measurement
 
-The application shall not transmit terminal content, prompts, commands, output, or model context to a telemetry service by default.
+The application shall not automatically write or upload session metrics.
+Metrics shall be bounded and memory-only, with manual aggregate export containing
+no commands, prompts, output, paths, free-form errors, hashes or persistent IDs.
+Unknown execution attribution shall remain unknown.
 
 ### FR-PRIV-004 — No cloud fallback
 
@@ -938,7 +956,7 @@ Safety scoring shall inspect the command semantics independently from general ac
 6. Exact secret-filter policy and disclosure UX.
 7. Exact command-validator implementation and shell AST library.
 8. How much local CLI help is cached versus retrieved on demand.
-9. Whether the command repair pass is enabled automatically or only for high-confidence repair categories.
+9. Resolved for alpha: deterministic correction only; one separately requested model retry, never safety/secret repair.
 10. Packaging/repository strategy for Arch/CachyOS distribution.
 
 ---
@@ -956,7 +974,7 @@ Milestone components:
 5. command/subcommand/flag validator;
 6. semantic safety/risk classifier;
 7. documentation resolver for Bash/man/pacman/`gh`/`gcloud`;
-8. bounded command-repair pass;
+8. deterministic correction and separately requested single retry;
 9. staging/ghost-text UI;
 10. benchmark integration that reports raw-model and final-system results separately.
 

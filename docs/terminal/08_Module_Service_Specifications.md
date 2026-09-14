@@ -14,7 +14,7 @@
 | `terminal/src/command_validation.rs` | Distro/executable/CLI evidence and update-intent checks | Fixed help argv, bounded, executable-aware cache with five-minute expiry |
 | `terminal/src/flag_help.rs` | Local flag-prefix descriptions | Installed documentation only; no inference or staged guesses |
 | `terminal/src/guidance.rs` | Direct known-host/find guidance and prose checks | Commands still require CLI and risk validation |
-| `terminal/src/worker.rs` | Bounded request queue and one-repair pipeline | Worker receives snapshots, never PTY handles |
+| `terminal/src/worker.rs` | Bounded queue, single inference, deterministic alpha gates | Worker receives snapshots, never PTY handles; retry needs a fresh explicit action |
 | `terminal/src/inference.rs` | Resident GGUF, grammar sampling, token/time bounds | In-process CPU inference; no network |
 | `terminal/src/theme.rs` | Bundled palettes, generated CSS, preference persistence | Atomic writes; window override separate from saved preference |
 | `terminal/build.rs` | Embedded GLib icon resource | Desktop builds only |

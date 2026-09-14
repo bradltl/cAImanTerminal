@@ -1,5 +1,31 @@
 # Decision log
 
+## 2026-09-14 — Acceptance evidence and native parser containment
+
+The three-by-200 target-workstation benchmark failed both latency thresholds and
+had 40 unstageable responses in every run. Keep dogfood blocked and preserve those
+failures in acceptance statistics; diagnostic retries cannot replace them.
+Proptest seed 18 exposed a native Bash scanner wide-codepoint `isdigit` crash.
+Reject non-ASCII command candidates before native parsing until Unicode safety
+can be established. This narrows staging, not terminal input or quoted evidence.
+Current policy decisions supersede older automatic-repair decisions below.
+
+## 2026-09-11 — Narrow alpha conformance and hard release gates
+
+Use a versioned shipping policy in both languages; retain broader research
+behavior separately. Unknown CLI coverage is unverified, not valid. Replace
+pinned disagreements with exact trace comparisons and no implicit exceptions.
+Keep deterministic correction; require a distinct user action for one model
+retry and never retry safety/secret rejection. Preserve request/prompt generations
+through staging and independently check them in Bash.
+
+Adopt shrinking properties, instrumented fuzzing, real-PTY lifecycle regression,
+and a completed-response latency gate. Compact prompts and command-only model
+responses reduce measured overhead without dropping host validation. Two threads
+are the new default based on target-machine profiling; saved settings are honored.
+Do not reuse mutable KV state between sessions. Dogfood metrics stay in memory
+with manual numeric export; no automatic logs/uploads or fresh v4 holdout yet.
+
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
 > Model research is documented in [llm/README.md](../../llm/README.md).

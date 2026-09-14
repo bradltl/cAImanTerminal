@@ -281,7 +281,7 @@ These lookups are performed by the application and returned to the model as stru
 
 The host decides when documentation lookup is appropriate. The model should not autonomously execute the lookup command itself.
 
-### 6.4 Command validation and repair
+### 6.4 Command validation and controlled correction
 
 A generated command should not immediately become visible ghost text.
 
@@ -296,17 +296,22 @@ CLI/argument validation
     ↓
 Safety/risk validation
     ↓
-If invalid and repairable:
-    local documentation lookup
+If eligible for deterministic task-option correction:
+    choose the canonical authorized alternative
     ↓
-One bounded repair inference
+Recheck CLI, intent, secrets, safety and risk
     ↓
-Validation again
+Validate current immutable staging snapshot
     ↓
 Stage suggestion
 ```
 
 The application must never execute the resulting command during validation.
+An unverifiable response ends the first inference. A separate Retry suggestion
+action permits one new inference for unchanged explicit request context, with
+every gate reapplied. Safety/secret rejection and passive requests never retry.
+The broader product vision below does not expand the narrow shipping
+[alpha-v1 policy and release gates](14_Alpha_Conformance.md).
 
 ---
 
