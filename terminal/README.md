@@ -26,6 +26,10 @@ Staging requires an explicit supported task or an exact literal command. Passive
 advice never repairs or stages. Assistance pauses inside all running/unknown
 programs, including SSH wrappers, until the original local Bash prompt returns.
 See [hardening and supported contracts](../docs/terminal/13_Security_Hardening.md).
+Alpha permits only audited CLI forms and printable ASCII commands. Unverifiable
+explicit responses may offer a separate Retry suggestion action once; safety and
+secret rejection never retry. Metrics stay in memory with manual aggregate export.
+Dogfooding remains blocked by [measured alpha gates](../docs/terminal/14_Alpha_Conformance.md).
 
 ## Install and settings
 
@@ -56,6 +60,8 @@ cargo test --locked
 cargo clippy --locked --all-targets -- -D warnings
 # Requires a graphical session; run each GTK test separately:
 cargo test --locked --lib ui::tests::desktop_flow -- --ignored --nocapture
+cargo test --locked --lib ui::tests::lifecycle_boundary -- --ignored --nocapture
+cargo test --locked --lib ui::tests::disabled_ai_hides_pane -- --ignored --nocapture
 cargo test --locked --lib settings_ui::tests::settings_window -- --ignored --nocapture
 ```
 
@@ -63,6 +69,10 @@ See the [runtime harness guide](tests/README.md) for live-model testing and cont
 policies. Raw-model training and benchmarking belong to [`llm/`](../llm/README.md).
 For static safety replay: `./target/debug/caiman-terminal --audit-report artifacts/results/RUN.json`.
 That replay is narrower than full end-to-end evaluation.
+For exact alpha conformance, build the desktop binary and run
+`.venv/bin/python llm/tools/conformance.py` from the root. No difference baseline
+or automatic exception approval is supported. See the acceptance guide for fuzz,
+mutation and release-build latency commands.
 
 ## Documentation
 

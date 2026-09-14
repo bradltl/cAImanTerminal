@@ -29,6 +29,11 @@ in Settings. Model bytes are sealed before loading in a supervised helper.
 Read one JSON request/response fixture from stdin and evaluate the production
 worker without loading a model or executing candidates. Used for conformance.
 .TP
+.B \-\-alpha-benchmark
+Run the explicit synthetic release-build latency gate: three runs of 200 warm
+requests. Print numeric JSON; never execute candidates. Failure blocks alpha
+dogfooding. This is not automatic session telemetry.
+.TP
 .B \-\-no-ai
 Start a plain terminal without loading the model.
 .TP
@@ -69,7 +74,7 @@ At the normal Bash prompt, prefix a request with @ and press Enter:
 .nf
   @ explain the error
   @ show disk usage
-  @ find . -name '*.log' -size +500M
+  @ list files recursively
   @ continue
 .fi
 .PP
@@ -88,6 +93,16 @@ Passive advice cannot repair or stage commands. Staging requires an explicit
 supported task or the exact literal command. Unknown intent and explanatory
 questions do not authorize staging. Remote assistance is disabled: all running
 programs have unknown host identity until the original local Bash prompt returns.
+.PP
+Alpha staging permits only audited CLI forms and printable ASCII commands.
+Unknown or unverifiable commands cannot stage. Deterministic task-option
+correction is automatic; model retries are not. Retry suggestion allows one new
+inference for an unverifiable explicit request with unchanged context. Safety
+and secret rejection cannot retry.
+.PP
+Copy session metrics manually exports fixed numeric aggregates to the clipboard.
+Metrics are bounded and memory-only, with no content, paths, hashes, session IDs,
+automatic files or uploads. Unknown execution attribution remains unknown.
 .PP
 Failed foreground commands and completed assistant suggestions can trigger a
 follow-up using recent command output and exit status. Interrupts and successful

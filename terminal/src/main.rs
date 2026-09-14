@@ -64,7 +64,7 @@ fn main() -> anyhow::Result<()> {
                 )
             }
             "--help" | "-h" => {
-                println!("{}\ncAIman Terminal 0.1\n\n  --model PATH  Local GGUF (default: SFT v2)\n  --model-sha256 HASH  Trusted digest required for custom weights\n  --policy-check  Evaluate a JSON fixture through the production worker\n  --no-ai       Plain terminal, no model load\n  --ask TEXT    Headless final-pipeline inference; never executes commands\n  --audit-report PATH  Replay a saved benchmark through host validation\n  --theme ID    Theme override for this window\n  --list-themes List bundled theme IDs\n  --version     Print version\n\nManual: man caiman-terminal", include_str!("../resources/caiman.txt"));
+                println!("{}\ncAIman Terminal 0.1\n\n  --model PATH  Local GGUF (default: SFT v2)\n  --model-sha256 HASH  Trusted digest required for custom weights\n  --policy-check  Evaluate a JSON fixture through the production worker\n  --alpha-benchmark  Run the synthetic release latency gate\n  --no-ai       Plain terminal, no model load\n  --ask TEXT    Headless final-pipeline inference; never executes commands\n  --audit-report PATH  Replay a saved benchmark through host validation\n  --theme ID    Theme override for this window\n  --list-themes List bundled theme IDs\n  --version     Print version\n\nManual: man caiman-terminal", include_str!("../resources/caiman.txt"));
                 return Ok(());
             }
             _ => anyhow::bail!("Unknown option: {arg}"),
