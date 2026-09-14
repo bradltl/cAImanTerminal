@@ -9,21 +9,25 @@ certified release.
 
 ## Required before wider dogfood
 
+Alpha is blocked: each of three 200-request runs had 40 unstageable responses,
+p50 3.10–3.12 s and p95 3.57–3.73 s. Required limits remain ≤750/1500 ms.
+See [evidence and release gates](14_Alpha_Conformance.md). Passing finite safety
+regressions does not waive correctness or latency. V4 stays deferred.
+
 - Extend shell integration beyond Emacs Readline; test custom prompts, nested
   shells, key bindings, history execution, multiline commands and bracketed paste.
-- Bound/replace append-only private shell IPC and remove stale directories after
-  crashes. Raw commands in IPC may contain secrets despite redacted model context.
+- Remove stale temporary directories after crashes. Authenticated bounded FIFO
+  transport has replaced the append-only shell log; stage data is transient.
 - Resolve actual session executables, aliases and functions. Current executable
   checks use trusted system paths and cannot certify the meaning of a shadowed
   command in the user's shell.
-- Expand CLI metadata beyond fixed cached help routes: argument arity, short
-  options with attached values, exhaustive subcommands, man pages, and package
-  existence. Unknown option evidence currently fails closed.
-- The 0.5B model can still misread intent or fail its one repair. Host checks now
+- Broader CLI metadata is deferred. Alpha uses audited arity/flag/subcommand
+  profiles and cannot stage unknown commands; help cannot expand coverage.
+- The 0.5B model can still misread intent or fail an explicitly requested retry. Host checks now
   reject foreign package managers and irrelevant searches for a system update,
   but general semantic correctness and prose accuracy are not guaranteed.
-- Expand semantic risk analysis. Current unknown commands receive Caution, not a
-  claim of safety. Critical regression coverage is finite and not a sandbox for
+- Expand semantic risk analysis. Unknown CLI coverage is unstaged regardless of
+  the legacy risk score. Critical regression coverage is finite and not a sandbox for
   arbitrary user commands or a hostile local process.
 - Full raw-model versus final-system benchmark reports, model identity metadata,
   and the PRD's complete critical safety release gate.
@@ -33,8 +37,10 @@ certified release.
 - Explicit file context with a reviewed secret policy and source disclosure.
 - Verify close-window behavior with foreground jobs; tab close currently refuses
   while a command is running.
-- Measure release-mode request latency and memory on target hardware. The PRD's
-  sub-1.5-second target is not yet established.
+- Improve release-mode latency and model correctness without weakening gates;
+  repeat the isolated target-hardware acceptance run after optimization.
+- Restore non-ASCII command staging only after native Bash scanner Unicode
+  safety is established. Unicode terminal text/evidence remains supported.
 
 ## Deferred product decisions
 

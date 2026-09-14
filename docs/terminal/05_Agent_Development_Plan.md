@@ -16,14 +16,16 @@ the native Rust/GTK4/VTE direction; the benchmark harness remains separate.
 - Test core invariants and exercise the actual GTK/Bash integration.
 - Record implementation limits instead of treating the full MVP checklist as done.
 
-## Next slices
+## Current alpha delivery and next slices
 
-1. Reliable Bash integration across editing modes, completion systems, and
-   multiline/pasted input; bounded IPC; trusted executable/alias metadata.
-2. CLI-specific subcommand and short/long flag validation from installed help,
-   with evidence-scoped repair and final-system benchmark reporting.
-3. Remote shell integration and explicit file context with stronger secret policy.
-4. Performance profiling, packaging, and complete PRD dogfood acceptance review.
+1. Maintain the implemented authenticated FIFO, immutable staging snapshot,
+   fixed-key boundary, narrow alpha CLI policy and explicit single-retry action.
+2. Keep exact Rust/Python conformance, mutation, property, PTY and PR/nightly fuzz
+   gates passing; retain discovered failures as regression cases.
+3. Resolve measured model correctness and latency failures. Every release run
+   must satisfy p50 ≤750 ms and p95 ≤1500 ms before alpha dogfood.
+4. Keep v2/v3 regressions; defer v4 and broader remote/CLI/file capabilities.
+   No new training corpus from automatic session capture.
 
 Review responsibilities: inspect execution boundaries, lifecycle/cancellation,
 context isolation, malformed model output, and unintended filesystem/network

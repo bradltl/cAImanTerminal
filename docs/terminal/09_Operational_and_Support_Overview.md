@@ -14,9 +14,16 @@ reported in the UI; `--no-ai` skips loading. No terminal content is logged to a
 telemetry service. Headless `--ask` intentionally prints its result for local use. `--audit-report`
 replays saved raw candidates through static host validation without inference.
 
-CI runs deterministic Rust tests, the desktop build/tests, formatting, linting,
-and existing Python tests. Graphical integration is a separate display-dependent
-check. Model weights are not downloaded by CI.
+Every PR runs deterministic Rust/Python conformance, property tests, four guard
+mutants, formatting/linting, real GTK/Bash under Xvfb, and bounded fuzzing.
+Scheduled fuzzing runs longer. Model weights are not downloaded by CI; verified
+live-model/latency gates use an explicitly dispatched trusted provisioned runner.
+See [gate commands and measured blockers](14_Alpha_Conformance.md).
+
+Session metrics are bounded and memory-only. Manual Copy session metrics exports
+numeric aggregates to the clipboard; there are no automatic files or uploads.
+The explicitly invoked synthetic `--alpha-benchmark` prints numeric JSON and
+returns failure when any alpha latency/correctness criterion fails.
 
 Troubleshooting:
 
