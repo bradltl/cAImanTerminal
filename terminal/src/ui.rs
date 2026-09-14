@@ -881,6 +881,22 @@ fn install_icon() {
     gtk::Window::set_default_icon_name("io.cayman.Terminal");
 }
 
+fn worker_event_stream(
+    events: std::sync::mpsc::Receiver<Event>,
+) -> futures_channel::mpsc::UnboundedReceiver<Event> {
+    let (send, receive) = futures_channel::mpsc::unbounded();
+    // This bridge sleeps in recv, not a GTK timer. Dropping the UI stream or
+    // worker channel terminates forwarding; no GTK object enters this thread.
+    std::thread::spawn(move || {
+        for event in events {
+            if send.unbounded_send(event).is_err() {
+                break;
+            }
+        }
+    });
+    receive
+}
+
 pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
     let app = gtk::Application::builder()
         .application_id("io.cayman.Terminal")
@@ -1135,12 +1151,20 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
         window.add_action(&settings_action);
         app.set_accels_for_action("win.settings", &["<Control>comma"]);
         let weak_window = window.downgrade();
-        glib::timeout_add_local(Duration::from_millis(60), move || {
-            if weak_window.upgrade().is_none() {
-                return glib::ControlFlow::Break;
-            }
-            tabs.borrow_mut().retain(|tab| !tab.borrow().closed);
-            while let Ok(event) = worker.events.try_recv() {
+        let cleanup_tabs = tabs.clone();
+        notebook.connect_page_removed(move |_, _, _| {
+            let tabs = cleanup_tabs.clone();
+            // Defer until the close callback releases its mutable tab borrow.
+            glib::idle_add_local_once(move || tabs.borrow_mut().retain(|tab| !tab.borrow().closed));
+        });
+        let mut events = worker_event_stream(worker.events);
+        let delivery = glib::MainContext::default().spawn_local(async move {
+            use futures_util::StreamExt;
+            while let Some(event) = events.next().await {
+                if weak_window.upgrade().is_none() {
+                    break;
+                }
+                tabs.borrow_mut().retain(|tab| !tab.borrow().closed);
                 match event {
                     Event::Measured { .. } => (),
                     Event::Status(status) => {
@@ -1179,8 +1203,8 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                     }
                 }
             }
-            glib::ControlFlow::Continue
         });
+        window.connect_destroy(move |_| delivery.abort());
         window.present();
     });
     app.run_with_args::<&str>(&[]);
@@ -1189,6 +1213,23 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn worker_events_wake_the_main_context_and_preserve_order() {
+        use futures_util::StreamExt;
+        let (send, receive) = std::sync::mpsc::channel();
+        let mut events = worker_event_stream(receive);
+        std::thread::spawn(move || {
+            for index in 0..32 {
+                send.send(Event::Status(index.to_string())).unwrap();
+            }
+        });
+        glib::MainContext::new().block_on(async move {
+            for index in 0..32 {
+                assert!(matches!(events.next().await, Some(Event::Status(text)) if text == index.to_string()));
+            }
+            assert!(events.next().await.is_none());
+        });
+    }
     #[track_caller]
     fn pump_until(mut condition: impl FnMut() -> bool) {
         let deadline = Instant::now() + Duration::from_secs(8);

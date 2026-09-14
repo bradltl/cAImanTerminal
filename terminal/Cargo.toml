@@ -6,7 +6,7 @@ description = "A native, local-only assisted Bash terminal"
 
 [features]
 default = ["desktop", "inference"]
-desktop = ["dep:gtk", "dep:vte"]
+desktop = ["dep:gtk", "dep:vte", "dep:futures-channel", "dep:futures-util"]
 inference = ["dep:llama-cpp-2", "dep:encoding_rs"]
 
 [dependencies]
@@ -22,6 +22,8 @@ libc = "0.2"
 sha2 = "0.10"
 gtk = { package = "gtk4", version = "0.10", optional = true }
 vte = { package = "vte4", version = "0.9", features = ["v0_76"], optional = true }
+futures-channel = { version = "0.3", optional = true }
+futures-util = { version = "0.3", optional = true }
 llama-cpp-2 = { version = "=0.1.156", default-features = false, optional = true }
 encoding_rs = { version = "0.8", optional = true }
 
