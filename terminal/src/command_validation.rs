@@ -74,7 +74,10 @@ fn unwrap_sudo(words: &[String]) -> Result<&[String]> {
     if words[0] != "sudo" {
         return Ok(words);
     }
-    if words.get(1).is_none_or(|w| w.starts_with('-')) {
+    if words
+        .get(1)
+        .is_none_or(|w| w.starts_with('-') || w == "sudo")
+    {
         bail!("Use a direct sudo command without wrapper options");
     }
     Ok(&words[1..])
@@ -375,8 +378,15 @@ pub fn is_system_update(intent: &str) -> bool {
     }
     parse_commands(&text).ok().is_some_and(|commands| {
         commands.iter().any(|words| {
-            unwrap_sudo(words).is_ok_and(|words| {
-                ["apt", "apt-get", "dnf", "yum", "zypper"].contains(&words[0].as_str())
+            // Classification of an observed command is not authorization. Nested
+            // sudo remains forbidden by CLI/risk gates, but should not hide the
+            // user's previously attempted package-manager operation.
+            let mut words = words.as_slice();
+            while words.first().is_some_and(|word| word == "sudo") {
+                words = &words[1..];
+            }
+            words.first().is_some_and(|exe| {
+                ["apt", "apt-get", "dnf", "yum", "zypper"].contains(&exe.as_str())
                     && words[1..].iter().any(|w| {
                         ["update", "upgrade", "full-upgrade", "dist-upgrade"].contains(&w.as_str())
                     })
