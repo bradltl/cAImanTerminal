@@ -1,7 +1,7 @@
 use crate::terminal_backend::TerminalSurface;
 use crate::{
     context::{bounded, CommandRecord, Session},
-    shell::{self, EventReader},
+    shell::EventReader,
     worker::{self, Event, Request},
 };
 use gtk::{gdk, gio, glib, prelude::*};
@@ -99,6 +99,10 @@ struct Suggestion {
     ticket: u64,
     binding: crate::context::ContextBinding,
 }
+struct RetryOffer {
+    text: String,
+    binding: crate::context::ContextBinding,
+}
 struct Tab {
     session: Session,
     terminal: vte::Terminal,
@@ -126,9 +130,23 @@ struct Tab {
     child: Option<glib::Pid>,
     alive: bool,
     closed: bool,
+    retry: Option<RetryOffer>,
+    retry_button: gtk::Button,
+    last_request: Option<RetryOffer>,
+    metrics: crate::metrics::Metrics,
+    queued: Option<Instant>,
+    completed_ticket: Option<u64>,
 }
 impl Tab {
     fn invalidate(&mut self) {
+        if self.queued.take().is_some() {
+            self.metrics.cancelled = self.metrics.cancelled.saturating_add(1);
+        }
+        if self.pending.is_some() {
+            self.metrics.dismissed = self.metrics.dismissed.saturating_add(1);
+        }
+        self.retry = None;
+        self.retry_button.set_sensitive(false);
         self.cancellation.fetch_add(1, Ordering::Relaxed);
         self.pending = None;
         self.ghost.set_text("");
@@ -148,16 +166,32 @@ impl Tab {
         };
         self.ghost.set_text("");
         if !self.session.at_prompt
+            || !self.alive
+            || self.closed
             || self.session.remote
             || s.ticket != self.cancellation.load(Ordering::Relaxed)
             || !s.binding.matches(&self.session)
         {
             return false;
         }
-        match shell::write_stage(self.dir.path(), &s.command, &s.input, &self.session.cwd) {
+        if s.input != self.session.input {
+            return false;
+        }
+        match crate::staging::stage(
+            &self.terminal,
+            self.dir.path(),
+            &self.session,
+            crate::staging::StageAttempt {
+                command: &s.command,
+                binding: &s.binding,
+                ticket: s.ticket,
+                current_ticket: self.cancellation.load(Ordering::Relaxed),
+                alive: self.alive && !self.closed,
+                passive: false,
+            },
+        ) {
             Ok(()) => {
                 // Fixed widget key sequence only. Never feed model text or Enter.
-                self.terminal.send_integration_key(self.shell.stage_key());
                 self.terminal.grab_focus();
                 true
             }
@@ -178,7 +212,10 @@ impl Tab {
             self.assistant.response("Off.", passive);
             return;
         }
-        let ticket = self.cancellation.load(Ordering::Relaxed);
+        let ticket = self.cancellation.fetch_add(1, Ordering::Relaxed) + 1;
+        self.session.request_id = ticket;
+        self.pending = None;
+        self.ghost.set_text("");
         let remember_intent = !passive || !self.session.input.is_empty();
         let memory = format!("User: {text}");
         let mut session = self.session.clone();
@@ -201,8 +238,17 @@ impl Tab {
             cancellation: self.cancellation.clone(),
             passive,
         };
+        self.last_request = (!passive).then(|| RetryOffer {
+            text: req.text.clone(),
+            binding: crate::context::ContextBinding::capture(&req.session),
+        });
+        self.retry = None;
+        self.retry_button.set_sensitive(false);
+        let category = crate::intent::IntentContract::resolve(&req);
         match requests.try_send(req) {
             Ok(()) => {
+                self.metrics.requested(&category);
+                self.queued = Some(Instant::now());
                 if remember_intent {
                     self.session.remember(memory);
                 }
@@ -225,6 +271,115 @@ impl Tab {
             }
         }
     }
+    fn complete(
+        &mut self,
+        ticket: u64,
+        passive: bool,
+        result: Result<Box<worker::Answer>, String>,
+    ) {
+        if !self.enabled
+            || !self.alive
+            || self.closed
+            || self.completed_ticket == Some(ticket)
+            || ticket != self.cancellation.load(Ordering::Relaxed)
+        {
+            return;
+        }
+        self.completed_ticket = Some(ticket);
+        self.activity.set_text("ai");
+        let elapsed = self
+            .queued
+            .take()
+            .map(|s| s.elapsed().as_millis())
+            .unwrap_or(0);
+        self.pending = None;
+        self.ghost.set_text("");
+        match result {
+            Ok(answer) => {
+                self.metrics.validation(
+                    if answer.validation.is_some() {
+                        crate::metrics::ValidatorOutcome::Verified
+                    } else {
+                        crate::metrics::ValidatorOutcome::Clarification
+                    },
+                    answer.validation.as_ref().map(|v| &v.risk),
+                );
+                self.metrics.completed(
+                    elapsed,
+                    answer.source != crate::alpha_policy::VERSION,
+                    answer.repaired,
+                    answer.validation.is_some(),
+                );
+                let mut message = answer
+                    .response
+                    .explanation
+                    .clone()
+                    .or(answer.response.question.clone())
+                    .unwrap_or_default();
+                if let Some(plan) = &answer.response.plan {
+                    message.push_str(&format!("\n\n{}", plan.join("\n")));
+                }
+                if let Some(v) = answer.validation {
+                    let Some(binding) = v.binding().cloned() else {
+                        return;
+                    };
+                    if passive || !binding.matches(&self.session) {
+                        return;
+                    }
+                    message.push_str(&format!("\n\n$ {}", v.command));
+                    if v.risk != crate::host::Risk::Normal {
+                        message.push_str(&format!("\n\n{:?}: {}", v.risk, v.reason));
+                    }
+                    self.ghost.set_text(&format!("{}  [Tab]", v.command));
+                    self.ghost.set_visible(true);
+                    self.suggested = Some(v.command.clone());
+                    self.pending = Some(Suggestion {
+                        command: v.command,
+                        input: self.session.input.clone(),
+                        ticket,
+                        binding,
+                    });
+                }
+                if !answer.source.is_empty() {
+                    message.push_str(&format!("\n\n{}", answer.source));
+                }
+                if !message.is_empty() {
+                    self.assistant.response(&message, passive);
+                    self.session.remember(format!("Assistant: {message}"));
+                }
+            }
+            Err(error) => {
+                self.metrics.validation(
+                    if error.starts_with("Unverifiable:") {
+                        crate::metrics::ValidatorOutcome::Unverifiable
+                    } else {
+                        crate::metrics::ValidatorOutcome::Rejected
+                    },
+                    None,
+                );
+                self.metrics.completed(elapsed, false, false, false);
+                if !passive && error.starts_with("Unverifiable:") {
+                    if let Some(offer) = self.last_request.take() {
+                        if offer.binding.matches(&self.session) {
+                            self.retry = Some(offer);
+                            self.retry_button.set_sensitive(true);
+                        }
+                    }
+                }
+                self.assistant.response(
+                    &format!(
+                        "{}\n\n{error}",
+                        if passive {
+                            "No verified suggestion."
+                        } else {
+                            "No command staged."
+                        }
+                    ),
+                    passive,
+                );
+            }
+        }
+    }
     fn poll(&mut self, requests: &SyncSender<Request>) {
         let events = match self.reader.poll(&self.dir.path().join("events")) {
             Ok(events) => events,
@@ -238,6 +393,11 @@ impl Tab {
             }
         };
         for event in events {
+            if self.session.prompt_generation != event.prompt_generation {
+                self.invalidate();
+                self.session.revision += 1;
+                self.session.prompt_generation = event.prompt_generation;
+            }
             if self.session.cwd != event.cwd
                 || event.kind == "request"
                 || (event.kind == "prompt" && (!self.session.at_prompt || self.session.remote))
@@ -249,6 +409,15 @@ impl Tab {
             match event.kind.as_str() {
                 "prompt" => {
                     if let Some((command, cwd, start_row, ai_origin)) = self.running.take() {
+                        if ai_origin {
+                            if event.status == 0 {
+                                self.metrics.executed_success =
+                                    self.metrics.executed_success.saturating_add(1);
+                            } else {
+                                self.metrics.executed_failure =
+                                    self.metrics.executed_failure.saturating_add(1);
+                            }
+                        }
                         let (_, row) = self.terminal.cursor_position();
                         let (text, _) = self.terminal.text_range_format(
                             vte::Format::Text,
@@ -293,8 +462,7 @@ impl Tab {
                     // Only our original local Readline prompt resumes assistance.
                     let remote = true;
                     self.session.remote = remote;
-                    let ai_origin = self.staged.take().is_some_and(|s| s == event.text)
-                        || self.suggested.as_deref() == Some(event.text.trim());
+                    let ai_origin = self.staged.take().is_some_and(|s| s == event.text);
                     self.running = Some((event.text, event.cwd, self.start_row, ai_origin));
                     self.status.set_text(if remote {
                         "running / host unknown | assistance paused"
@@ -313,7 +481,11 @@ impl Tab {
                 }
                 "input" | "staged" => {
                     if event.kind == "staged" {
+                        self.metrics.accepted = self.metrics.accepted.saturating_add(1);
                         self.staged = Some(event.text.clone());
+                    } else if self.staged.as_ref().is_some_and(|s| s != &event.text) {
+                        self.metrics.edited = self.metrics.edited.saturating_add(1);
+                        self.staged = None;
                     }
                     self.snapshot_waiting = false;
                     if self.session.input != event.text {
@@ -447,6 +619,14 @@ fn new_tab(
         .hscrollbar_policy(gtk::PolicyType::Never)
         .build();
     side.append(&side_scroll);
+    let retry_button = gtk::Button::with_label("Retry suggestion");
+    retry_button.set_sensitive(false);
+    side.append(&retry_button);
+    let export_metrics = gtk::Button::with_label("Copy session metrics");
+    export_metrics.set_tooltip_text(Some(
+        "Copy numeric aggregates only; nothing is saved automatically.",
+    ));
+    side.append(&export_metrics);
     let pane_label = label("ai");
     pane_label.add_css_class("status");
     side.append(&pane_label);
@@ -499,7 +679,48 @@ fn new_tab(
         child: None,
         alive: true,
         closed: false,
+        retry: None,
+        last_request: None,
+        retry_button: retry_button.clone(),
+        metrics: Default::default(),
+        queued: None,
+        completed_ticket: None,
     }));
+    let metrics_tab = Rc::downgrade(&tab);
+    export_metrics.connect_clicked(move |_| {
+        if let Some(tab) = metrics_tab.upgrade() {
+            if let Some(display) = gdk::Display::default() {
+                display.clipboard().set_text(&tab.borrow().metrics.export());
+            }
+        }
+    });
+    let retry_tab = Rc::downgrade(&tab);
+    let switch_tab = Rc::downgrade(&tab);
+    notebook.connect_switch_page(move |_, _, _| {
+        if let Some(tab) = switch_tab.upgrade() {
+            // Removing a tab emits switch-page synchronously while its close
+            // handler holds the borrow. That handler has already invalidated it.
+            if let Ok(mut tab) = tab.try_borrow_mut() {
+                tab.invalidate();
+            }
+        }
+    });
+    let retry_requests = requests.clone();
+    retry_button.connect_clicked(move |_| {
+        let Some(tab) = retry_tab.upgrade() else {
+            return;
+        };
+        let mut tab = tab.borrow_mut();
+        tab.retry_button.set_sensitive(false);
+        let Some(offer) = tab.retry.take() else {
+            return;
+        };
+        if tab.enabled && tab.alive && !tab.closed && offer.binding.matches(&tab.session) {
+            tab.request(offer.text, false, &retry_requests);
+            // One new inference per explicit retry; a new @ request can start over.
+            tab.last_request = None;
+        }
+    });
     let weak = Rc::downgrade(&tab);
     let book = notebook.clone();
     let page = split.clone();
@@ -921,6 +1142,7 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
             tabs.borrow_mut().retain(|tab| !tab.borrow().closed);
             while let Ok(event) = worker.events.try_recv() {
                 match event {
+                    Event::Measured { .. } => (),
                     Event::Status(status) => {
                         let text = if status.starts_with("Local AI ready") {
                             "Ready..".to_string()
@@ -953,71 +1175,7 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                         let Some(tab) = tab else {
                             continue;
                         };
-                        let mut tab = tab.borrow_mut();
-                        if !tab.enabled
-                            || !tab.alive
-                            || ticket != tab.cancellation.load(Ordering::Relaxed)
-                        {
-                            continue;
-                        }
-                        tab.activity.set_text("ai");
-                        tab.pending = None;
-                        tab.ghost.set_text("");
-                        match result {
-                            Ok(answer) => {
-                                let mut message = answer
-                                    .response
-                                    .explanation
-                                    .clone()
-                                    .or(answer.response.question.clone())
-                                    .unwrap_or_default();
-                                if let Some(plan) = &answer.response.plan {
-                                    message.push_str(&format!("\n\n{}", plan.join("\n")));
-                                }
-                                if let Some(v) = answer.validation {
-                                    let Some(binding) = v.binding().cloned() else {
-                                        continue;
-                                    };
-                                    if passive || !binding.matches(&tab.session) {
-                                        continue;
-                                    }
-                                    message.push_str(&format!("\n\n$ {}", v.command));
-                                    if v.risk != crate::host::Risk::Normal {
-                                        message
-                                            .push_str(&format!("\n\n{:?}: {}", v.risk, v.reason));
-                                    }
-                                    tab.ghost.set_text(&format!("{}  [Tab]", v.command));
-                                    tab.ghost.set_visible(true);
-                                    tab.suggested = Some(v.command.clone());
-                                    tab.pending = Some(Suggestion {
-                                        command: v.command,
-                                        input: tab.session.input.clone(),
-                                        ticket,
-                                        binding,
-                                    });
-                                }
-                                if !answer.source.is_empty() {
-                                    message.push_str(&format!("\n\n{}", answer.source));
-                                }
-                                if !message.is_empty() {
-                                    tab.assistant.response(&message, passive);
-                                    tab.session.remember(format!("Assistant: {message}"));
-                                }
-                            }
-                            Err(error) => {
-                                tab.assistant.response(
-                                    &format!(
-                                        "{}\n\n{error}",
-                                        if passive {
-                                            "No verified suggestion."
-                                        } else {
-                                            "No command staged."
-                                        }
-                                    ),
-                                    passive,
-                                );
-                            }
-                        }
+                        tab.borrow_mut().complete(ticket, passive, result);
                     }
                 }
             }
@@ -1041,6 +1199,191 @@ mod tests {
             }
             std::thread::sleep(Duration::from_millis(10));
         }
+    }
+    #[test]
+    #[ignore = "requires a graphical display; real Bash lifecycle and request races"]
+    fn lifecycle_boundary() {
+        gtk::init().unwrap();
+        let book = gtk::Notebook::new();
+        let window = gtk::Window::builder()
+            .child(&book)
+            .default_width(800)
+            .default_height(500)
+            .build();
+        let (tx, rx) = std::sync::mpsc::sync_channel(4);
+        let one = new_tab(&book, 1, tx.clone(), true, &Default::default()).unwrap();
+        window.present();
+        pump_until(|| one.borrow().session.at_prompt);
+        one.borrow().terminal.feed_child(b"@ ls\r");
+        let mut req = None;
+        pump_until(|| {
+            req = rx.try_recv().ok();
+            req.is_some()
+        });
+        let req = req.unwrap();
+        let settled = Instant::now() + Duration::from_millis(150);
+        pump_until(|| Instant::now() >= settled);
+        assert_eq!(
+            req.ticket,
+            one.borrow().cancellation.load(Ordering::Relaxed),
+            "@ request must bind to the resulting prompt"
+        );
+        assert_eq!(
+            req.session.prompt_generation,
+            one.borrow().session.prompt_generation
+        );
+        let answer = worker::process(&req, |_| {
+            Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+        })
+        .unwrap();
+        let valid = answer.validation.unwrap();
+        let good = worker::process(&req, |_| {
+            Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+        })
+        .unwrap();
+        one.borrow_mut()
+            .complete(req.ticket, false, Ok(Box::new(good)));
+        assert!(one.borrow().pending.is_some());
+        one.borrow_mut().request("ls".into(), false, &tx);
+        let blocked = rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        one.borrow_mut().complete(
+            blocked.ticket,
+            false,
+            Err("Credential access is blocked".into()),
+        );
+        assert!(
+            one.borrow().pending.is_none(),
+            "blocked replacement must clear the previous ghost"
+        );
+        assert!(
+            !one.borrow().retry_button.is_sensitive(),
+            "safety rejection cannot offer retry"
+        );
+        one.borrow_mut().request("ls".into(), false, &tx);
+        let failed = rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        one.borrow_mut()
+            .complete(failed.ticket, false, Err("Unverifiable: fixture".into()));
+        assert!(one.borrow().retry_button.is_sensitive());
+        let retry_button = one.borrow().retry_button.clone();
+        retry_button.emit_clicked();
+        let retry = rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        assert_eq!(retry.text, failed.text);
+        assert!(retry.ticket > req.ticket);
+        one.borrow_mut().complete(
+            retry.ticket,
+            false,
+            Err("Unverifiable: retry fixture".into()),
+        );
+        assert!(
+            !one.borrow().retry_button.is_sensitive(),
+            "one explicit retry only"
+        );
+        let late = worker::Answer {
+            timings: None,
+            response: crate::host::Response::parse(
+                r#"{"action":"suggest_command","command":"ls"}"#,
+            )
+            .unwrap(),
+            validation: Some(valid.clone()),
+            source: "fixture".into(),
+            elapsed_ms: 0,
+            repaired: false,
+        };
+        one.borrow_mut()
+            .complete(req.ticket, false, Ok(Box::new(late)));
+        assert!(
+            one.borrow().pending.is_none(),
+            "out-of-order result cannot restore ghost text"
+        );
+        let old_generation = one.borrow().session.prompt_generation;
+        crate::shell::write_stage_bound(
+            one.borrow().dir.path(),
+            "echo stale",
+            "",
+            &one.borrow().session.cwd,
+            old_generation,
+        )
+        .unwrap();
+        one.borrow().terminal.feed_child(b"\r");
+        pump_until(|| one.borrow().session.prompt_generation != old_generation);
+        one.borrow()
+            .terminal
+            .send_integration_key(crate::terminal_backend::IntegrationKey::Stage);
+        let settled = Instant::now() + Duration::from_millis(100);
+        pump_until(|| Instant::now() >= settled);
+        assert!(
+            one.borrow().session.input.is_empty(),
+            "Bash must reject an old stage file even with matching CWD/input"
+        );
+        assert!(!valid.binding().unwrap().matches(&one.borrow().session));
+        let two = new_tab(&book, 2, tx, true, &Default::default()).unwrap();
+        pump_until(|| two.borrow().session.at_prompt);
+        assert!(one.borrow().pending.is_none());
+        // Actual alternate-screen application plus resize; no invented OSC state.
+        two.borrow()
+            .terminal
+            .feed_child(b"printf '\\033[?1049h'; /bin/sleep 0.2; printf '\\033[?1049l'\r");
+        pump_until(|| !two.borrow().session.at_prompt);
+        assert!(two.borrow().session.remote);
+        window.set_default_size(960, 640);
+        pump_until(|| two.borrow().session.at_prompt);
+        two.borrow().terminal.feed_child(b"cd /tmp\r");
+        pump_until(|| two.borrow().session.cwd == "/tmp");
+        // Delayed worker cancellation and closing the originating tab.
+        let mut session = one.borrow().session.clone();
+        session.at_prompt = true;
+        let token = one.borrow().cancellation.clone();
+        let ticket = token.load(Ordering::Relaxed);
+        let delayed = Request {
+            session,
+            text: "ls".into(),
+            ticket,
+            cancellation: token,
+            passive: false,
+        };
+        let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        let handle = std::thread::spawn(move || {
+            worker::process(&delayed, |_| {
+                entered_tx.send(()).unwrap();
+                release_rx.recv().unwrap();
+                Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+            })
+        });
+        entered_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        {
+            let mut tab = one.borrow_mut();
+            tab.closed = true;
+            tab.alive = false;
+            tab.invalidate();
+        }
+        release_tx.send(()).unwrap();
+        assert!(handle.join().unwrap().is_err());
+        let page = book.nth_page(Some(0)).unwrap();
+        let tab_label = book
+            .tab_label(&page)
+            .unwrap()
+            .downcast::<gtk::Box>()
+            .unwrap();
+        tab_label
+            .last_child()
+            .unwrap()
+            .downcast::<gtk::Button>()
+            .unwrap()
+            .emit_clicked();
+        assert_eq!(
+            book.n_pages(),
+            1,
+            "close button must not reenter a borrowed tab"
+        );
+        two.borrow().terminal.feed_child(b"exit\r");
+        pump_until(|| !two.borrow().alive);
+        assert!(!two.borrow_mut().accept());
+        println!(
+            "{}",
+            serde_json::json!({"suite":"real-pty-lifecycle","passed":true,"stale_prompt":true,"request_binding":true,"alternate_screen":true,"resize":true,"delayed_close":true,"shell_death":true})
+        );
+        window.close();
     }
     #[test]
     #[ignore = "requires a graphical display; starts a real Bash PTY"]
@@ -1375,7 +1718,10 @@ mod tests {
             assert_ne!(tab.passive_ticket, Some(ticket));
             busy_rx.try_recv().unwrap();
             tab.request("update my system".into(), true, &busy_tx);
-            assert_eq!(tab.passive_ticket, Some(ticket));
+            assert_eq!(
+                tab.passive_ticket,
+                Some(tab.cancellation.load(Ordering::Relaxed))
+            );
         }
         // Clear the unfinished input without submitting it.
         one.borrow().terminal.feed_child(b"\x15");

@@ -4,10 +4,11 @@ See [security hardening](../../docs/terminal/13_Security_Hardening.md) for the
 authoritative current policy and new conformance/mutation/CI commands.
 
 The desktop, `--ask`, and these tests use `worker::process`: deterministic host
-hints, structured prompt, JSON contract, one shared repair, installed command
-validation, intent checks, and final risk assessment. Tests never execute model
+hints, structured prompt, JSON contract, deterministic alpha correction, audited CLI
+validation, intent/secret checks, and final risk assessment. Tests never execute model
 suggestions. Stale tickets are rejected before and after inference; GTK also
-checks the ticket before displaying or staging a suggestion.
+checks the immutable session/request/prompt/CWD/input binding at completion and
+acceptance. Bash independently rejects stale prompt generation, CWD and input.
 
 Run deterministic regressions:
 
@@ -45,18 +46,26 @@ GDK_BACKEND=x11 CAYMAN_TEST_X11_KEYS=1 cargo test --offline --lib ui::tests::des
   Input is capped at 3700 tokens in a 4096-token context, reserving generation space.
 - Compaction drops old conversation, older command history, then reduces terminal
   text and remaining history, and finally documentation. The current request,
-  current input, latest command/exit observation, and repair reason are preserved.
+  current input, latest command/exit observation, provenance and host feedback are preserved.
   If these alone exceed the budget, the request fails explicitly.
 - Context truncation is marked in the envelope. Read-only file/editor guidance
   still bypasses inference while crossing host validation.
-- Active malformed output, tone errors, and invalid commands share one repair budget.
-  Passive requests cannot repair or stage. Unknown intent fails closed.
+- Malformed output, tone errors and unverifiable commands end the first inference.
+  A separate Retry suggestion action permits one new inference with unchanged
+  context. Safety/secret rejection and passive requests never retry or stage.
+  Unknown intent and unsupported CLI coverage fail closed.
   Risk rejection is final. Cancellation and a 45-second inference deadline apply
   during prompt evaluation and output generation.
 
 Coverage includes stale results, tab isolation, redaction, hostile section text,
-context overflow, invalid schema, repair limits, wrong-host commands, unknown flags,
+context overflow, invalid schema, explicit retry limits, wrong-host commands, unknown flags,
 critical commands, and terminal output overriding stale assistant suggestions.
+
+The [alpha gate guide](../../docs/terminal/14_Alpha_Conformance.md) supplies exact
+Rust/Python conformance, recording-boundary tests, proptest, libFuzzer, mutation,
+real-PTY lifecycle and release latency commands. A native Unicode scanner crash
+found by proptest is covered by ASCII-only command preflight and retained inputs.
+The first full three-by-200 latency run failed; passing tests is not alpha approval.
 
 ## Observed v5 limitation
 

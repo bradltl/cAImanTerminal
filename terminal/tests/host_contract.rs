@@ -197,7 +197,7 @@ fn staged_data_cannot_inject_enter_or_readline_control_sequences() {
     write_stage(dir.path(), "echo 'hello world'", "ech", "/tmp").unwrap();
     assert_eq!(
         fs::read_to_string(dir.path().join("stage")).unwrap(),
-        "/tmp\nech\necho 'hello world'\n"
+        "0\n/tmp\nech\necho 'hello world'\n"
     );
 }
 #[test]
@@ -213,8 +213,10 @@ fn response_pipeline_validates_without_executing_candidate() {
         cancellation: Arc::new(AtomicU64::new(0)),
         passive: false,
     };
-    let answer = process(&req, |_| Ok(serde_json::json!({"action":"suggest_command","command":format!("touch {}",marker.display()),"explanation":"Create file"}).to_string())).unwrap();
-    assert!(answer.validation.is_some());
+    let answer = process(&req, |_| {
+        Ok(serde_json::json!({"action":"suggest_command","command":format!("touch {}",marker.display()),"explanation":"Create file"}).to_string())
+    });
+    assert!(answer.is_err(), "touch has no audited alpha CLI profile");
     assert!(!marker.exists());
 }
 #[test]
@@ -308,96 +310,65 @@ fn suggestion(command: &str) -> String {
 }
 
 #[test]
-fn pipeline_repairs_unknown_flags_once_with_installed_help() {
+fn pipeline_corrects_known_task_options_without_second_inference() {
+    let mut req = pipeline_request();
+    req.text = "list files recursively".into();
     let mut calls = 0;
-    let mut request = pipeline_request();
-    request.text = "list files recursively".into();
-    let answer = process(&request, |prompt| {
-        calls += 1;
-        if calls == 1 {
-            assert!(!prompt.contains("Source: /usr/bin/ls"));
-            Ok(suggestion("ls --recursivee"))
-        } else {
-            assert_eq!(calls, 2);
-            assert!(prompt.contains("Flag '--recursivee'"));
-            assert!(prompt.contains("Source: /usr/bin/ls --help"));
-            Ok(suggestion("ls --recursive"))
-        }
-    })
-    .unwrap();
-    assert_eq!(calls, 2);
-    assert!(answer.repaired);
-    assert_eq!(answer.validation.unwrap().command, "ls --recursive");
-}
-
-#[test]
-fn pipeline_never_retries_a_bad_repair_or_repairs_final_risk_rejection() {
-    let mut calls = 0;
-    assert!(process(&pipeline_request(), |_| {
+    let answer = process(&req, |_| {
         calls += 1;
         Ok(suggestion("ls --recursivee"))
     })
-    .is_err());
-    assert_eq!(calls, 2);
-    calls = 0;
-    let error = process(&pipeline_request(), |_| {
+    .unwrap();
+    assert_eq!(calls, 1);
+    assert!(answer.repaired);
+    assert!(answer
+        .response
+        .explanation
+        .as_deref()
+        .unwrap()
+        .starts_with("The host corrected"));
+    assert_eq!(answer.validation.unwrap().command, "ls -R");
+}
+
+#[test]
+fn pipeline_never_repairs_safety_rejection() {
+    let mut calls = 0;
+    assert!(process(&pipeline_request(), |_| {
         calls += 1;
         Ok(suggestion("cat /etc/shadow"))
     })
-    .unwrap_err();
-    assert!(error.to_string().contains("Credential"));
+    .is_err());
     assert_eq!(calls, 1);
 }
 
 #[test]
-fn repaired_candidate_crosses_risk_gate_and_new_command_help() {
+fn deterministic_correction_cannot_switch_to_model_supplied_replacement() {
     let mut calls = 0;
-    assert!(process(&pipeline_request(), |_| {
-        calls += 1;
-        Ok(suggestion(if calls == 1 {
-            "ls --recursivee"
-        } else {
-            "cat /etc/shadow"
-        }))
-    })
-    .is_err());
-    assert_eq!(calls, 2);
-    calls = 0;
     let answer = process(&pipeline_request(), |_| {
         calls += 1;
-        Ok(suggestion(if calls == 1 {
-            "ls --recursivee"
-        } else {
-            "df --human-readable"
-        }))
+        assert_eq!(calls, 1, "no automatic model repair");
+        Ok(suggestion("ls --recursivee"))
     })
     .unwrap();
-    assert!(answer.source.contains("/usr/bin/df"));
-    assert!(answer.validation.is_none(), "Changing from listing files to disk usage violates intent even after successful CLI validation");
+    assert_eq!(answer.validation.unwrap().command, "ls");
 }
 
 #[test]
-fn lookup_of_missing_binary_is_repaired_without_executing_it() {
-    use caiman_terminal::command_validation::check_host;
-    assert!(check_host("which cayman_nonexistent_binary_39281", false).is_err());
-    assert!(check_host("command -v cayman_nonexistent_binary_39281", false).is_err());
+fn missing_binary_is_unverifiable_without_an_automatic_retry() {
     let mut calls = 0;
-    let answer = process(&pipeline_request(), |_| {
+    let error = process(&pipeline_request(), |_| {
         calls += 1;
-        Ok(suggestion(if calls == 1 {
-            "which cayman_nonexistent_binary_39281"
-        } else {
-            "uname"
-        }))
+        Ok(suggestion("which cayman_nonexistent_binary_39281"))
     })
-    .unwrap();
-    assert_eq!(calls, 2);
-    assert!(answer.repaired);
+    .unwrap_err();
+    assert!(error.to_string().starts_with("Unverifiable:"));
+    assert_eq!(calls, 1);
 }
 
 #[test]
 fn repeated_failed_candidate_is_rejected_using_observed_exit_and_output() {
     let mut req = pipeline_request();
+    req.text = "ls missing".into();
     req.session.record(CommandRecord {
         command: "ls missing".into(),
         cwd: "/tmp".into(),
@@ -409,13 +380,13 @@ fn repeated_failed_candidate_is_rejected_using_observed_exit_and_output() {
     let mut calls = 0;
     let answer = process(&req, |prompt| {
         assert!(prompt.contains("No such file or directory"));
-        assert!(prompt.contains("[Exit code: 2]"));
         calls += 1;
-        Ok(suggestion(if calls == 1 { "ls missing" } else { "pwd" }))
+        Ok(suggestion("ls missing"))
     })
     .unwrap();
-    assert!(answer.repaired);
-    assert_eq!(calls, 2);
+    assert!(answer.validation.is_none());
+    assert!(answer.response.command.is_none());
+    assert_eq!(calls, 1);
 }
 
 #[test]

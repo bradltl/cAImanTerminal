@@ -107,36 +107,18 @@ fn find_glob_correction_preserves_root_and_literal_pattern() {
     );
 }
 #[test]
-fn tone_repair_is_checked_and_shares_the_one_repair_budget() {
+fn unverifiable_prose_requires_explicit_retry() {
     let mut req = request("explain the error", "");
     req.passive = false;
     let mut calls = 0;
-    let answer = worker::process(&req, |_| {
-        calls += 1;
-        Ok(if calls == 1 { r#"{"action":"clarify","question":"What did you expect to happen when I run apt update?"}"#.into() }
-            else { r#"{"action":"explain","explanation":"Exit 127 means the shell could not find the command."}"#.into() })
-    }).unwrap();
-    assert_eq!(calls, 2);
-    assert!(answer.repaired);
-    calls = 0;
     assert!(worker::process(&req, |_| {
         calls += 1;
         Ok(r#"{"action":"clarify","question":"What did you expect?"}"#.into())
     })
-    .is_err());
-    assert_eq!(calls, 2);
-    calls = 0;
-    assert!(worker::process(&req, |_| {
-        calls += 1;
-        Ok(if calls == 1 {
-            r#"{"action":"clarify","question":"What did you expect?"}"#.into()
-        } else {
-            r#"{"action":"suggest_command","command":"ls --invented","explanation":"List files"}"#
-                .into()
-        })
-    })
-    .is_err());
-    assert_eq!(calls, 2);
+    .unwrap_err()
+    .to_string()
+    .starts_with("Unverifiable:"));
+    assert_eq!(calls, 1);
     assert!(guidance::check_response(
         &Response::parse(r#"{"action":"clarify","question":"Which directory should I search?"}"#)
             .unwrap()
@@ -179,6 +161,13 @@ fn file_guidance_handles_missing_ambiguous_and_quoted_names() {
     for name in ["README.md", "README.txt"] {
         std::fs::write(dir.path().join(name), "").unwrap();
     }
+    req.text = "read README.md.tmp".into();
+    let mismatch = worker::process(&req, |_| panic!("known file guidance must not infer")).unwrap();
+    assert!(
+        mismatch.validation.is_none(),
+        "filename prefix must not select a different file"
+    );
+    req.text = "read the readme file".into();
     let answer = worker::process(&req, |_| panic!("no inference")).unwrap();
     assert!(answer.validation.is_none());
     assert!(answer.response.explanation.unwrap().contains("Which file"));

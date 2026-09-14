@@ -24,6 +24,7 @@ impl Drop for Running {
     }
 }
 pub struct ProcessModel {
+    timings: RefCell<Option<crate::metrics::GenerationTimings>>,
     path: PathBuf,
     options: crate::settings::Inference,
     running: RefCell<Option<Running>>,
@@ -32,6 +33,7 @@ impl ProcessModel {
     pub fn new(path: &Path, options: &crate::settings::Inference) -> Result<Self> {
         options.validate()?;
         Ok(Self {
+            timings: RefCell::new(None),
             path: path.canonicalize()?,
             options: options.clone(),
             running: RefCell::new(None),
@@ -158,7 +160,11 @@ impl ProcessModel {
     }
 }
 impl crate::adapters::ModelBackend for ProcessModel {
+    fn timings(&self) -> Option<crate::metrics::GenerationTimings> {
+        self.timings.borrow().clone()
+    }
     fn generate(&self, prompt: &str, cancellation: &AtomicU64, ticket: u64) -> Result<String> {
+        self.timings.borrow_mut().take();
         if prompt.len() > 32768 {
             bail!("Model prompt exceeds IPC limit");
         }
@@ -181,14 +187,22 @@ impl crate::adapters::ModelBackend for ProcessModel {
                 deadline,
             )?;
             let line = self.receive(running, cancellation, ticket, deadline)?;
-            let reply: std::result::Result<String, String> = serde_json::from_str(&line)?;
-            reply.map_err(anyhow::Error::msg)
+            let reply: ModelReply = serde_json::from_str(&line)?;
+            *self.timings.borrow_mut() = Some(reply.timings);
+            reply.result.map_err(anyhow::Error::msg)
         })();
         if result.is_err() {
             state.take();
         }
         result
     }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ModelReply {
+    result: std::result::Result<String, String>,
+    timings: crate::metrics::GenerationTimings,
 }
 
 #[cfg(feature = "inference")]
@@ -221,7 +235,14 @@ pub fn serve(path: &Path) -> Result<()> {
         let result = model
             .generate(&prompt, &AtomicU64::new(0), 0)
             .map_err(|e| e.to_string());
-        writeln!(output, "{}", serde_json::to_string(&result)?)?;
+        writeln!(
+            output,
+            "{}",
+            serde_json::to_string(&ModelReply {
+                result,
+                timings: model.timings()
+            })?
+        )?;
         output.flush()?;
     }
     Ok(())

@@ -107,6 +107,13 @@ def verify_pipeline_invariants(scenario: Scenario, system_eval: SystemEvaluation
         )
 
 
+class AlphaEvaluationPipeline:
+    """Explicit shipping profile, independent of scenario gold and Rust outputs."""
+    def evaluate(self, fixture: dict) -> dict:
+        from .alpha_policy import evaluate
+        return evaluate(fixture)
+
+
 class SystemEvaluationPipeline:
     """
     Host-owned complete cAIman Terminal inference pipeline.

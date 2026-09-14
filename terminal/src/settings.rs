@@ -41,7 +41,7 @@ impl Default for Inference {
     fn default() -> Self {
         Self {
             model_sha256: None,
-            threads: 4,
+            threads: 2,
             context_tokens: 4096,
             output_tokens: 256,
             timeout_seconds: 45,

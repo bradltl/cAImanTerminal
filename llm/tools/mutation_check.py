@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MUTANTS = [
     ("secret", "secrets.rs", r'if contains\(text\) \|\| text.contains\("\[secret redacted\]"\) \{', "if false {"),
     ("intent", "intent.rs", r'Self::ExplainOrClarify => false,', "Self::ExplainOrClarify => true,"),
-    ("passive-repair", "worker.rs", r'if request.passive \{\s*return Err\(error\);\s*\}', "if false { return Err(error); }"),
+    ("newline", "host.rs", r'c.is_control\(\)', "false"),
     ("wrapper", "host.rs", r'bail!\("Interpreter/wrapper commands need manual review and cannot be staged"\);', "// removed wrapper gate"),
 ]
 

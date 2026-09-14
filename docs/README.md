@@ -1,6 +1,7 @@
 # cAIman Terminal documentation
 
-Reviewed for the split workspace on **2026-09-10**.
+Updated for alpha hardening on **2026-09-14**. Alpha dogfooding is not approved;
+the measured latency and model-correctness gates remain closed.
 
 ## Current guides
 
@@ -11,6 +12,7 @@ Reviewed for the split workspace on **2026-09-10**.
 - [Local artifacts](../artifacts/README.md)
 - [Runtime harness](../terminal/tests/README.md)
 - [Security hardening, verification and remaining limits](terminal/13_Security_Hardening.md)
+- [Alpha-v1 policy, executable review matrix and acceptance evidence](terminal/14_Alpha_Conformance.md)
 
 ## Terminal product and implementation
 
@@ -26,6 +28,8 @@ Reviewed for the split workspace on **2026-09-10**.
 10. [User guide](terminal/10_User_and_Admin_Guides.md)
 11. [Known limitations](terminal/11_Open_Issues_Risks_and_Backlog.md)
 12. [Current status and history](terminal/12_Project_Status.md)
+13. [Security hardening](terminal/13_Security_Hardening.md)
+14. [Alpha conformance and release gates](terminal/14_Alpha_Conformance.md)
 
 ## Development guidance and archive
 

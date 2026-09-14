@@ -5,6 +5,9 @@ use std::{path::Path, sync::atomic::AtomicU64};
 
 pub trait ModelBackend {
     fn generate(&self, prompt: &str, cancellation: &AtomicU64, ticket: u64) -> Result<String>;
+    fn timings(&self) -> Option<crate::metrics::GenerationTimings> {
+        None
+    }
 }
 #[cfg(feature = "inference")]
 impl ModelBackend for crate::inference::LocalModel {

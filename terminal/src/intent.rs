@@ -3,7 +3,8 @@
 use crate::{host, worker::Request};
 use anyhow::{bail, Result};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(tag = "kind", content = "value", rename_all = "snake_case")]
 pub enum IntentContract {
     ExactCommand(String),
     Alternatives(Vec<String>),
@@ -11,8 +12,49 @@ pub enum IntentContract {
     ExplainOrClarify,
 }
 
+/// A filename substring is not an operand: README.md.tmp must not authorize
+/// reading README.md. Spaced natural-language names retain boundary checks.
+pub fn names_file(query: &str, name: &str) -> bool {
+    let words = shlex::split(query).unwrap_or_default();
+    if words.iter().any(|word| {
+        word.strip_prefix("./")
+            .unwrap_or(word)
+            .eq_ignore_ascii_case(name)
+    }) {
+        return true;
+    }
+    if !name.chars().any(char::is_whitespace) {
+        return false;
+    }
+    let query = query.to_lowercase();
+    let name = name.to_lowercase();
+    let filename_char = |c: char| c.is_alphanumeric() || matches!(c, '/' | '.' | '_' | '-');
+    query.match_indices(&name).any(|(index, _)| {
+        !query[..index]
+            .chars()
+            .next_back()
+            .is_some_and(filename_char)
+            && !query[index + name.len()..]
+                .chars()
+                .next()
+                .is_some_and(filename_char)
+    })
+}
+pub fn generic_readme(query: &str) -> bool {
+    shlex::split(query)
+        .is_some_and(|words| words.iter().any(|word| word.eq_ignore_ascii_case("readme")))
+}
+
 impl IntentContract {
     pub fn resolve(request: &Request) -> Self {
+        Self::resolve_for_host(
+            request,
+            crate::command_validation::Host::local().package_manager,
+            unsafe { libc::geteuid() } == 0,
+        )
+    }
+
+    pub fn resolve_for_host(request: &Request, manager: Option<&str>, root: bool) -> Self {
         if request.passive || request.session.remote {
             return Self::ExplainOrClarify;
         }
@@ -46,8 +88,8 @@ impl IntentContract {
             "show current directory" | "print working directory" => &["pwd"],
             "show git status" => &["git status"],
             "update my system" | "upgrade my system" => {
-                if crate::command_validation::Host::local().package_manager == Some("pacman") {
-                    if unsafe { libc::geteuid() } == 0 {
+                if manager == Some("pacman") {
+                    if root {
                         &["pacman -Syu"]
                     } else {
                         &["sudo pacman -Syu"]
@@ -83,8 +125,8 @@ impl IntentContract {
                     && commands[0][1].strip_prefix("./").is_some_and(|name| {
                         !name.contains('/')
                             && !name.is_empty()
-                            && (query.contains(&name.to_lowercase())
-                                || (query.contains("readme")
+                            && (names_file(query, name)
+                                || (generic_readme(query)
                                     && name.eq_ignore_ascii_case("README.md")))
                     })
             }),

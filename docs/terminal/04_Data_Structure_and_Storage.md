@@ -9,17 +9,18 @@
 The grammar permits one object:
 
 ```json
-{"action":"suggest_command","command":"df -h","explanation":"Show filesystem usage."}
+{"action":"suggest_command","command":"df -h"}
 ```
 
 Alternatives: `explain` with `explanation`, or `clarify` with `question`.
 The parser rejects unknown fields, execution/tool actions, missing required text,
 and commands attached to explanation-only responses. Risk is produced separately
-by the host. A plan is currently prose in `explanation`, with only one next command.
+by the host. The parser accepts optional explanation/plan prose; the compact
+generation grammar emits command-only suggestions, with only one next command.
 
 ## Session
 
-Each tab owns an ID, cwd, prompt state, input revision, remote state, pending
+Each tab owns an ID, request ID, authenticated prompt generation, cwd, prompt state, input revision, remote state, pending
 suggestion, cancellation counter, up to eight command records, and four recent
 conversation entries. A command record has command, cwd, exit code, bounded
 combined output, timestamp, and AI-origin marker. Output is limited to 2,500
@@ -32,16 +33,22 @@ printed there. Arbitrary files are not automatically read into context.
 
 ## Private shell IPC
 
-A 0700 temporary directory per tab contains `bashrc`, `events`, and transient
-`stage` data. Events contain four NUL-terminated fields: kind, exit status, cwd,
-text. Individual shell text fields are bounded to 16,384 characters; the host
-reads at most 64 KiB per poll. The event file is currently append-only during the
-session and may contain sensitive raw command text. It is removed on orderly tab
-cleanup; see the backlog for crash cleanup and bounded IPC transport work.
+A 0700 temporary directory per tab contains `bashrc`, a private `nonce`, the
+`events` FIFO, and transient `stage` data. Events contain six NUL-terminated
+fields: nonce, sequence, kind, exit status, cwd, text. The host reads at most
+8192 bytes per poll and rejects records/buffers over 4096 bytes, forged nonces,
+out-of-order sequences and explicit shell overflow. There is no append-only
+command log. Temporary files are removed on orderly cleanup; crash cleanup and
+malicious same-user access remain limitations.
 
-The staging file is atomically renamed, with expected input on the first line
-and a single printable candidate on the second. Bash compares input before
-assigning `READLINE_LINE`. It never sources or evaluates this file.
+The atomically replaced staging file contains prompt generation, expected CWD,
+expected input and one printable ASCII candidate on four lines. Original Bash
+checks all bindings before assigning `READLINE_LINE`; it never evaluates the file.
+
+The immutable host staging snapshot also binds session/request IDs, context
+generation and local prompt state. Fixed-size memory-only metric counters export
+only numeric aggregates by explicit clipboard action. No content, paths, hashes,
+free-form errors or persistent session IDs are retained in that metrics schema.
 
 ## Preferences and artifacts
 

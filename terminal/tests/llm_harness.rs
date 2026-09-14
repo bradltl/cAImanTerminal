@@ -45,30 +45,16 @@ fn context_boundaries_and_compaction_preserve_current_task() {
 }
 
 #[test]
-fn malformed_responses_share_one_repair_and_stale_results_are_rejected() {
+fn malformed_responses_do_not_retry_and_stale_results_are_rejected() {
     let req = request("show disk usage");
     let mut calls = 0;
-    let answer = worker::process(&req, |input| {
+    let error = worker::process(&req, |_| {
         calls += 1;
-        let prompt: Prompt = serde_json::from_str(input).unwrap();
-        assert_eq!(prompt.request, req.text);
-        if calls == 1 {
-            Ok("not JSON".into())
-        } else {
-            assert!(prompt.correction.is_some());
-            Ok(r#"{"action":"explain","explanation":"df shows filesystem disk usage."}"#.into())
-        }
+        Ok("not JSON".into())
     })
-    .unwrap();
-    assert!(answer.repaired);
-    assert_eq!(calls, 2);
-    calls = 0;
-    assert!(worker::process(&req, |_| {
-        calls += 1;
-        Ok("bad".into())
-    })
-    .is_err());
-    assert_eq!(calls, 2);
+    .unwrap_err();
+    assert!(error.to_string().starts_with("Unverifiable:"));
+    assert_eq!(calls, 1);
     assert!(worker::process(&req, |_| {
         req.cancellation.fetch_add(1, Ordering::Relaxed);
         Ok(r#"{"action":"explain","explanation":"stale"}"#.into())
@@ -175,5 +161,5 @@ fn observed_result_questions_cannot_stage_unrelated_commands() {
         calls += 1;
         Ok(r#"{"action":"suggest_command","command":"pacman -Ss README.md","explanation":"Package search"}"#.into())
     }).is_err());
-    assert_eq!(calls, 2);
+    assert_eq!(calls, 1);
 }

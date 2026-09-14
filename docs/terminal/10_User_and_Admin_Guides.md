@@ -20,7 +20,7 @@ The tab-bar menu contains pane visibility and AI enable/disable controls.
 Type requests at the normal prompt and press Enter:
 
 ```text
-@ find every log file larger than 500 MB
+@ show disk usage
 @ explain that error
 @ what does this flag mean?
 @ continue
@@ -56,8 +56,10 @@ work in progress. Commands without a help trigger stay quiet.
 Failed commands and completed assistant suggestions automatically trigger a
 follow-up using the command, output, exit status, and original intent. There is
 no need to type `@ explain that error`. Ctrl-C and direct SSH do not trigger local
-follow-ups. Invalid suggestions get one model repair using installed help; if
-that also fails, the assistant shows the host's reason and offers no ghost.
+follow-ups. Passive requests never stage or retry. Supported task-option
+corrections are deterministic. An unverifiable explicit response offers a separate
+Retry suggestion button for one new inference, only while the request context is
+unchanged. Safety and secret rejection never offer repair or retry.
 
 Ghost suggestions use a fixed-height strip, not cursor-aligned inline rendering.
 Tab still only stages a validated command; Enter executes it.
@@ -71,11 +73,24 @@ model download, or arbitrary model tool execution. Missing AI does not stop Bash
 This preview does not implement automatic file-content reading or full remote
 assistant integration. See the backlog before relying on it for daily workflows.
 
-Pausing after bare `find` now offers `find . -type f` with filename-search tips.
+Pausing after bare `find` offers filename-search explanations, not a staged command.
 Pausing after `find . -name` or `find . -size` explains the missing operand without
-inventing a filename or size. Unquoted filename patterns can receive a quoted
-replacement. On CachyOS, failed apt updates get a direct pacman explanation and
-a validated `sudo pacman -Syu` suggestion (without sudo when already root).
+inventing a filename or size. Under alpha-v1, `find` is outside staged CLI coverage.
+On CachyOS, failed apt updates can receive a direct pacman explanation; explicitly
+request `@ update my system` to authorize a validated update suggestion.
+
+Alpha staging is limited to audited CLI forms and printable ASCII commands.
+Unsupported commands, unknown options, and unverifiable candidates cannot stage.
+Normal manually typed Bash commands and Unicode terminal text are unaffected.
+This is an engineering preview: latency acceptance currently fails, so alpha
+dogfooding is not approved.
+
+Copy session metrics manually copies fixed numeric aggregates to the clipboard.
+It includes scenario/outcome counts, validation risk, correction count, timing
+buckets, acceptance/edit/dismissal, and reliably attributed exit-status counts.
+No commands, prompts, output, paths, free-form errors, content hashes or session
+identifiers are exported. Metrics are bounded and memory-only; there are no
+automatic files or uploads. Unknown execution attribution is not counted as known.
 
 Type `ps -` to see installed options and their meanings, or narrow the list with
 `ps -f` or `ps --so`. The same flag-help trigger applies to other commands;

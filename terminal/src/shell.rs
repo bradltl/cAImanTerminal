@@ -11,6 +11,7 @@ use std::{
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct ShellEvent {
+    pub prompt_generation: u64,
     pub kind: String,
     pub status: i32,
     pub cwd: String,
@@ -22,6 +23,7 @@ pub struct EventReader {
     pipe: File,
     nonce: String,
     sequence: u64,
+    prompt_generation: u64,
     pending: Vec<u8>,
 }
 impl EventReader {
@@ -51,6 +53,7 @@ impl EventReader {
             pipe,
             nonce,
             sequence: 0,
+            prompt_generation: 0,
             pending: Vec::new(),
         })
     }
@@ -101,7 +104,11 @@ impl EventReader {
             if !["prompt", "start", "request", "input", "staged"].contains(&fields[2].as_str()) {
                 bail!("Unknown shell event");
             }
+            if fields[2] == "prompt" {
+                self.prompt_generation = sequence;
+            }
             result.push(ShellEvent {
+                prompt_generation: self.prompt_generation,
                 kind: fields[2].clone(),
                 status: fields[3].parse()?,
                 cwd: fields[4].clone(),
@@ -124,6 +131,16 @@ pub fn write_stage(
     expected_input: &str,
     expected_cwd: &str,
 ) -> Result<()> {
+    write_stage_bound(dir, command, expected_input, expected_cwd, 0)
+}
+
+pub fn write_stage_bound(
+    dir: &Path,
+    command: &str,
+    expected_input: &str,
+    expected_cwd: &str,
+    prompt_generation: u64,
+) -> Result<()> {
     crate::host::assess_risk(command, false, "")?;
     if expected_input.contains(['\n', '\r', '\0']) {
         bail!("Cannot replace a multiline input");
@@ -132,7 +149,10 @@ pub fn write_stage(
         bail!("Cannot stage in a directory with control characters");
     }
     let mut file = tempfile::NamedTempFile::new_in(dir)?;
-    write!(file, "{expected_cwd}\n{expected_input}\n{command}\n")?;
+    write!(
+        file,
+        "{prompt_generation}\n{expected_cwd}\n{expected_input}\n{command}\n"
+    )?;
     file.persist(dir.join("stage"))?;
     Ok(())
 }

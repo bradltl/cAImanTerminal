@@ -12,6 +12,14 @@ legacy unbound replays are rejected. See the
 [hardening guide](../docs/terminal/13_Security_Hardening.md) for conformance,
 dataset overlap checks and current trust boundaries.
 
+Production comparison now selects the independent `AlphaEvaluationPipeline`
+(`alpha-v1`), separate from the broader research pipeline. From the repository
+root, run `.venv/bin/python llm/tools/conformance.py` after building the Rust app.
+It compares every deterministic gate exactly against identical fixtures, including
+corrections, unknown/skipped checks and final stageability. No pinned disagreement
+baseline remains. V2/v3 stay regression suites; v4 creation is deferred until app
+stabilization and deliberately sanitized dogfood contributions.
+
 ## Working directory and layout
 
 Run all commands in this guide from **`llm/`**.

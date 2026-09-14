@@ -26,6 +26,8 @@ pub struct CommandRecord {
 pub struct ContextBinding {
     id: u64,
     revision: u64,
+    request_id: u64,
+    prompt_generation: u64,
     cwd: String,
     input: String,
     remote: bool,
@@ -36,6 +38,8 @@ impl ContextBinding {
         Self {
             id: session.id,
             revision: session.revision,
+            request_id: session.request_id,
+            prompt_generation: session.prompt_generation,
             cwd: session.cwd.clone(),
             input: session.input.clone(),
             remote: session.remote,
@@ -54,6 +58,11 @@ pub struct Session {
     pub remote: bool,
     pub at_prompt: bool,
     pub revision: u64,
+    #[serde(default)]
+    pub request_id: u64,
+    /// Sequence of the last authenticated original-shell prompt, not OSC state.
+    #[serde(default)]
+    pub prompt_generation: u64,
     pub input: String,
     /// A bounded, redacted snapshot of this tab's live terminal, captured at request time.
     #[serde(default)]
@@ -72,6 +81,8 @@ impl Session {
             remote: false,
             at_prompt: false,
             revision: 0,
+            request_id: 0,
+            prompt_generation: 0,
             input: String::new(),
             terminal_text: String::new(),
             running_command: None,

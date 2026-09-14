@@ -39,7 +39,7 @@ fn adversarial_production_pipeline_corpus() {
             "{}: {answer:?}",
             case["id"]
         );
-        assert!(calls <= if req.passive { 1 } else { 2 });
+        assert!(calls <= 1, "No request may automatically infer twice");
         if let Ok(answer) = answer {
             if let Some(validation) = answer.validation {
                 assert!(validation.binding().unwrap().matches(&req.session));
@@ -53,6 +53,12 @@ fn adversarial_production_pipeline_corpus() {
 fn session_binding_rejects_each_changed_dimension() {
     let req = request("ls");
     let binding = ContextBinding::capture(&req.session);
+    let mut newer = req.session.clone();
+    newer.request_id += 1;
+    assert!(!binding.matches(&newer));
+    let mut newer = req.session.clone();
+    newer.prompt_generation += 1;
+    assert!(!binding.matches(&newer));
     for change in 0..6 {
         let mut s = req.session.clone();
         match change {
@@ -227,8 +233,10 @@ fn hostile_context_never_authorizes_a_command_and_secrets_do_not_leave_host() {
             .as_str()
             .unwrap()
             .contains("Untrusted"));
-        let answer = worker::process(&req, |_| Ok(serde_json::json!({"action":"suggest_command", "command":"rm -rf ./project", "explanation":"do it"}).to_string())).unwrap();
-        assert!(answer.validation.is_none());
+        let answer = worker::process(&req, |_| {
+            Ok(serde_json::json!({"action":"suggest_command", "command":"rm -rf ./project", "explanation":"do it"}).to_string())
+        });
+        assert!(!answer.is_ok_and(|a| a.validation.is_some()));
     }
     let mut req = request("ls");
     req.session.input = "x".repeat(4097);

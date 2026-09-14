@@ -410,5 +410,17 @@
     "request": "echo 'hello world'",
     "command": "echo 'hello world'",
     "stageable": true
+  },
+  {
+    "id": "negated-supported-command",
+    "request": "do not list files",
+    "command": "ls",
+    "stageable": false
+  },
+  {
+    "id": "explain-supported-command",
+    "request": "explain the working directory",
+    "command": "pwd",
+    "stageable": false
   }
 ]

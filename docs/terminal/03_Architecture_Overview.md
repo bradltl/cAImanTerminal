@@ -1,10 +1,21 @@
 # Architecture overview
 
+## Alpha-v1 amendment
+
+See [the executable boundary map](14_Alpha_Conformance.md). Host facts are data
+injected into a shared production candidate gate, not precomputed verdicts.
+An independent Python alpha profile compares the complete deterministic trace.
+Staging binds session/request/context/prompt generations, CWD, input and local
+prompt state. Only fixed integration keys cross the assistant-to-VTE adapter;
+Bash reads candidate text as data and checks its own prompt generation again.
+Native inference reports numeric load/prefill/decode timings over bounded IPC.
+Session metrics have fixed-size counters only, with manual clipboard export.
+
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
 > Model research is documented in [llm/README.md](../../llm/README.md).
 
-## First iteration
+## Current production pipeline
 
 ```mermaid
 flowchart LR
@@ -16,14 +27,14 @@ flowchart LR
   Session -->|failure or suggested command completion| Worker
   Worker --> Known[Known host facts / common find guidance]
   Known -->|command| Host
-  Known -->|no direct answer| Model[Embedded llama.cpp / resident GGUF]
+  Known -->|no direct answer| Model[Supervised llama.cpp / resident GGUF]
   Model --> JSON[Constrained response parser]
-  JSON --> Host[AST / distro / executable / CLI evidence]
-  Host -->|missing evidence or invalid| Docs[Fixed cached local help]
-  Docs --> Check[Check installed options]
-  Check -->|invalid: one repair inference| Model
+  JSON --> Host[alpha-v1 parser / CLI / intent / secrets]
+  Host -->|eligible option error| Check[Deterministic canonical correction]
+  Check -->|recheck every gate| Host
+  Host -->|unverifiable| Stop[No suggestion / explicit retry offer]
+  User -->|Retry suggestion once, unchanged context| Worker
   Host -->|valid| Risk[Deterministic risk check]
-  Check -->|valid| Risk
   Risk -->|accepted| Suggestion[Suggestion display]
   User -->|Tab| Readline[Readline staging widget]
   Suggestion -->|single printable line as data| Readline
@@ -37,17 +48,17 @@ a tab closes, or AI is disabled. No model or validator receives a PTY handle.
 
 Bash is started with a private rcfile that sources the user's `.bashrc`, selects
 Emacs Readline mode, and installs prompt/accept/snapshot/staging widgets. Prompt
-and command events use a private per-tab NUL-delimited IPC file; VTE provides
+and command events use a private per-tab authenticated NUL-delimited FIFO; VTE provides
 bounded text ranges between observed command boundaries. stdout and stderr are
 combined by the PTY. This is semantic shell integration plus VTE text extraction,
-not pixel scraping. OSC 133 prompt markers are also emitted.
+not pixel scraping. Display OSC events never establish trusted prompt state.
 
 The shell staging widget reads a candidate as data into `READLINE_LINE` only if
-the actual input still equals the expected input. The host only sends fixed
+the prompt generation, physical CWD and actual input still match. The host only sends fixed
 widget key sequences to VTE. It does not send generated command bytes or Enter.
 
-SSH launched directly from the local prompt marks the tab remote and pauses local
-assistance until the local Bash prompt returns. Remote shell integration is a
+All running or unknown foreground programs pause assistance until the original
+local Bash prompt returns, including SSH and wrappers. Remote shell integration is a
 later milestone. The core context and documentation boundaries already exclude
 local machine evidence from remote requests.
 
@@ -65,7 +76,7 @@ reorderable, and managed through keyboard shortcuts and a small tab-bar menu.
 Input reads are coalesced into one Readline snapshot after 150 ms idle. Passive
 inference is eligible after 250 ms and waits for that snapshot. The suggestion
 strip reserves one line, so suggestions do not resize VTE. A full worker mailbox
-leaves passive work eligible for retry. The small AI status indicates thinking.
+may defer passive enqueueing; it never repeats a completed inference. The small AI status indicates thinking.
 
 Every failed foreground command (except interrupts) and every completed assistant
 suggestion can trigger one observation. There is no inference loop without new
@@ -73,11 +84,11 @@ input or a new command result. Successful unrelated commands stay quiet. Origina
 intent is stored separately from the rotating conversation.
 
 Host facts include ID/ID_LIKE, native package manager, trusted executable
-availability, and required pacman privileges. Fixed help routes are cached for
-the process lifetime. Long flags and short clusters require matching evidence;
-unknown coverage fails closed. Repaired commands use their own help route and
-cross the final risk gate. There is at most one repair inference. Invalid repairs
-produce visible host feedback with no ghost command.
+availability, and required pacman privileges. The alpha manifest defines staged
+CLI coverage; cached help is quoted explanatory evidence, not authorization.
+Unknown coverage fails closed. Deterministic corrections cross every final gate.
+Unverifiable explicit responses may offer one separately requested inference;
+safety/secret rejection and passive requests never retry.
 
 An initial operation-level rule rejects pacman package/file searches for a system
 update intent. This is narrow semantic coverage, not general intent verification.
@@ -91,8 +102,8 @@ These cases require no inference. Any command still crosses installed CLI and
 risk validation before it becomes a ghost; missing filenames are not invented.
 
 Other requests continue through Qwen. Prose is checked for known dismissive
-phrases and unsupported claims of execution. A prose repair shares the same
-single-repair budget as command repair. This is a bounded response-quality check,
+phrases and unsupported claims of execution. Invalid prose ends that inference
+without an automatic repair. This is a bounded response-quality check,
 not a guarantee that every model response is accurate or well phrased.
 
 ## Flag assistance
