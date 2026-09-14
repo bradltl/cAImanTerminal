@@ -212,7 +212,7 @@ fn main() -> anyhow::Result<()> {
             println!(
                 "{}",
                 serde_json::to_string_pretty(&caiman_terminal::secrets::sanitize_json(
-                    serde_json::json!({"model": model, "expected_sha256": hash, "schema": "cayman-response-v1", "response": answer.response, "validation": answer.validation, "source": answer.source, "repaired": answer.repaired, "elapsed_ms": answer.elapsed_ms})
+                    serde_json::json!({"model": model, "expected_sha256": hash, "schema": "cayman-response-v1", "response": answer.response, "validation": answer.validation, "source": answer.source, "repaired": answer.repaired, "elapsed_ms": answer.elapsed_ms, "runtime": runtime.runtime()})
                 ))?
             );
             return Ok(());

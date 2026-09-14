@@ -1,3 +1,4 @@
+use crate::settings::{AccelerationBackend, AccelerationStatus, Inference, InferenceRuntime};
 use anyhow::{bail, Context, Result};
 use llama_cpp_2::{
     context::params::LlamaContextParams,
@@ -5,6 +6,7 @@ use llama_cpp_2::{
     llama_batch::LlamaBatch,
     model::{params::LlamaModelParams, AddBos, LlamaChatMessage, LlamaChatTemplate, LlamaModel},
     sampling::LlamaSampler,
+    LlamaBackendDeviceType,
 };
 use std::{
     num::NonZeroU32,
@@ -20,7 +22,78 @@ pub struct LocalModel {
     _verified: crate::model_file::VerifiedModel,
     backend: LlamaBackend,
     options: crate::settings::Inference,
+    runtime: InferenceRuntime,
 }
+
+fn select_acceleration(
+    options: &Inference,
+    devices: &[llama_cpp_2::LlamaBackendDevice],
+) -> (InferenceRuntime, Option<usize>) {
+    let device = options
+        .gpu_offload
+        .then(|| {
+            devices.iter().find_map(|device| {
+                // Software Vulkan renderers can be enumerated as CPU devices. They
+                // do not establish hardware acceleration and are not selected.
+                if !matches!(
+                    device.device_type,
+                    LlamaBackendDeviceType::Gpu | LlamaBackendDeviceType::IntegratedGpu
+                ) {
+                    return None;
+                }
+                let backend = match device.backend.as_str() {
+                    "Vulkan" if cfg!(feature = "gpu-vulkan") => AccelerationBackend::Vulkan,
+                    "CUDA" if cfg!(feature = "gpu-cuda") => AccelerationBackend::Cuda,
+                    _ => return None,
+                };
+                Some((backend, device.index))
+            })
+        })
+        .flatten();
+    let runtime = InferenceRuntime {
+        backend: device.map_or(AccelerationBackend::Cpu, |(backend, _)| backend),
+        status: if !options.gpu_offload {
+            AccelerationStatus::CpuDisabled
+        } else if device.is_some() {
+            AccelerationStatus::OffloadRequested
+        } else {
+            AccelerationStatus::CpuUnavailable
+        },
+        requested_gpu_layers: if options.gpu_offload {
+            options.gpu_layers
+        } else {
+            0
+        },
+    };
+    (runtime, device.map(|(_, index)| index))
+}
+
+fn load_with_fallback<T>(
+    runtime: &mut InferenceRuntime,
+    mut load: impl FnMut(bool) -> Result<T>,
+) -> Result<T> {
+    let offload = runtime.status == AccelerationStatus::OffloadRequested;
+    match load(offload) {
+        Err(_) if offload => {
+            // Only model/context preparation is retried, never generation. Both
+            // attempts use the same already-verified sealed model descriptor.
+            runtime.backend = AccelerationBackend::Cpu;
+            runtime.status = AccelerationStatus::CpuFallback;
+            load(false)
+        }
+        result => result,
+    }
+}
+
+fn context_params(options: &Inference, offload: bool) -> LlamaContextParams {
+    LlamaContextParams::default()
+        .with_n_ctx(NonZeroU32::new(options.context_tokens))
+        .with_n_threads(options.threads)
+        .with_n_threads_batch(options.threads)
+        .with_offload_kqv(offload)
+        .with_op_offload(offload)
+}
+
 impl LocalModel {
     /// Use the real tokenizer and chat template, including system instructions.
     /// Reserve 396 tokens for generation/template overhead in the 4096-token KV.
@@ -72,11 +145,27 @@ impl LocalModel {
         )?;
         let mut backend = LlamaBackend::init()?;
         backend.void_logs();
-        let model = LlamaModel::load_from_file(
-            &backend,
-            verified.path(),
-            &LlamaModelParams::default().with_n_gpu_layers(0),
-        )?;
+        let devices = if options.gpu_offload && backend.supports_gpu_offload() {
+            llama_cpp_2::list_llama_ggml_backend_devices()
+        } else {
+            Vec::new()
+        };
+        let (mut runtime, selected_device) = select_acceleration(&options, &devices);
+        let model = load_with_fallback(&mut runtime, |offload| {
+            // Explicit device selection prevents a disabled or unavailable GPU
+            // preference from accidentally inheriting native auto-placement.
+            let selected: Vec<_> = selected_device.filter(|_| offload).into_iter().collect();
+            let params = LlamaModelParams::default()
+                .with_n_gpu_layers(if offload { options.gpu_layers } else { 0 })
+                .with_devices(&selected)?;
+            let model = LlamaModel::load_from_file(&backend, verified.path(), &params)?;
+            if offload {
+                // Check the requested context allocation before the first token.
+                // Drop this empty context; requests still get independent KV.
+                let _preflight = model.new_context(&backend, context_params(&options, true))?;
+            }
+            Ok(model)
+        })?;
         Ok(Self {
             template: model
                 .chat_template(None)
@@ -89,6 +178,7 @@ impl LocalModel {
             _verified: verified,
             backend,
             options,
+            runtime,
         })
     }
     pub fn generate(&self, input: &str, cancellation: &AtomicU64, ticket: u64) -> Result<String> {
@@ -107,10 +197,10 @@ impl LocalModel {
         let prefill = Instant::now();
         // Fresh KV state prevents leakage between tabs. The expensive model
         // weights stay loaded for the lifetime of the single inference worker.
-        let params = LlamaContextParams::default()
-            .with_n_ctx(NonZeroU32::new(self.options.context_tokens))
-            .with_n_threads(self.options.threads)
-            .with_n_threads_batch(self.options.threads);
+        let params = context_params(
+            &self.options,
+            self.runtime.status == AccelerationStatus::OffloadRequested,
+        );
         let mut ctx = self.model.new_context(&self.backend, params)?;
         let mut batch = LlamaBatch::new(512, 1);
         for (chunk_index, chunk) in tokens.chunks(512).enumerate() {
@@ -180,5 +270,112 @@ impl LocalModel {
     }
     pub fn timings(&self) -> crate::metrics::GenerationTimings {
         self.timings.borrow().clone()
+    }
+    pub fn runtime(&self) -> &InferenceRuntime {
+        &self.runtime
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn device(
+        backend: &str,
+        device_type: LlamaBackendDeviceType,
+    ) -> llama_cpp_2::LlamaBackendDevice {
+        llama_cpp_2::LlamaBackendDevice {
+            index: 7,
+            name: "synthetic".into(),
+            description: "synthetic".into(),
+            backend: backend.into(),
+            memory_total: 1024,
+            memory_free: 1024,
+            device_type,
+        }
+    }
+
+    #[test]
+    fn gpu_selection_requires_opt_in_compiled_backend_and_hardware() {
+        let mut options = Inference::default();
+        let devices = [device("Vulkan", LlamaBackendDeviceType::IntegratedGpu)];
+        let (runtime, selected) = select_acceleration(&options, &devices);
+        assert_eq!(runtime.status, AccelerationStatus::CpuDisabled);
+        assert_eq!(runtime.requested_gpu_layers, 0);
+        assert_eq!(selected, None);
+        options.gpu_offload = true;
+        assert_eq!(
+            select_acceleration(&options, &devices).1,
+            cfg!(feature = "gpu-vulkan").then_some(7)
+        );
+        for devices in [
+            vec![],
+            vec![device("Vulkan", LlamaBackendDeviceType::Cpu)],
+            vec![device("unknown", LlamaBackendDeviceType::Gpu)],
+        ] {
+            let (runtime, selected) = select_acceleration(&options, &devices);
+            assert_eq!(runtime.status, AccelerationStatus::CpuUnavailable);
+            assert_eq!(selected, None);
+        }
+        for (backend, compiled) in [
+            ("Vulkan", cfg!(feature = "gpu-vulkan")),
+            ("CUDA", cfg!(feature = "gpu-cuda")),
+        ] {
+            let (runtime, selected) =
+                select_acceleration(&options, &[device(backend, LlamaBackendDeviceType::Gpu)]);
+            assert_eq!(selected, compiled.then_some(7));
+            assert_eq!(
+                runtime.status,
+                if compiled {
+                    AccelerationStatus::OffloadRequested
+                } else {
+                    AccelerationStatus::CpuUnavailable
+                }
+            );
+        }
+        let cpu = context_params(&options, false);
+        assert!(!cpu.offload_kqv());
+        assert!(!cpu.op_offload());
+        let gpu = context_params(&options, true);
+        assert!(gpu.offload_kqv());
+        assert!(gpu.op_offload());
+    }
+
+    #[test]
+    fn allocation_fallback_precedes_generation_and_never_retries_cpu_failure() {
+        let mut runtime = InferenceRuntime {
+            backend: AccelerationBackend::Vulkan,
+            status: AccelerationStatus::OffloadRequested,
+            requested_gpu_layers: 32,
+        };
+        let mut attempts = Vec::new();
+        let mut successful = runtime.clone();
+        let gpu_model = load_with_fallback(&mut successful, |offload| {
+            attempts.push(offload);
+            Ok("GPU model")
+        })
+        .unwrap();
+        assert_eq!(gpu_model, "GPU model");
+        assert_eq!(attempts, [true]);
+        assert_eq!(successful, runtime);
+        attempts.clear();
+        let model = load_with_fallback(&mut runtime, |offload| {
+            attempts.push(offload);
+            anyhow::ensure!(!offload, "synthetic GPU allocation failure");
+            Ok("CPU model")
+        })
+        .unwrap();
+        assert_eq!(model, "CPU model");
+        assert_eq!(attempts, [true, false]);
+        assert_eq!(runtime.backend, AccelerationBackend::Cpu);
+        assert_eq!(runtime.status, AccelerationStatus::CpuFallback);
+        assert!(runtime.description().contains("CPU fallback"));
+        attempts.clear();
+        let result: Result<()> = load_with_fallback(&mut runtime, |offload| {
+            attempts.push(offload);
+            bail!("synthetic CPU failure")
+        });
+        assert!(result.is_err());
+        assert_eq!(attempts, [false]);
     }
 }

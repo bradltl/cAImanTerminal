@@ -8,11 +8,17 @@ pub trait ModelBackend {
     fn timings(&self) -> Option<crate::metrics::GenerationTimings> {
         None
     }
+    fn runtime(&self) -> Option<crate::settings::InferenceRuntime> {
+        None
+    }
 }
 #[cfg(feature = "inference")]
 impl ModelBackend for crate::inference::LocalModel {
     fn generate(&self, prompt: &str, cancellation: &AtomicU64, ticket: u64) -> Result<String> {
         self.generate(prompt, cancellation, ticket)
+    }
+    fn runtime(&self) -> Option<crate::settings::InferenceRuntime> {
+        Some(self.runtime().clone())
     }
 }
 #[cfg(feature = "inference")]
