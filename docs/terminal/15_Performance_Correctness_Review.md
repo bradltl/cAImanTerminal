@@ -7,7 +7,73 @@ In particular, a closed JSON object cannot be extended by appending fields after
 its closing brace, timed IPC waits wake immediately on readiness, and truncating
 before secret detection can expose values whose labels were removed. The original
 ≤750 ms p50 / ≤1500 ms p95 release gates remain unchanged. Implementation results
-and measured comparisons will be recorded here as fixes are verified.
+and measured comparisons follow.
+
+### Verified disposition
+
+| Finding | Result |
+| --- | --- |
+| P1 / C1, JSON completion | Incremental, quote/escape-aware framing replaces full parsing after every token; the completed object must pass the production response schema. The proposed closed-object truncation mechanism was not valid JSON and was not reproduced. |
+| P2, tokenization | Generation reuses the exact prepared tokens and the verified model's cached chat template. Compaction still uses exact full tokenization: BPE deltas and monotonic token counts cannot safely be assumed. |
+| P3, model hashing | Not a warm-path cost. The supervised helper already verifies/seals once per resident model, off GTK. No mutable-file digest cache or skipped integrity check was introduced. |
+| P4 / P7 / P8, context/redaction | Tail extraction scans backward; clean redaction borrows its input, allocates only for replacements, and private-key detection no longer builds a whole compacted copy. Detection remains before truncation to preserve secret labels and PEM headers. |
+| P5, GTK polling | Worker results now wake a GLib future through an event stream; tab cleanup is event-driven. The per-tab 60 ms shell poll is retained: a readiness-only prototype reproducibly captured output before VTE rendered it, even at idle priority. That optimization was rejected and the original PTY tests pass again. |
+| P6 / C5, IPC | Existing waits already wake on readiness and supervise cancellation. Receive timeouts are clamped to the deadline; a scope guard restores stdin flags on success and failure. Socket send timeouts are not a replacement for supervised pipe writes. |
+| P9, prompt escaping | Single-buffer escaping preserves the previous bytes exactly, tested against serde plus the old delimiter escapes with generated Unicode inputs. |
+| C2, kill arguments | Signals are distinguished from PID operands. Init, nonpositive/group targets, missing operands and unparseable PIDs fail closed. `kill` remains outside alpha CLI staging coverage. |
+| C3 / C4, nested sudo | Nested sudo is rejected by risk and host checks; observed update classification recognizes repeated sudo without authorizing it. The alpha CLI manifest already blocked these candidates, so this was a lower-layer gap, not a demonstrated production escape. |
+| C6, OS release | Cached for process lifetime in diagnostic model context; remote context remains empty. |
+| C7, tabs | No change: tabs are ASCII, and the separate control-byte check intentionally rejects them in command candidates. Normal terminal typing is unaffected. |
+| C8, validation metrics | RAII measurement scopes reset and restore thread-local state, including nested measurements. Calls outside a worker measurement do not accumulate timings. |
+
+### Larger optimization: deterministic contract routing
+
+The existing narrow intent registry already knows the authorized alternatives for
+disk/memory usage, file listing, CWD, Git status and supported updates. Exact
+literal commands also need validation, not inference. Production now tries those
+candidates deterministically through the same parser, CLI, intent, secret, risk,
+previous-failure and context gates, then revalidates and binds the final result.
+It does not add commands, guess operands or use terminal evidence as authority.
+
+`process_model_candidate` and `CAYMAN_BENCH_MODEL_PATH=1` retain the actual model
+branch with all the same gates. Adversarial tests, malformed-response tests and
+live-model regression explicitly exercise this branch, so deterministic answers
+cannot hide dangerous candidates or erase model failures.
+
+### Measured results (release build, i7-1355U, two threads)
+
+The original frozen corpus and thresholds were not changed:
+
+| Route | Measured requests | p50 | p95 | Unstageable |
+| --- | ---: | ---: | ---: | ---: |
+| Production, run 1 | 200 | 0.113 ms | 0.195 ms | 0 |
+| Production, run 2 | 200 | 0.085 ms | 0.158 ms | 0 |
+| Production, run 3 | 200 | 0.102 ms | 0.258 ms | 0 |
+| Model-candidate diagnostic pilot | 20 | 3140 ms | 3434 ms | 4 |
+
+All 600 production cases used the deterministic route. Those figures measure
+enqueue through completed worker validation, not keyboard-to-render latency or
+faster inference. The production cold sample was 4.65 ms and did not load model
+weights. The model pilot used the pinned verified v2 weights and retained fresh
+per-request KV state. Median preparation was 1.15 ms, prefill 2395 ms, decode
+734 ms, with approximately 372 input and 20 output tokens—not the review's
+estimated 2K input / 200 output tokens. Some local compilation overlapped the
+pilot; it is diagnostic evidence, not a fresh release certification.
+
+The software cleanups did not recover the proposed 5–10% model failures. The
+material production improvement comes from avoiding unnecessary inference.
+The frozen supported-command corpus now passes; broader model-response quality,
+model-path latency and end-to-end desktop acceptance remain open. Do not declare
+alpha ready or relax its targets based on this deterministic corpus alone.
+See [numeric evidence](evidence/performance-review-20260914.json).
+
+### Regression coverage
+
+`performance_correctness`, `response_stream`, prompt escaping properties, metric
+scope tests and supervised-process tests cover these fixes. The exact conformance
+corpus now has 101 cases. Real Bash/VTE desktop and lifecycle tests cover the
+retained shell poll, explicit retry and physical-Enter staging boundary. The
+worker event-stream test verifies ordered main-context delivery and closure.
 
 ## Supplied review (unverified estimates and recommendations)
 
@@ -21,7 +87,7 @@ and measured comparisons will be recorded here as fixes are verified.
 ### 🔴 Critical — Directly Contributing to Latency Miss
 
 #### P1: O(N²) JSON parsing in generation loop
-**File:** [inference.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/inference.rs#L160-L163)
+**File:** [inference.rs](../../terminal/src/inference.rs)
 
 ```rust
 result.push_str(&self.model.token_to_piece(token, &mut decoder, true, None)?);
@@ -35,21 +101,21 @@ On **every decoded token**, the entire accumulated result is re-parsed as JSON. 
 **Fix:** Track brace/bracket depth with a simple counter. Only attempt a full parse when `depth == 0` and the last character is `}`.
 
 #### P2: Repeated tokenization in prompt compaction loop
-**File:** [inference.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/inference.rs#L33-L52)
+**File:** [inference.rs](../../terminal/src/inference.rs)
 
 The `prepare_prompt` loop calls `apply_chat_template` + `str_to_token` on every iteration of `compact()`. Each trim step re-tokenizes the *entire* prompt string. If 5 compactions are needed, 6 full tokenizations occur.
 
 **Fix:** Binary search on context budget, or cache the token count delta from what was removed rather than re-tokenizing everything.
 
 #### P3: Synchronous model file hashing on the worker thread
-**File:** [inference.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/inference.rs#L60-L66)
+**File:** [inference.rs](../../terminal/src/inference.rs)
 
 `VerifiedModel::open` reads and SHA-256-hashes the entire model file (potentially hundreds of MB) synchronously. This delays first-request readiness significantly.
 
 **Fix:** Hash in a background thread during startup, or cache the hash after first verification.
 
 #### P4: Redaction before truncation — processing megabytes to keep 2,500 chars
-**File:** [context.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/context.rs#L118-L125)
+**File:** [context.rs](../../terminal/src/context.rs)
 
 ```rust
 record.output = bounded(&redact(&record.output), 2500);
@@ -62,7 +128,7 @@ record.output = bounded(&redact(&record.output), 2500);
 ### 🟡 Moderate — Latency/CPU Contributors
 
 #### P5: Two 60ms polling loops on the GTK main thread
-**Files:** [ui.rs L843](file:///home/brad/repos/CaymanTerminal/terminal/src/ui.rs#L843) and [ui.rs L1138](file:///home/brad/repos/CaymanTerminal/terminal/src/ui.rs#L1138)
+**Files:** [ui.rs L843](../../terminal/src/ui.rs) and [ui.rs L1138](../../terminal/src/ui.rs)
 
 Two independent `glib::timeout_add_local(60ms)` timers continuously poll:
 1. Each tab's `poll()` method (per-tab timer)
@@ -73,14 +139,14 @@ Both fire continuously regardless of activity, consuming CPU and battery.
 **Fix:** Replace the worker event poll with `glib::MainContext::channel()` for event-driven wakeup. For the tab poll, use VTE signals to trigger state checks instead of blind polling.
 
 #### P6: IPC spin-polling with 20ms timeout loops
-**Files:** [model_process.rs L108](file:///home/brad/repos/CaymanTerminal/terminal/src/model_process.rs#L108) and [model_process.rs L146-L154](file:///home/brad/repos/CaymanTerminal/terminal/src/model_process.rs#L146-L154)
+**Files:** [model_process.rs L108](../../terminal/src/model_process.rs) and [model_process.rs L146-L154](../../terminal/src/model_process.rs)
 
 Both `receive()` and `send()` use tight loops with 20ms sleeps/polls, adding up to 20ms of wasted latency per IPC round-trip.
 
 **Fix:** Use blocking `recv()` with a deadline for receive. For send, use blocking I/O with `SO_SNDTIMEO` instead of `O_NONBLOCK` + poll loop.
 
 #### P7: `bounded()` iterates chars twice
-**File:** [context.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/context.rs#L10-L13)
+**File:** [context.rs](../../terminal/src/context.rs)
 
 ```rust
 let n = text.chars().count();        // O(N) iteration
@@ -94,14 +160,14 @@ For large inputs this is two full UTF-8 scans plus a new allocation.
 ### 🟢 Minor
 
 #### P8: `secrets::redact` always allocates 6 string clones
-**File:** [secrets.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/secrets.rs#L29-L31)
+**File:** [secrets.rs](../../terminal/src/secrets.rs)
 
 The `.fold()` calls `.into_owned()` on every pattern, even when no match occurs (and `replace_all` returns a `Cow::Borrowed`).
 
 **Fix:** Check `Cow::Borrowed` before calling `.into_owned()`, or use a single pass that only allocates when a match is found.
 
 #### P9: `prompt::render()` quote closure creates 5 intermediate strings
-**File:** [prompt.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/prompt.rs#L68-L75)
+**File:** [prompt.rs](../../terminal/src/prompt.rs)
 
 `serde_json::to_string` followed by 4 chained `.replace()` calls allocates 5 `String`s per quoted section.
 
@@ -114,7 +180,7 @@ The `.fold()` calls `.into_owned()` on every pattern, even when no match occurs 
 ### 🔴 Critical — Affects Staging Correctness
 
 #### C1: Eager JSON stop condition truncates model output
-**File:** [inference.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/inference.rs#L161-L163)
+**File:** [inference.rs](../../terminal/src/inference.rs)
 
 The JSON parse check on every token means generation aborts as soon as a *syntactically valid* partial JSON object is formed. If the model outputs `{"action": "suggest_command"}` before appending `"command": "ls -la"`, generation stops prematurely with a structurally valid but semantically incomplete response.
 
@@ -123,7 +189,7 @@ The JSON parse check on every token means generation aborts as soon as a *syntac
 **Fix:** Only terminate on brace-depth == 0 AND encountering an EOG token or the grammar's root acceptance state.
 
 #### C2: `kill` signal false positive
-**File:** [host.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/host.rs#L241)
+**File:** [host.rs](../../terminal/src/host.rs)
 
 ```rust
 if exe == "kill" && args.iter().any(|a| ["-1", "0", "1"].contains(&a.as_str())) {
@@ -134,7 +200,7 @@ if exe == "kill" && args.iter().any(|a| ["-1", "0", "1"].contains(&a.as_str())) 
 **Fix:** Parse `kill` arguments positionally: distinguish `-<signal>` flags from PID arguments. Alternatively, only block bare `kill -1` (no further PID arguments) or `kill -- -1`.
 
 #### C3: Nested `sudo` bypasses validation
-**Files:** [command_validation.rs L73-L81](file:///home/brad/repos/CaymanTerminal/terminal/src/command_validation.rs#L73-L81) and [host.rs L187-L194](file:///home/brad/repos/CaymanTerminal/terminal/src/host.rs#L187-L194)
+**Files:** [command_validation.rs L73-L81](../../terminal/src/command_validation.rs) and [host.rs L187-L194](../../terminal/src/host.rs)
 
 Both `unwrap_sudo()` and `assess_risk()` strip only one layer of `sudo`. A command like `sudo sudo rm -rf /` passes through with `exe = "sudo"`, which isn't in the `rm` blocklist.
 
@@ -145,17 +211,17 @@ Both `unwrap_sudo()` and `assess_risk()` strip only one layer of `sudo`. A comma
 ### 🟡 Moderate
 
 #### C4: `is_system_update` fails on nested sudo
-**File:** [command_validation.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/command_validation.rs#L376-L385)
+**File:** [command_validation.rs](../../terminal/src/command_validation.rs)
 
 Same single-unwrap issue: `sudo sudo apt update` → inner exe is `"sudo"` → not in the package manager list → fails to be identified as a system update → follow-up intent handling breaks.
 
 #### C5: O_NONBLOCK not restored after `send()`
-**File:** [model_process.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/model_process.rs#L128-L133)
+**File:** [model_process.rs](../../terminal/src/model_process.rs)
 
 `send()` sets `O_NONBLOCK` on the child's stdin fd but never restores the original flags. Currently safe because the fd is used exclusively for sequential writes, but fragile if the code evolves.
 
 #### C6: `model_context()` reads `/etc/os-release` on every call
-**File:** [context.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/context.rs#L135)
+**File:** [context.rs](../../terminal/src/context.rs)
 
 ```rust
 "platform": if self.remote { String::new() } else { std::fs::read_to_string("/etc/os-release").unwrap_or_default() },
@@ -166,12 +232,12 @@ This performs synchronous filesystem I/O every time `model_context()` is called.
 ### 🟢 Minor
 
 #### C7: Tab character (`\t`) rejection
-**File:** [host.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/host.rs#L131)
+**File:** [host.rs](../../terminal/src/host.rs)
 
 The ASCII-only check on L128 means tabs never reach L131 in practice (tabs are ASCII), but `c.is_control()` would reject tabs if the ASCII gate were ever relaxed. Currently a latent issue, not a live bug.
 
 #### C8: Thread-local metric leak across non-worker contexts
-**File:** [worker.rs](file:///home/brad/repos/CaymanTerminal/terminal/src/worker.rs#L469-L491)
+**File:** [worker.rs](../../terminal/src/worker.rs)
 
 `CANDIDATE_VALIDATION_MS` is a thread-local that accumulates timing. Only the worker thread resets it. If `check_candidate` is called from tests or benchmarks on other threads, the metric accumulates incorrectly.
 

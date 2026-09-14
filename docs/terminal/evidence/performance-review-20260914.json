@@ -1,0 +1,30 @@
+{
+  "policy": "alpha-v1",
+  "scope": "worker completion; production routing and model-candidate diagnostics are separate",
+  "workstation": "i7-1355U",
+  "release_build": true,
+  "threads": 2,
+  "corpus_sha256": "aca5703acfa38ee7dff426b85337bb1728a2d389e2ad14febe0519590a7b4f12",
+  "expected_model_sha256": "fdb77f88b8282cbb0e65f8362b5c11e8ea8648f1730661fb5592e5b6a633fb61",
+  "production_model_loaded": false,
+  "production_cold_ms": 4.650127,
+  "production_runs": [
+    {"samples": 200, "deterministic": 200, "p50_ms": 0.112614, "p95_ms": 0.195054, "failures": 0},
+    {"samples": 200, "deterministic": 200, "p50_ms": 0.08546, "p95_ms": 0.158134, "failures": 0},
+    {"samples": 200, "deterministic": 200, "p50_ms": 0.102142, "p95_ms": 0.257943, "failures": 0}
+  ],
+  "model_candidate_pilot": {
+    "samples": 20,
+    "p50_ms": 3140.091417,
+    "p95_ms": 3434.150332,
+    "failures": 4,
+    "median_prepare_ms": 1.1537815,
+    "median_prefill_ms": 2394.928445,
+    "median_decode_ms": 733.5542085,
+    "median_input_tokens": 371.5,
+    "median_output_tokens": 19.5,
+    "isolated_workstation": false
+  },
+  "frozen_production_corpus_passed": true,
+  "alpha_release_approved": false
+}
