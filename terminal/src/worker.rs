@@ -218,7 +218,7 @@ pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Set
                     continue;
                 }
                 let started = Instant::now();
-                CANDIDATE_VALIDATION_MS.set(0.0);
+                let validation_measurement = ValidationMeasurement::start();
                 let mut timings = None;
                 let mut inference_ms = 0.0;
                 let result = process(&request, |prompt| {
@@ -241,7 +241,7 @@ pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Set
                         worker_ms,
                         inference_round_trip_ms: inference_ms,
                         host_processing_ms: (worker_ms - inference_ms).max(0.0),
-                        candidate_validation_ms: CANDIDATE_VALIDATION_MS.get(),
+                        candidate_validation_ms: validation_measurement.finish(),
                         generation: timings,
                     },
                 });
@@ -467,7 +467,24 @@ fn process_inner(
 }
 
 thread_local! {
-    static CANDIDATE_VALIDATION_MS: std::cell::Cell<f64> = const { std::cell::Cell::new(0.0) };
+    static CANDIDATE_VALIDATION_MS: std::cell::Cell<Option<f64>> = const { std::cell::Cell::new(None) };
+}
+#[cfg(any(feature = "inference", test))]
+struct ValidationMeasurement(Option<f64>);
+#[cfg(any(feature = "inference", test))]
+impl ValidationMeasurement {
+    fn start() -> Self {
+        Self(CANDIDATE_VALIDATION_MS.replace(Some(0.0)))
+    }
+    fn finish(self) -> f64 {
+        CANDIDATE_VALIDATION_MS.get().unwrap_or(0.0)
+    }
+}
+#[cfg(any(feature = "inference", test))]
+impl Drop for ValidationMeasurement {
+    fn drop(&mut self) {
+        CANDIDATE_VALIDATION_MS.set(self.0);
+    }
 }
 /// The candidate boundary is shared by generated and host-guided responses and
 /// fixture replay. Host facts are injectable; the decision code is production code.
@@ -476,7 +493,7 @@ pub fn check_candidate(
     command: &str,
     facts: &crate::alpha_policy::HostFacts,
 ) -> crate::alpha_policy::DecisionTrace {
-    let started = Instant::now();
+    let started = CANDIDATE_VALIDATION_MS.get().map(|_| Instant::now());
     let mut trace = crate::alpha_policy::evaluate(request, command, facts);
     if request.session.journal.back().is_some_and(|r| {
         r.exit_code != 0 && Some(r.command.trim()) == trace.final_command.as_deref().map(str::trim)
@@ -485,7 +502,27 @@ pub fn check_candidate(
         trace.final_command = None;
         trace.context = "previous_failure".into();
     }
-    CANDIDATE_VALIDATION_MS
-        .set(CANDIDATE_VALIDATION_MS.get() + started.elapsed().as_secs_f64() * 1000.0);
+    if let Some(started) = started {
+        CANDIDATE_VALIDATION_MS.set(
+            CANDIDATE_VALIDATION_MS
+                .get()
+                .map(|elapsed| elapsed + started.elapsed().as_secs_f64() * 1000.0),
+        );
+    }
     trace
+}
+
+#[cfg(test)]
+mod measurement_tests {
+    use super::*;
+    #[test]
+    fn measurement_scope_resets_and_restores_even_when_nested() {
+        assert_eq!(CANDIDATE_VALIDATION_MS.get(), None);
+        let outer = ValidationMeasurement::start();
+        CANDIDATE_VALIDATION_MS.set(Some(2.0));
+        let inner = ValidationMeasurement::start();
+        assert_eq!(inner.finish(), 0.0);
+        assert_eq!(outer.finish(), 2.0);
+        assert_eq!(CANDIDATE_VALIDATION_MS.get(), None);
+    }
 }
