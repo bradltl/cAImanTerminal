@@ -1,6 +1,37 @@
 use caiman_terminal::{command_validation, host};
 
 #[test]
+fn bounded_tails_preserve_unicode_and_redact_before_cutting_labels() {
+    use caiman_terminal::context::{bounded, CommandRecord, Session};
+    for size in 0..20 {
+        let text = "aé🦀z";
+        let expected: String = text
+            .chars()
+            .skip(text.chars().count().saturating_sub(size))
+            .collect();
+        assert_eq!(bounded(text, size), expected);
+    }
+    let mut session = Session::new(1, "/tmp".into());
+    for secret in [
+        format!("password={}", "x".repeat(100_000)),
+        format!("-----BEGIN PRIVATE KEY-----\n{}", "a".repeat(100_000)),
+    ] {
+        session.record(CommandRecord {
+            command: "synthetic".into(),
+            cwd: "/tmp".into(),
+            exit_code: 0,
+            output: secret,
+            timestamp: 0,
+            ai_origin: false,
+        });
+        let output = &session.journal.back().unwrap().output;
+        assert!(output.contains("redacted") || output.contains("withheld"));
+        assert!(!output.contains("xxxxxxxx"));
+        assert!(!output.contains("aaaaaaaa"));
+    }
+}
+
+#[test]
 fn nested_sudo_never_hides_risk_but_observed_update_intent_is_retained() {
     for command in [
         "sudo sudo rm -rf /",

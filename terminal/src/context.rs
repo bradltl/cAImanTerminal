@@ -8,8 +8,19 @@ pub fn redact(text: &str) -> String {
 }
 
 pub fn bounded(text: &str, chars: usize) -> String {
-    let n = text.chars().count();
-    text.chars().skip(n.saturating_sub(chars)).collect()
+    let start = text
+        .char_indices()
+        .rev()
+        .nth(chars)
+        .map_or(0, |(i, c)| i + c.len_utf8());
+    text[start..].to_owned()
+}
+
+fn redacted_tail(text: &str, chars: usize) -> String {
+    // Detect secrets on the original text: trimming first can remove password=
+    // or a PEM header while retaining its value. Borrow clean inputs until the
+    // bounded tail is copied, instead of cloning the entire output repeatedly.
+    bounded(&crate::secrets::redact_cow(text), chars)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -107,32 +118,35 @@ impl Session {
             ]
             .contains(&intent.trim().to_lowercase().as_str())
             {
-                self.intent = Some(bounded(&redact(intent), 1000));
+                self.intent = Some(redacted_tail(intent, 1000));
             }
         }
-        self.conversation.push_back(bounded(&redact(&text), 1000));
+        self.conversation.push_back(redacted_tail(&text, 1000));
         while self.conversation.len() > 4 {
             self.conversation.pop_front();
         }
     }
     pub fn capture_terminal(&mut self, text: &str, running: Option<&str>) {
-        self.terminal_text = bounded(&redact(text.trim_end()), 3000);
-        self.running_command = running.map(|command| bounded(&redact(command), 500));
+        self.terminal_text = redacted_tail(text.trim_end(), 3000);
+        self.running_command = running.map(|command| redacted_tail(command, 500));
     }
     pub fn record(&mut self, mut record: CommandRecord) {
-        record.cwd = bounded(&redact(&record.cwd), 1024);
-        record.command = bounded(&redact(&record.command), 2048);
-        record.output = bounded(&redact(&record.output), 2500);
+        record.cwd = redacted_tail(&record.cwd, 1024);
+        record.command = redacted_tail(&record.command, 2048);
+        record.output = redacted_tail(&record.output, 2500);
         self.journal.push_back(record);
         while self.journal.len() > 8 {
             self.journal.pop_front();
         }
     }
     pub fn model_context(&self) -> serde_json::Value {
+        static OS_RELEASE: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| {
+            std::fs::read_to_string("/etc/os-release").unwrap_or_default()
+        });
         serde_json::json!({
             "session": self.id, "shell": "bash", "cwd": redact(&self.cwd),
             "environment": if self.remote { "remote; OS and installed tools unknown" } else { "local" },
-            "platform": if self.remote { String::new() } else { std::fs::read_to_string("/etc/os-release").unwrap_or_default() },
+            "platform": if self.remote { "" } else { OS_RELEASE.as_str() },
             "recent_commands": self.journal.iter().rev().take(3).collect::<Vec<_>>(),
             "conversation": self.conversation,
             "intent": self.intent,
