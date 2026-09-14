@@ -137,7 +137,8 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
     settings.validate()?;
     let corpus_text = include_str!("../resources/alpha-latency.json");
     let corpus: Vec<String> = serde_json::from_str(corpus_text)?;
-    let worker = worker::spawn(model, false, settings.clone());
+    let model_candidate = std::env::var("CAYMAN_BENCH_MODEL_PATH").as_deref() == Ok("1");
+    let worker = worker::spawn_with_routing(model, false, settings.clone(), model_candidate);
     let cold = measure(&worker, &corpus[0], 0, 0)?;
     // Deliberate benchmark opt-in simulates clicking Retry suggestion once.
     // Retries never replace first-attempt failures in the acceptance statistics.
@@ -209,7 +210,7 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
     let corpus_hash = format!("{:x}", Sha256::digest(corpus_text.as_bytes()));
     println!(
         "{}",
-        serde_json::json!({"policy":"alpha-v1","release_build":true,"corpus_sha256":corpus_hash,"model_sha256":crate::model_file::DEFAULT_SHA256,"threads":settings.inference.threads,"cold":cold,"runs":measured,"deterministic_calibration":deterministic_summary,"retry_profile_enabled":profile_retry,"retries":retries,"alpha_latency_passed":passed})
+        serde_json::json!({"policy":"alpha-v1","release_build":true,"corpus_sha256":corpus_hash,"expected_model_sha256":crate::model_file::DEFAULT_SHA256,"model_candidate_path":model_candidate,"threads":settings.inference.threads,"cold":cold,"runs":measured,"deterministic_calibration":deterministic_summary,"retry_profile_enabled":profile_retry,"retries":retries,"alpha_latency_passed":passed})
     );
     anyhow::ensure!(passed, "Alpha latency gate failed; dogfood remains blocked");
     Ok(())

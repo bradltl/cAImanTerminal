@@ -1232,12 +1232,12 @@ mod tests {
             req.session.prompt_generation,
             one.borrow().session.prompt_generation
         );
-        let answer = worker::process(&req, |_| {
+        let answer = worker::process_model_candidate(&req, |_| {
             Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
         })
         .unwrap();
         let valid = answer.validation.unwrap();
-        let good = worker::process(&req, |_| {
+        let good = worker::process_model_candidate(&req, |_| {
             Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
         })
         .unwrap();
@@ -1344,7 +1344,7 @@ mod tests {
         let (entered_tx, entered_rx) = std::sync::mpsc::channel();
         let (release_tx, release_rx) = std::sync::mpsc::channel();
         let handle = std::thread::spawn(move || {
-            worker::process(&delayed, |_| {
+            worker::process_model_candidate(&delayed, |_| {
                 entered_tx.send(()).unwrap();
                 release_rx.recv().unwrap();
                 Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
@@ -1455,8 +1455,10 @@ mod tests {
             let request = request.unwrap();
             assert_eq!(request.text, "find");
             assert_eq!(request.session.input, "find");
-            let answer =
-                worker::process(&request, |_| panic!("bare find must not need inference")).unwrap();
+            let answer = worker::process_model_candidate(&request, |_| {
+                panic!("bare find must not need inference")
+            })
+            .unwrap();
             assert!(
                 answer.validation.is_none(),
                 "Passive find advice cannot stage"
@@ -1489,8 +1491,10 @@ mod tests {
             assert_eq!(one.borrow().assistant.text(), "Ready..");
             let flag_request = flag_request.unwrap();
             assert_eq!(flag_request.text, "ps -");
-            let answer =
-                worker::process(&flag_request, |_| panic!("flag help must not infer")).unwrap();
+            let answer = worker::process_model_candidate(&flag_request, |_| {
+                panic!("flag help must not infer")
+            })
+            .unwrap();
             assert!(answer
                 .response
                 .explanation

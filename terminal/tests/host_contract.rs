@@ -2,7 +2,7 @@ use caiman_terminal::{
     context::{redact, CommandRecord, Session},
     host::{parse_commands, passive_eligible, validate, Response, Risk},
     shell::{write_stage, EventReader},
-    worker::{process, Request},
+    worker::{process_model_candidate as process, Request},
 };
 use std::{
     fs,

@@ -28,7 +28,7 @@ fn adversarial_production_pipeline_corpus() {
         req.session.remote = case["remote"].as_bool().unwrap_or(false);
         let raw = serde_json::json!({"action":"suggest_command", "command":case["command"], "explanation":"Review the command"}).to_string();
         let mut calls = 0;
-        let answer = worker::process(&req, |_| {
+        let answer = worker::process_model_candidate(&req, |_| {
             calls += 1;
             Ok(raw.clone())
         });
@@ -73,7 +73,10 @@ fn session_binding_rejects_each_changed_dimension() {
     }
     let mut unknown = request("ls");
     unknown.session.at_prompt = false;
-    assert!(worker::process(&unknown, |_| panic!("Unknown shell must not infer")).is_err());
+    assert!(
+        worker::process_model_candidate(&unknown, |_| panic!("Unknown shell must not infer"))
+            .is_err()
+    );
 }
 
 #[test]
@@ -87,7 +90,7 @@ fn malformed_and_secret_responses_never_preserve_a_command() {
         let mut req = request("ls");
         req.passive = true;
         let mut calls = 0;
-        assert!(worker::process(&req, |_| {
+        assert!(worker::process_model_candidate(&req, |_| {
             calls += 1;
             Ok(raw.into())
         })
@@ -233,14 +236,17 @@ fn hostile_context_never_authorizes_a_command_and_secrets_do_not_leave_host() {
             .as_str()
             .unwrap()
             .contains("Untrusted"));
-        let answer = worker::process(&req, |_| {
+        let answer = worker::process_model_candidate(&req, |_| {
             Ok(serde_json::json!({"action":"suggest_command", "command":"rm -rf ./project", "explanation":"do it"}).to_string())
         });
         assert!(!answer.is_ok_and(|a| a.validation.is_some()));
     }
     let mut req = request("ls");
     req.session.input = "x".repeat(4097);
-    assert!(worker::process(&req, |_| panic!("Oversized input must not infer")).is_err());
+    assert!(
+        worker::process_model_candidate(&req, |_| panic!("Oversized input must not infer"))
+            .is_err()
+    );
 }
 
 #[test]
@@ -270,8 +276,10 @@ fn observation_answers_quote_evidence_without_inference_or_staging() {
         timestamp: 0,
         ai_origin: false,
     });
-    let answer =
-        worker::process(&req, |_| panic!("Evidence questions do not need inference")).unwrap();
+    let answer = worker::process_model_candidate(&req, |_| {
+        panic!("Evidence questions do not need inference")
+    })
+    .unwrap();
     assert!(answer.validation.is_none());
     assert!(answer.response.command.is_none());
     let explanation = answer.response.explanation.unwrap();
