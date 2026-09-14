@@ -3,6 +3,10 @@
 This supersedes older claims about passive staging, SSH detection, model loading
 and benchmark certification. The app remains an engineering preview, not a
 security sandbox or a production-administration tool.
+The [alpha acceptance guide](14_Alpha_Conformance.md) contains the current
+finding-to-test matrix and failed three-by-200 latency evidence. Alpha dogfooding
+remains blocked. Commands are printable ASCII only: a property-test native Unicode
+scanner crash is contained by preflight before native parsing.
 
 ## Shipping staging authority
 
@@ -133,7 +137,11 @@ arbitrary models nor runs PR code there. Provisioning that runner and collecting
 an independent holdout remain external release prerequisites. Local test success
 is not a hosted CI run.
 
-## Local verification (2026-09-11)
+## Historical pre-alpha verification (2026-09-11)
+
+Superseded counts: the current suite has 98 exact Rust/Python comparisons and
+109 Python tests, with no disagreement baseline. See the alpha guide for current
+property, PTY, fuzz, mutation and latency results. The earlier evidence follows.
 
 Rust default-feature and headless regressions passed, as did formatting and
 Clippy with warnings denied. Python: 106 tests passed. The 60-case production

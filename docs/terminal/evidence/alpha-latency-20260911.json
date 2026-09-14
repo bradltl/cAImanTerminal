@@ -1,0 +1,16 @@
+{
+  "policy": "alpha-v1",
+  "workstation": "i7-1355U",
+  "release_build": true,
+  "threads": 2,
+  "corpus_sha256": "aca5703acfa38ee7dff426b85337bb1728a2d389e2ad14febe0519590a7b4f12",
+  "model_sha256": "fdb77f88b8282cbb0e65f8362b5c11e8ea8648f1730661fb5592e5b6a633fb61",
+  "cold_ms": 3726.042528,
+  "runs": [
+    {"samples": 200, "p50_ms": 3102.579479, "p95_ms": 3725.332895, "failures": 40},
+    {"samples": 200, "p50_ms": 3123.983729, "p95_ms": 3573.429774, "failures": 40},
+    {"samples": 200, "p50_ms": 3118.543515, "p95_ms": 3682.013576, "failures": 40}
+  ],
+  "isolated_workstation": false,
+  "alpha_latency_passed": false
+}

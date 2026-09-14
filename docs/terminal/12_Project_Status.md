@@ -1,5 +1,22 @@
 # Project status
 
+## Current alpha-hardening status — 2026-09-11
+
+Engineering preview only: **not alpha-ready**. The latest conformance suite has
+98 paired cases with zero discrepancies/exceptions. New coverage includes the
+production output adapter, request/prompt generations, real-PTY lifecycle races,
+explicit retry, quoted prompt injection, proptest and coverage-guided fuzzing.
+The verified live-model regression passes. Numeric session metrics remain local
+and memory-only. Work is delivered as focused Conventional Commits on the
+hardening branch; main is not changed.
+
+The three-by-200 target-workstation run failed: p50 3.10–3.12 s, p95 3.57–3.73 s,
+and 40/200 unstageable responses in every run. A property-test native Unicode
+scanner crash was contained by ASCII-only command preflight, with regressions.
+No pilot or failed response counts as an acceptance pass.
+See [current evidence and limits](14_Alpha_Conformance.md).
+Older results below are historical, not the current alpha acceptance state.
+
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
 > Model research is documented in [llm/README.md](../../llm/README.md).

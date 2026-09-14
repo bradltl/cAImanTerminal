@@ -1,5 +1,15 @@
 # Testing plan
 
+## Alpha release gates
+
+Use [Alpha Hardening / Harness Conformance](14_Alpha_Conformance.md) for the current
+commands, finding-to-test matrix, fixture schema and latency protocol. PRs require
+exact conformance, parser properties, guard mutants, real GTK/Bash lifecycle and
+bounded coverage-guided fuzzing. Longer fuzzing runs daily. Verified-model and
+three-by-200 latency checks run only on an explicitly dispatched trusted runner;
+they are not permission to run untrusted PR code on that runner. A green ordinary
+PR does not certify alpha performance or permit an alpha release.
+
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
 > Model research is documented in [llm/README.md](../../llm/README.md).
