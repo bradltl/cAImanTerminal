@@ -8,6 +8,8 @@ description = "A native, local-only assisted Bash terminal"
 default = ["desktop", "inference"]
 desktop = ["dep:gtk", "dep:vte", "dep:futures-channel", "dep:futures-util"]
 inference = ["dep:llama-cpp-2", "dep:encoding_rs"]
+gpu-vulkan = ["inference", "llama-cpp-2/vulkan"]
+gpu-cuda = ["inference", "llama-cpp-2/cuda"]
 
 [dependencies]
 anyhow = "1"

@@ -14,6 +14,8 @@ fn old_theme_settings_migrate_and_unknown_fields_survive() {
     let mut config = settings::load(&path).unwrap();
     assert_eq!(config.version, 1);
     assert_eq!(config.idle_ms, 250);
+    assert!(!config.inference.gpu_offload);
+    assert_eq!(config.inference.gpu_layers, 32);
     config.font_size = 14;
     settings::save(&path, &config).unwrap();
     let value: serde_json::Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
@@ -22,6 +24,45 @@ fn old_theme_settings_migrate_and_unknown_fields_survive() {
     let loaded = settings::load(&path).unwrap();
     assert_eq!(loaded.font_size, 14);
     assert_eq!(loaded.theme, "nord");
+}
+#[test]
+fn gpu_preferences_are_opt_in_bounded_and_preserve_unknown_settings() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("settings.json");
+    let mut config = Settings::default();
+    config.inference.gpu_offload = true;
+    config.inference.gpu_layers = 256;
+    config
+        .inference
+        .extra
+        .insert("future_option".into(), true.into());
+    settings::save(&path, &config).unwrap();
+    let loaded = settings::load(&path).unwrap();
+    assert!(loaded.inference.gpu_offload);
+    assert_eq!(loaded.inference.gpu_layers, 256);
+    assert_eq!(loaded.inference.extra["future_option"], true);
+    let before = std::fs::read(&path).unwrap();
+    for layers in [0, 257, u32::MAX] {
+        config.inference.gpu_layers = layers;
+        assert!(settings::save(&path, &config).is_err());
+        assert_eq!(std::fs::read(&path).unwrap(), before);
+    }
+    for layers in [1, 32, 256] {
+        config.inference.gpu_layers = layers;
+        config.validate().unwrap();
+    }
+    let runtime = settings::InferenceRuntime {
+        backend: settings::AccelerationBackend::Vulkan,
+        status: settings::AccelerationStatus::OffloadRequested,
+        requested_gpu_layers: 32,
+    };
+    let encoded = serde_json::to_string(&runtime).unwrap();
+    assert_eq!(
+        serde_json::from_str::<settings::InferenceRuntime>(&encoded).unwrap(),
+        runtime
+    );
+    assert!(runtime.description().contains("requested"));
+    assert!(runtime.description().contains("unmeasured"));
 }
 #[test]
 fn invalid_settings_cannot_replace_working_configuration() {

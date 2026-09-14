@@ -31,6 +31,8 @@ pub struct Settings {
 pub struct Inference {
     pub model_sha256: Option<String>,
     pub threads: i32,
+    pub gpu_offload: bool,
+    pub gpu_layers: u32,
     pub context_tokens: u32,
     pub output_tokens: usize,
     pub timeout_seconds: u64,
@@ -42,6 +44,8 @@ impl Default for Inference {
         Self {
             model_sha256: None,
             threads: 2,
+            gpu_offload: false,
+            gpu_layers: 32,
             context_tokens: 4096,
             output_tokens: 256,
             timeout_seconds: 45,
@@ -120,6 +124,9 @@ impl Inference {
         if !(1..=64).contains(&self.threads) {
             bail!("Inference threads must be 1–64");
         }
+        if !(1..=256).contains(&self.gpu_layers) {
+            bail!("Requested GPU layers must be 1–256; disable GPU offload to use CPU only");
+        }
         if !(2048..=32768).contains(&self.context_tokens) {
             bail!("Context size must be 2048–32768 tokens");
         }
@@ -132,6 +139,63 @@ impl Inference {
             bail!("Inference timeout must be 5–300 seconds");
         }
         Ok(())
+    }
+}
+
+/// Content-free runtime selection. Requested layers are not proof of actual
+/// tensor placement: the pinned backend does not expose that measurement.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct InferenceRuntime {
+    pub backend: AccelerationBackend,
+    pub status: AccelerationStatus,
+    pub requested_gpu_layers: u32,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AccelerationBackend {
+    Cpu,
+    Vulkan,
+    Cuda,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AccelerationStatus {
+    CpuDisabled,
+    CpuUnavailable,
+    OffloadRequested,
+    CpuFallback,
+}
+impl InferenceRuntime {
+    pub fn description(&self) -> String {
+        match self.status {
+            AccelerationStatus::CpuDisabled => "CPU (GPU offload disabled)".into(),
+            AccelerationStatus::CpuUnavailable => {
+                "CPU (requested GPU backend/device unavailable)".into()
+            }
+            AccelerationStatus::CpuFallback => {
+                "CPU fallback (GPU model or context allocation failed)".into()
+            }
+            AccelerationStatus::OffloadRequested => format!(
+                "{} offload requested ({} layers; actual placement unmeasured)",
+                match self.backend {
+                    AccelerationBackend::Vulkan => "Vulkan",
+                    AccelerationBackend::Cuda => "CUDA",
+                    AccelerationBackend::Cpu => "No GPU",
+                },
+                self.requested_gpu_layers
+            ),
+        }
+    }
+}
+/// Build capability only; device detection remains inside the supervised helper
+/// so opening Settings never initializes drivers or loads a model on GTK.
+pub fn compiled_gpu_backends() -> &'static str {
+    match (cfg!(feature = "gpu-vulkan"), cfg!(feature = "gpu-cuda")) {
+        (true, true) => "Vulkan and CUDA",
+        (true, false) => "Vulkan",
+        (false, true) => "CUDA",
+        (false, false) => "none (CPU-only build)",
     }
 }
 pub fn path() -> Result<PathBuf> {
