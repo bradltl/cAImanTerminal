@@ -184,6 +184,17 @@ pub fn build_prompt(request: &Request, docs: &str) -> String {
 /// Bounded mailbox and one worker keep inference off GTK's main loop and avoid
 /// loading one model per tab. No runtime implementation has a shell handle.
 pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Settings) -> Worker {
+    spawn_with_routing(model_path, disabled, settings, false)
+}
+
+/// Diagnostic model-candidate routing skips only the canonical fast path. Both
+/// routes use the same model parser, host guidance, final gates and bindings.
+pub fn spawn_with_routing(
+    model_path: PathBuf,
+    disabled: bool,
+    settings: crate::settings::Settings,
+    model_candidate: bool,
+) -> Worker {
     let (tx, rx) = mpsc::sync_channel::<Request>(1);
     let (event_tx, events) = mpsc::channel();
     std::thread::spawn(move || {
@@ -218,16 +229,20 @@ pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Set
                     continue;
                 }
                 let started = Instant::now();
-                CANDIDATE_VALIDATION_MS.set(0.0);
+                let validation_measurement = ValidationMeasurement::start();
                 let mut timings = None;
                 let mut inference_ms = 0.0;
-                let result = process(&request, |prompt| {
-                    let inference_started = Instant::now();
-                    let result = model.generate(prompt, &request.cancellation, request.ticket);
-                    inference_ms += inference_started.elapsed().as_secs_f64() * 1000.0;
-                    timings = model.timings();
-                    result
-                })
+                let result = process_routed(
+                    &request,
+                    |prompt| {
+                        let inference_started = Instant::now();
+                        let result = model.generate(prompt, &request.cancellation, request.ticket);
+                        inference_ms += inference_started.elapsed().as_secs_f64() * 1000.0;
+                        timings = model.timings();
+                        result
+                    },
+                    model_candidate,
+                )
                 .map(|mut answer| {
                     answer.timings = timings.clone();
                     answer
@@ -241,7 +256,7 @@ pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Set
                         worker_ms,
                         inference_round_trip_ms: inference_ms,
                         host_processing_ms: (worker_ms - inference_ms).max(0.0),
-                        candidate_validation_ms: CANDIDATE_VALIDATION_MS.get(),
+                        candidate_validation_ms: validation_measurement.finish(),
                         generation: timings,
                     },
                 });
@@ -255,7 +270,7 @@ pub fn spawn(model_path: PathBuf, disabled: bool, settings: crate::settings::Set
         }
         #[cfg(not(feature = "inference"))]
         {
-            let _ = (model_path, rx, settings);
+            let _ = (model_path, rx, settings, model_candidate);
             let _ = event_tx.send(Event::Status(
                 "AI unavailable · build with inference feature".into(),
             ));
@@ -272,6 +287,24 @@ pub fn process(
     request: &Request,
     generate: impl FnMut(&str) -> anyhow::Result<String>,
 ) -> anyhow::Result<Answer> {
+    process_routed(request, generate, false)
+}
+
+/// Exercise generated candidates without the canonical fast path. Used by
+/// diagnostics and adversarial tests; this is the production model branch,
+/// not an alternate validator. Never changes policy or permits an extra inference.
+pub fn process_model_candidate(
+    request: &Request,
+    generate: impl FnMut(&str) -> anyhow::Result<String>,
+) -> anyhow::Result<Answer> {
+    process_routed(request, generate, true)
+}
+
+fn process_routed(
+    request: &Request,
+    generate: impl FnMut(&str) -> anyhow::Result<String>,
+    model_candidate: bool,
+) -> anyhow::Result<Answer> {
     if request.text.len() > 4096
         || request.session.input.len() > 4096
         || request.session.cwd.len() > 4096
@@ -281,8 +314,8 @@ pub fn process(
     if request.session.remote || !request.session.at_prompt {
         anyhow::bail!("Assistance requires a confirmed local shell prompt");
     }
-    let mut answer =
-        process_inner(request, generate).map_err(|e| anyhow::anyhow!(redact(&e.to_string())))?;
+    let mut answer = process_inner(request, generate, model_candidate)
+        .map_err(|e| anyhow::anyhow!(redact(&e.to_string())))?;
     if let Some(command) = answer.response.command.as_deref() {
         let trace = check_candidate(request, command, &crate::alpha_policy::HostFacts::local());
         if let Some(command) = trace.final_command {
@@ -341,6 +374,7 @@ pub fn process(
 fn process_inner(
     request: &Request,
     mut generate: impl FnMut(&str) -> anyhow::Result<String>,
+    model_candidate: bool,
 ) -> anyhow::Result<Answer> {
     let ensure_current = || -> anyhow::Result<()> {
         if request
@@ -353,6 +387,11 @@ fn process_inner(
         Ok(())
     };
     ensure_current()?;
+    if !model_candidate {
+        if let Some(answer) = canonical_answer(request) {
+            return Ok(answer);
+        }
+    }
     // Observation questions can be answered from recorded evidence without
     // asking a model to reconstruct facts. Output stays quoted, never authority.
     let query = request
@@ -466,8 +505,52 @@ fn process_inner(
     })
 }
 
+fn canonical_answer(request: &Request) -> Option<Answer> {
+    use crate::intent::IntentContract;
+    let candidates = match IntentContract::resolve(request) {
+        IntentContract::Alternatives(commands) => commands,
+        IntentContract::ExactCommand(command) => vec![command],
+        _ => return None,
+    };
+    let facts = crate::alpha_policy::HostFacts::local();
+    let command = candidates
+        .into_iter()
+        .find_map(|candidate| check_candidate(request, &candidate, &facts).final_command)?;
+    Some(Answer {
+        timings: None,
+        response: Response {
+            action: "suggest_command".into(),
+            command: Some(command),
+            explanation: None,
+            question: None,
+            plan: None,
+        },
+        validation: None, // The shared outer pipeline rechecks and binds it.
+        source: "Host authorized command".into(),
+        elapsed_ms: 0,
+        repaired: false,
+    })
+}
+
 thread_local! {
-    static CANDIDATE_VALIDATION_MS: std::cell::Cell<f64> = const { std::cell::Cell::new(0.0) };
+    static CANDIDATE_VALIDATION_MS: std::cell::Cell<Option<f64>> = const { std::cell::Cell::new(None) };
+}
+#[cfg(any(feature = "inference", test))]
+struct ValidationMeasurement(Option<f64>);
+#[cfg(any(feature = "inference", test))]
+impl ValidationMeasurement {
+    fn start() -> Self {
+        Self(CANDIDATE_VALIDATION_MS.replace(Some(0.0)))
+    }
+    fn finish(self) -> f64 {
+        CANDIDATE_VALIDATION_MS.get().unwrap_or(0.0)
+    }
+}
+#[cfg(any(feature = "inference", test))]
+impl Drop for ValidationMeasurement {
+    fn drop(&mut self) {
+        CANDIDATE_VALIDATION_MS.set(self.0);
+    }
 }
 /// The candidate boundary is shared by generated and host-guided responses and
 /// fixture replay. Host facts are injectable; the decision code is production code.
@@ -476,7 +559,7 @@ pub fn check_candidate(
     command: &str,
     facts: &crate::alpha_policy::HostFacts,
 ) -> crate::alpha_policy::DecisionTrace {
-    let started = Instant::now();
+    let started = CANDIDATE_VALIDATION_MS.get().map(|_| Instant::now());
     let mut trace = crate::alpha_policy::evaluate(request, command, facts);
     if request.session.journal.back().is_some_and(|r| {
         r.exit_code != 0 && Some(r.command.trim()) == trace.final_command.as_deref().map(str::trim)
@@ -485,7 +568,27 @@ pub fn check_candidate(
         trace.final_command = None;
         trace.context = "previous_failure".into();
     }
-    CANDIDATE_VALIDATION_MS
-        .set(CANDIDATE_VALIDATION_MS.get() + started.elapsed().as_secs_f64() * 1000.0);
+    if let Some(started) = started {
+        CANDIDATE_VALIDATION_MS.set(
+            CANDIDATE_VALIDATION_MS
+                .get()
+                .map(|elapsed| elapsed + started.elapsed().as_secs_f64() * 1000.0),
+        );
+    }
     trace
+}
+
+#[cfg(test)]
+mod measurement_tests {
+    use super::*;
+    #[test]
+    fn measurement_scope_resets_and_restores_even_when_nested() {
+        assert_eq!(CANDIDATE_VALIDATION_MS.get(), None);
+        let outer = ValidationMeasurement::start();
+        CANDIDATE_VALIDATION_MS.set(Some(2.0));
+        let inner = ValidationMeasurement::start();
+        assert_eq!(inner.finish(), 0.0);
+        assert_eq!(outer.finish(), 2.0);
+        assert_eq!(CANDIDATE_VALIDATION_MS.get(), None);
+    }
 }

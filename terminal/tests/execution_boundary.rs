@@ -61,7 +61,7 @@ fn production_stage_boundary_records_only_fixed_keys_and_rejects_every_stale_dim
         cancellation: Arc::new(AtomicU64::new(0)),
         passive: false,
     };
-    let answer = worker::process(&request, |_| {
+    let answer = worker::process_model_candidate(&request, |_| {
         Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
     })
     .unwrap();

@@ -204,7 +204,8 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
         if [
             "bash", "sh", "zsh", "fish", "python", "python3", "perl", "ruby", "node", "awk",
             "gawk", "mawk", "sed", "eval", "exec", "env", "xargs", "watch", "nohup", "timeout",
-            "busybox", "doas", "su", "pkexec", "ssh", "mosh", "tmux", "screen", "source", ".",
+            "busybox", "sudo", "doas", "su", "pkexec", "ssh", "mosh", "tmux", "screen", "source",
+            ".",
         ]
         .contains(&exe)
         {
@@ -238,8 +239,8 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
         {
             bail!("Mutation of protected system locations cannot be staged");
         }
-        if exe == "kill" && args.iter().any(|a| ["1", "0", "-1"].contains(&a.as_str())) {
-            bail!("Signalling init or an entire process group cannot be staged");
+        if exe == "kill" {
+            check_kill_targets(args)?;
         }
         if exe == "mysql"
             && args
@@ -367,6 +368,36 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
         risk,
         reason: reasons.join(". "),
     })
+}
+
+fn check_kill_targets(args: &[String]) -> Result<()> {
+    let mut targets = args;
+    if let Some(flag) = targets.first() {
+        if ["-s", "-n"].contains(&flag.as_str()) {
+            targets = targets
+                .get(2..)
+                .ok_or_else(|| anyhow!("Missing kill signal"))?;
+        } else if flag != "--" && flag.starts_with('-') {
+            // A leading signal such as -1 is not a PID. Unknown option shapes
+            // still fail closed; alpha CLI coverage does not include kill.
+            let signal = &flag[1..];
+            if signal.is_empty() || !signal.chars().all(|c| c.is_ascii_alphanumeric()) {
+                bail!("Unsupported kill signal option");
+            }
+            targets = &targets[1..];
+        }
+    }
+    if targets.first().is_some_and(|s| s == "--") {
+        targets = &targets[1..];
+    }
+    if targets.is_empty()
+        || targets
+            .iter()
+            .any(|s| s.parse::<i64>().map_or(true, |pid| pid <= 1))
+    {
+        bail!("Only explicit individual process IDs above 1 are supported");
+    }
+    Ok(())
 }
 
 fn protected_target(arg: &str) -> bool {

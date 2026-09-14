@@ -64,7 +64,7 @@ fn every_evidence_source_is_quoted_and_cannot_create_template_roles() {
                 break;
             }
         }
-        let result = worker::process(&req, |_| {
+        let result = worker::process_model_candidate(&req, |_| {
             Ok(r#"{"action":"suggest_command","command":"sh -c id"}"#.into())
         });
         assert!(result.is_err());

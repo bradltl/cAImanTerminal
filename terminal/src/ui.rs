@@ -881,6 +881,22 @@ fn install_icon() {
     gtk::Window::set_default_icon_name("io.cayman.Terminal");
 }
 
+fn worker_event_stream(
+    events: std::sync::mpsc::Receiver<Event>,
+) -> futures_channel::mpsc::UnboundedReceiver<Event> {
+    let (send, receive) = futures_channel::mpsc::unbounded();
+    // This bridge sleeps in recv, not a GTK timer. Dropping the UI stream or
+    // worker channel terminates forwarding; no GTK object enters this thread.
+    std::thread::spawn(move || {
+        for event in events {
+            if send.unbounded_send(event).is_err() {
+                break;
+            }
+        }
+    });
+    receive
+}
+
 pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
     let app = gtk::Application::builder()
         .application_id("io.cayman.Terminal")
@@ -1135,12 +1151,20 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
         window.add_action(&settings_action);
         app.set_accels_for_action("win.settings", &["<Control>comma"]);
         let weak_window = window.downgrade();
-        glib::timeout_add_local(Duration::from_millis(60), move || {
-            if weak_window.upgrade().is_none() {
-                return glib::ControlFlow::Break;
-            }
-            tabs.borrow_mut().retain(|tab| !tab.borrow().closed);
-            while let Ok(event) = worker.events.try_recv() {
+        let cleanup_tabs = tabs.clone();
+        notebook.connect_page_removed(move |_, _, _| {
+            let tabs = cleanup_tabs.clone();
+            // Defer until the close callback releases its mutable tab borrow.
+            glib::idle_add_local_once(move || tabs.borrow_mut().retain(|tab| !tab.borrow().closed));
+        });
+        let mut events = worker_event_stream(worker.events);
+        let delivery = glib::MainContext::default().spawn_local(async move {
+            use futures_util::StreamExt;
+            while let Some(event) = events.next().await {
+                if weak_window.upgrade().is_none() {
+                    break;
+                }
+                tabs.borrow_mut().retain(|tab| !tab.borrow().closed);
                 match event {
                     Event::Measured { .. } => (),
                     Event::Status(status) => {
@@ -1179,8 +1203,8 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
                     }
                 }
             }
-            glib::ControlFlow::Continue
         });
+        window.connect_destroy(move |_| delivery.abort());
         window.present();
     });
     app.run_with_args::<&str>(&[]);
@@ -1189,6 +1213,23 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn worker_events_wake_the_main_context_and_preserve_order() {
+        use futures_util::StreamExt;
+        let (send, receive) = std::sync::mpsc::channel();
+        let mut events = worker_event_stream(receive);
+        std::thread::spawn(move || {
+            for index in 0..32 {
+                send.send(Event::Status(index.to_string())).unwrap();
+            }
+        });
+        glib::MainContext::new().block_on(async move {
+            for index in 0..32 {
+                assert!(matches!(events.next().await, Some(Event::Status(text)) if text == index.to_string()));
+            }
+            assert!(events.next().await.is_none());
+        });
+    }
     #[track_caller]
     fn pump_until(mut condition: impl FnMut() -> bool) {
         let deadline = Instant::now() + Duration::from_secs(8);
@@ -1232,12 +1273,12 @@ mod tests {
             req.session.prompt_generation,
             one.borrow().session.prompt_generation
         );
-        let answer = worker::process(&req, |_| {
+        let answer = worker::process_model_candidate(&req, |_| {
             Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
         })
         .unwrap();
         let valid = answer.validation.unwrap();
-        let good = worker::process(&req, |_| {
+        let good = worker::process_model_candidate(&req, |_| {
             Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
         })
         .unwrap();
@@ -1344,7 +1385,7 @@ mod tests {
         let (entered_tx, entered_rx) = std::sync::mpsc::channel();
         let (release_tx, release_rx) = std::sync::mpsc::channel();
         let handle = std::thread::spawn(move || {
-            worker::process(&delayed, |_| {
+            worker::process_model_candidate(&delayed, |_| {
                 entered_tx.send(()).unwrap();
                 release_rx.recv().unwrap();
                 Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
@@ -1455,8 +1496,10 @@ mod tests {
             let request = request.unwrap();
             assert_eq!(request.text, "find");
             assert_eq!(request.session.input, "find");
-            let answer =
-                worker::process(&request, |_| panic!("bare find must not need inference")).unwrap();
+            let answer = worker::process_model_candidate(&request, |_| {
+                panic!("bare find must not need inference")
+            })
+            .unwrap();
             assert!(
                 answer.validation.is_none(),
                 "Passive find advice cannot stage"
@@ -1489,8 +1532,10 @@ mod tests {
             assert_eq!(one.borrow().assistant.text(), "Ready..");
             let flag_request = flag_request.unwrap();
             assert_eq!(flag_request.text, "ps -");
-            let answer =
-                worker::process(&flag_request, |_| panic!("flag help must not infer")).unwrap();
+            let answer = worker::process_model_candidate(&flag_request, |_| {
+                panic!("flag help must not infer")
+            })
+            .unwrap();
             assert!(answer
                 .response
                 .explanation

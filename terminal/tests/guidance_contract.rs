@@ -78,7 +78,7 @@ fn bare_find_and_missing_operands_receive_idle_guidance_without_inference() {
         "find . -type",
     ] {
         assert!(host::passive_eligible(text, true, false));
-        let answer = worker::process(&request(text, text), |_| {
+        let answer = worker::process_model_candidate(&request(text, text), |_| {
             panic!("known find input must not invoke Qwen")
         })
         .unwrap();
@@ -94,13 +94,15 @@ fn bare_find_and_missing_operands_receive_idle_guidance_without_inference() {
 #[test]
 fn find_glob_correction_preserves_root_and_literal_pattern() {
     let text = "find /tmp -name *.log";
-    let answer = worker::process(&request(text, text), |_| panic!("no inference needed")).unwrap();
+    let answer =
+        worker::process_model_candidate(&request(text, text), |_| panic!("no inference needed"))
+            .unwrap();
     assert!(answer.validation.is_none());
     assert!(answer.response.command.is_none());
     assert!(answer.response.explanation.unwrap().contains("Quote"));
     let safe = "find /tmp -name '*.log'";
     assert!(
-        worker::process(&request(safe, safe), |_| panic!("no inference needed"))
+        worker::process_model_candidate(&request(safe, safe), |_| panic!("no inference needed"))
             .unwrap()
             .validation
             .is_none()
@@ -111,7 +113,7 @@ fn unverifiable_prose_requires_explicit_retry() {
     let mut req = request("explain the error", "");
     req.passive = false;
     let mut calls = 0;
-    assert!(worker::process(&req, |_| {
+    assert!(worker::process_model_candidate(&req, |_| {
         calls += 1;
         Ok(r#"{"action":"clarify","question":"What did you expect?"}"#.into())
     })
@@ -137,7 +139,8 @@ fn reading_readme_uses_current_directory_not_old_package_advice() {
     req.session.remember("User: update my system".into());
     req.session.remember("Assistant: pacman -Si READ".into());
     failed(&mut req, "apt upgrade");
-    let answer = worker::process(&req, |_| panic!("file viewing must not infer")).unwrap();
+    let answer =
+        worker::process_model_candidate(&req, |_| panic!("file viewing must not infer")).unwrap();
     let command = answer.validation.unwrap().command;
     let words = host::parse_commands(&command).unwrap();
     assert!(["less", "cat"].contains(&words[0][0].as_str()));
@@ -151,7 +154,7 @@ fn file_guidance_handles_missing_ambiguous_and_quoted_names() {
     let mut req = request("read the readme file", "");
     req.passive = false;
     req.session.cwd = dir.path().display().to_string();
-    let answer = worker::process(&req, |_| panic!("no inference")).unwrap();
+    let answer = worker::process_model_candidate(&req, |_| panic!("no inference")).unwrap();
     assert!(answer.validation.is_none());
     assert!(answer
         .response
@@ -162,19 +165,21 @@ fn file_guidance_handles_missing_ambiguous_and_quoted_names() {
         std::fs::write(dir.path().join(name), "").unwrap();
     }
     req.text = "read README.md.tmp".into();
-    let mismatch = worker::process(&req, |_| panic!("known file guidance must not infer")).unwrap();
+    let mismatch =
+        worker::process_model_candidate(&req, |_| panic!("known file guidance must not infer"))
+            .unwrap();
     assert!(
         mismatch.validation.is_none(),
         "filename prefix must not select a different file"
     );
     req.text = "read the readme file".into();
-    let answer = worker::process(&req, |_| panic!("no inference")).unwrap();
+    let answer = worker::process_model_candidate(&req, |_| panic!("no inference")).unwrap();
     assert!(answer.validation.is_none());
     assert!(answer.response.explanation.unwrap().contains("Which file"));
     let name = "notes 'draft'.md";
     std::fs::write(dir.path().join(name), "").unwrap();
     req.text = format!("show the contents of {name}");
-    let answer = worker::process(&req, |_| panic!("no inference")).unwrap();
+    let answer = worker::process_model_candidate(&req, |_| panic!("no inference")).unwrap();
     assert_eq!(
         host::parse_commands(&answer.validation.unwrap().command).unwrap()[0][1],
         format!("./{name}")
@@ -186,7 +191,9 @@ fn editor_question_gives_editor_guidance_not_package_commands() {
     let mut req = request("what is the terminal text file editor", "");
     req.passive = false;
     req.session.remember("Assistant: pacman -Si READ".into());
-    let answer = worker::process(&req, |_| panic!("editor discovery must not infer")).unwrap();
+    let answer =
+        worker::process_model_candidate(&req, |_| panic!("editor discovery must not infer"))
+            .unwrap();
     assert!(answer.response.explanation.is_some());
     if let Some(v) = answer.validation {
         assert!(["nano", "micro", "nvim", "vim", "vi"].contains(&v.command.as_str()));
@@ -218,7 +225,7 @@ fn a_new_question_overrides_remembered_intent_in_model_validation() {
     req.session.remote = true;
     req.session.remember("User: update my system".into());
     let mut calls = 0;
-    let answer = worker::process(&req, |_| {
+    let answer = worker::process_model_candidate(&req, |_| {
         calls += 1;
         Ok(if calls == 1 {
             r#"{"action":"suggest_command","command":"pacman -Si READ","explanation":"Package info"}"#.into()

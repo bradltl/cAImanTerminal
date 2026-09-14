@@ -139,7 +139,7 @@ is not a hosted CI run.
 
 ## Historical pre-alpha verification (2026-09-11)
 
-Superseded counts: the current suite has 98 exact Rust/Python comparisons and
+Superseded counts: the current suite has 101 exact Rust/Python comparisons and
 109 Python tests, with no disagreement baseline. See the alpha guide for current
 property, PTY, fuzz, mutation and latency results. The earlier evidence follows.
 

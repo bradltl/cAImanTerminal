@@ -79,6 +79,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "encoding_rs",
+ "futures-channel",
+ "futures-util",
  "gtk4",
  "libc",
  "llama-cpp-2",

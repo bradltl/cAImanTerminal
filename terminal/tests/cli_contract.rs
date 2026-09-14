@@ -32,7 +32,7 @@ fn model_helper_reports_digest_and_native_load_failures_without_crashing_parent(
                 "--model-sha256",
                 &digest,
                 "--ask",
-                "show disk usage",
+                "explain Unix permissions",
             ])
             .output()
             .unwrap();

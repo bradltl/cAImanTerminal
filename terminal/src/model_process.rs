@@ -105,7 +105,11 @@ impl ProcessModel {
             if Instant::now() >= deadline {
                 bail!("Model process exceeded its deadline");
             }
-            match running.replies.recv_timeout(Duration::from_millis(20)) {
+            // recv_timeout wakes immediately on a reply; the short timeout only
+            // bounds cancellation checks. Never extend the caller's deadline.
+            let wait =
+                Duration::from_millis(20).min(deadline.saturating_duration_since(Instant::now()));
+            match running.replies.recv_timeout(wait) {
                 Ok(Ok(line)) => return Ok(line),
                 Ok(Err(error)) => bail!("{error}"),
                 Err(mpsc::RecvTimeoutError::Timeout) => {}
@@ -124,13 +128,26 @@ impl ProcessModel {
         use std::os::fd::AsRawFd;
         let input = running.child.stdin.as_mut().context("Model input closed")?;
         let fd = input.as_raw_fd();
+        struct RestoreFlags {
+            fd: std::os::fd::RawFd,
+            flags: i32,
+        }
+        impl Drop for RestoreFlags {
+            fn drop(&mut self) {
+                // SAFETY: input's exclusive borrow outlives this scope guard.
+                unsafe {
+                    libc::fcntl(self.fd, libc::F_SETFL, self.flags);
+                }
+            }
+        }
         // SAFETY: valid owned pipe fd; nonblocking writes are deadline supervised.
-        unsafe {
+        let _restore = unsafe {
             let flags = libc::fcntl(fd, libc::F_GETFL);
             if flags < 0 || libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) < 0 {
                 return Err(std::io::Error::last_os_error().into());
             }
-        }
+            RestoreFlags { fd, flags }
+        };
         let mut bytes = message.as_bytes();
         while !bytes.is_empty() {
             if cancellation.load(Ordering::Relaxed) != ticket {
@@ -266,6 +283,34 @@ mod tests {
         let pid = child.id();
         let (tx, replies) = mpsc::sync_channel(1);
         let mut running = Running { child, replies };
+        use std::os::fd::AsRawFd;
+        let input_fd = running.child.stdin.as_ref().unwrap().as_raw_fd();
+        let original_flags = unsafe { libc::fcntl(input_fd, libc::F_GETFL) };
+        tx.send(Ok("ready".into())).unwrap();
+        assert_eq!(
+            model
+                .receive(
+                    &running,
+                    &AtomicU64::new(0),
+                    0,
+                    Instant::now() + Duration::from_secs(1)
+                )
+                .unwrap(),
+            "ready"
+        );
+        model
+            .send(
+                &mut running,
+                "small",
+                &AtomicU64::new(0),
+                0,
+                Instant::now() + Duration::from_secs(1),
+            )
+            .unwrap();
+        assert_eq!(
+            unsafe { libc::fcntl(input_fd, libc::F_GETFL) },
+            original_flags
+        );
         let now = Instant::now();
         assert!(model
             .receive(
@@ -292,6 +337,10 @@ mod tests {
                 Instant::now() + Duration::from_millis(40)
             )
             .is_err());
+        assert_eq!(
+            unsafe { libc::fcntl(input_fd, libc::F_GETFL) },
+            original_flags
+        );
         drop(tx);
         assert!(model
             .receive(

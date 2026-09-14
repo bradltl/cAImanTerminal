@@ -1,13 +1,21 @@
 # Testing plan
 
+Performance-review regressions cover nested sudo, kill signal/PID positions,
+secret labels outside retained tails, Unicode quoting equivalence, incremental
+JSON framing, request-scoped timings and ordered UI event delivery. Generated
+candidate tests explicitly use `process_model_candidate` so a deterministic
+fast answer cannot mask rejection tests. See [measurements and retained limits](15_Performance_Correctness_Review.md).
+
 ## Alpha release gates
 
 Use [Alpha Hardening / Harness Conformance](14_Alpha_Conformance.md) for the current
 commands, finding-to-test matrix, fixture schema and latency protocol. PRs require
 exact conformance, parser properties, guard mutants, real GTK/Bash lifecycle and
 bounded coverage-guided fuzzing. Longer fuzzing runs daily. Verified-model and
-three-by-200 latency checks run only on an explicitly dispatched trusted runner;
-they are not permission to run untrusted PR code on that runner. A green ordinary
+three-by-200 latency checks run only on an explicitly dispatched trusted runner.
+Production and model-candidate routing each have a separate failing gate and
+artifact; fast canonical answers cannot hide model quality or latency failures.
+These checks are not permission to run untrusted PR code on that runner. A green ordinary
 PR does not certify alpha performance or permit an alpha release.
 
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
@@ -34,8 +42,10 @@ worker mailbox retries. The test captures the actual GTK window to PNG.
 
 ## Model smoke and benchmark
 
-`--ask` uses the same host pipeline as the UI, with the actual GGUF and SHA-256
-reported. The Python project lives under `llm/`; run its tests from that directory.
+`--ask` uses the same host pipeline as the UI and reports the configured model
+path and expected SHA-256. Canonical answers need not load weights; only a model
+generation verifies and loads them. The Python project lives under `llm/`; run
+its tests from that directory.
 Full final-system benchmark aggregation and the PRD's critical safety release
 gate remain future work; passing the focused host tests is not a shipping claim.
 

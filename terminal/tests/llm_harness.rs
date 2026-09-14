@@ -48,21 +48,24 @@ fn context_boundaries_and_compaction_preserve_current_task() {
 fn malformed_responses_do_not_retry_and_stale_results_are_rejected() {
     let req = request("show disk usage");
     let mut calls = 0;
-    let error = worker::process(&req, |_| {
+    let error = worker::process_model_candidate(&req, |_| {
         calls += 1;
         Ok("not JSON".into())
     })
     .unwrap_err();
     assert!(error.to_string().starts_with("Unverifiable:"));
     assert_eq!(calls, 1);
-    assert!(worker::process(&req, |_| {
+    assert!(worker::process_model_candidate(&req, |_| {
         req.cancellation.fetch_add(1, Ordering::Relaxed);
         Ok(r#"{"action":"explain","explanation":"stale"}"#.into())
     })
     .unwrap_err()
     .to_string()
     .contains("cancelled"));
-    assert!(worker::process(&req, |_| panic!("cancelled requests must not infer")).is_err());
+    assert!(
+        worker::process_model_candidate(&req, |_| panic!("cancelled requests must not infer"))
+            .is_err()
+    );
 }
 
 #[cfg(feature = "inference")]
@@ -95,7 +98,9 @@ fn default_model_harness() {
         .remember("Assistant: Previously discussed pacman updates.".into());
     let mut report = Vec::new();
     let start = std::time::Instant::now();
-    let answer = worker::process(&req, |prompt| model.generate(prompt, &req.cancellation, 0));
+    let answer = worker::process_model_candidate(&req, |prompt| {
+        model.generate(prompt, &req.cancellation, 0)
+    });
     let passed = answer.as_ref().is_ok_and(|a| {
         a.response
             .explanation
@@ -107,7 +112,7 @@ fn default_model_harness() {
     // Keep actual generation coverage even when observation questions are
     // answered deterministically from the journal.
     let disk = request("show disk usage");
-    let generated = worker::process(&disk, |prompt| {
+    let generated = worker::process_model_candidate(&disk, |prompt| {
         model.generate(prompt, &disk.cancellation, 0)
     });
     let generated_passed = generated.as_ref().is_ok_and(|answer| {
@@ -157,7 +162,7 @@ fn followups_preserve_intent_but_a_new_task_replaces_it() {
 fn observed_result_questions_cannot_stage_unrelated_commands() {
     let req = request("Which filename did the last command print?");
     let mut calls = 0;
-    assert!(worker::process(&req, |_| {
+    assert!(worker::process_model_candidate(&req, |_| {
         calls += 1;
         Ok(r#"{"action":"suggest_command","command":"pacman -Ss README.md","explanation":"Package search"}"#.into())
     }).is_err());

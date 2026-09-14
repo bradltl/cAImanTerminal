@@ -3,6 +3,10 @@
 Alpha is gated, not released. The target is `alpha-v1`: independent Rust and
 Python decisions against the same host facts, request context and candidates.
 Broader research results are not production conformance results.
+The [subsequent performance review](15_Performance_Correctness_Review.md) adds
+validated deterministic routing and separate model-path measurements. The old
+three-by-200 failure table below is historical, not the current deterministic
+route's latency. Model-response quality and model-path latency remain unresolved.
 
 ## Executable review and trust boundaries
 
@@ -109,6 +113,14 @@ queue-plus-delivery overhead. They contain only numeric measurements.
 `CAYMAN_BENCH_RUNS` permit pilots. Pilots cannot pass release acceptance. Reports
 separate model, deterministic, correction and rejected paths. Invalid/unverified
 responses fail the gate regardless of latency.
+`CAYMAN_BENCH_MODEL_PATH=1` skips the canonical-command fast path while retaining
+the production model branch and every gate. Always report this separately from
+normal routing; fast deterministic responses are not evidence of model speed or
+model accuracy. The expected model digest is configuration metadata until model
+generation actually loads and verifies the weights. The dispatched trusted-runner
+job independently gates three-by-200 production and model-candidate runs, retaining
+both artifacts even on failure. A fast canonical route cannot turn unresolved
+model-path failures into a green performance gate.
 Explicit `CAYMAN_BENCH_RETRY=1` profiles a simulated single Retry suggestion action
 after eligible verification failures. These measurements remain separate and
 never replace first-attempt failures in the acceptance distribution.

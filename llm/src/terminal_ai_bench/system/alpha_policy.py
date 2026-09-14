@@ -139,12 +139,19 @@ def risk(commands, secret):
         short = lambda char: any(a.startswith("-") and not a.startswith("--") and char in a for a in args)
         if "/" in exe or not exe.isascii(): return "blocked"
         if exe == "command" and (not args or args[0] not in ("-v", "-V")): return "blocked"
-        if exe in "bash sh zsh fish python python3 perl ruby node awk gawk mawk sed eval exec env xargs watch nohup timeout busybox doas su pkexec ssh mosh tmux screen source .".split(): return "blocked"
+        if exe in "bash sh zsh fish python python3 perl ruby node awk gawk mawk sed eval exec env xargs watch nohup timeout busybox sudo doas su pkexec ssh mosh tmux screen source .".split(): return "blocked"
         if any(s in word for word in words for s in ("/etc/shadow", "/etc/gshadow", "id_rsa", "id_ed25519", ".gnupg", ".aws/credentials")): return "blocked"
         if exe.startswith("mkfs") or exe in "dd wipefs shred mkswap fdisk parted".split(): return "blocked"
         removing = exe in ("rm", "rmdir") or (exe == "find" and has("-delete"))
         if (removing or exe in "chmod chown chgrp mv cp install truncate tee".split()) and any(protected(a) for a in args): return "blocked"
-        if exe == "kill" and any(a in ("1", "0", "-1") for a in args): return "blocked"
+        if exe == "kill":
+            targets = args
+            if targets and targets[0] in ("-s", "-n"): targets = targets[2:]
+            elif targets and targets[0] != "--" and targets[0].startswith("-"):
+                if not targets[0][1:].isascii() or not targets[0][1:].isalnum(): return "blocked"
+                targets = targets[1:]
+            if targets and targets[0] == "--": targets = targets[1:]
+            if not targets or any(not re.fullmatch(r"\+?[0-9]+", s) or int(s) <= 1 or int(s) > 9223372036854775807 for s in targets): return "blocked"
         if exe == "mysql" and any((a.startswith("-p") and len(a) > 2) or a.startswith("--password=") for a in args): return "blocked"
         package_remove = (exe == "pacman" and (has("--remove") or short("R"))) or (exe in ("apt", "apt-get", "dnf", "yum") and any(has(a) for a in ("remove", "purge", "autoremove")))
         if package_remove and any(a in "glibc libc6 systemd bash linux pacman coreutils".split() for a in args): return "blocked"

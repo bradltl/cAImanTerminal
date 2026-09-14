@@ -48,7 +48,9 @@ training dependencies are documented in the research guide.
 
 Alpha dogfooding is blocked by measured latency and unverifiable responses.
 The [alpha-v1 acceptance guide](docs/terminal/14_Alpha_Conformance.md) records the
-98-case exact conformance suite, executable safety gates and three-by-200 results.
+101-case exact conformance suite and executable safety gates. The
+[performance review](docs/terminal/15_Performance_Correctness_Review.md) separates
+the now-fast deterministic command route from still-slow model generation.
 
 Engineering preview: Linux, GTK/VTE, Bash, local llama.cpp and Qwen SFT v2 by
 default. The app supports tabs, terminal-aware assistance, validated command

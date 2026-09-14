@@ -5,7 +5,7 @@ use caiman_terminal::{
     context::{CommandRecord, Session},
     host,
     inference::LocalModel,
-    worker::{process, Request},
+    worker::{process_model_candidate as process, Request},
 };
 use std::sync::{atomic::AtomicU64, Arc};
 

@@ -52,12 +52,21 @@ jobs:
       - run: cargo test --locked --test llm_harness default_model_harness -- --ignored --nocapture
       - run: cargo build --locked
       - run: ./target/debug/caiman-terminal --model "$CAIMAN_TEST_MODEL" --ask 'show disk usage'
-      - run: cargo build --release --locked
-      - name: Strict alpha latency gate, three runs of 200 warm requests
+      - id: release
+        run: cargo build --release --locked
+      - name: Production latency gate, three runs of 200 warm requests
         shell: bash
         run: ./target/release/caiman-terminal --model "$CAIMAN_TEST_MODEL" --alpha-benchmark > alpha-latency.json
+      - name: Independent model-path gate, three runs of 200 warm requests
+        if: ${{ !cancelled() && steps.release.outcome == 'success' }}
+        shell: bash
+        env:
+          CAYMAN_BENCH_MODEL_PATH: '1'
+        run: ./target/release/caiman-terminal --model "$CAIMAN_TEST_MODEL" --alpha-benchmark > alpha-model-latency.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: alpha-latency
-          path: alpha-latency.json
+          path: |
+            alpha-latency.json
+            alpha-model-latency.json

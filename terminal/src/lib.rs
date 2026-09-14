@@ -39,3 +39,5 @@ pub mod settings_ui;
 pub mod terminal_backend;
 
 mod command_profiles;
+#[cfg(any(feature = "inference", test))]
+mod response_stream;
