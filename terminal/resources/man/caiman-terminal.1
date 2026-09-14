@@ -30,9 +30,11 @@ Read one JSON request/response fixture from stdin and evaluate the production
 worker without loading a model or executing candidates. Used for conformance.
 .TP
 .B \-\-alpha-benchmark
-Run the explicit synthetic release-build latency gate: three runs of 200 warm
-requests. Print numeric JSON; never execute candidates. Failure blocks alpha
-dogfooding. This is not automatic session telemetry.
+Run the explicit synthetic release-build correctness benchmark with diagnostic
+timings; defaults to three runs of 200 warm requests. Print numeric JSON; never
+execute candidates. Invalid command responses fail the benchmark, but elapsed
+time and pilot size do not. No alpha latency requirement applies. This is not
+automatic session telemetry or a complete alpha-readiness certification.
 .TP
 .B \-\-no-ai
 Start a plain terminal without loading the model.
