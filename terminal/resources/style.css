@@ -38,7 +38,7 @@ paned > separator { min-width: 1px; min-height: 1px; background: {muted}; }
     font-family: monospace;
     font-size: 11px;
 }
-.ghost { background: {background}; color: {muted}; padding: 2px 6px; font-family: monospace; }
+.ghost { background: transparent; color: {muted}; padding: 0; font-family: monospace; }
 scrollbar { background: {background}; }
 scrollbar slider { min-width: 3px; min-height: 3px; background: {selection}; }
 

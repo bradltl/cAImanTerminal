@@ -103,11 +103,48 @@ struct RetryOffer {
     text: String,
     binding: crate::context::ContextBinding,
 }
+
+/// An overlay is presentation only: it cannot put text into the PTY or Readline.
+/// Geometry is captured when shown and checked again before accepting Tab.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct GhostPosition {
+    column: i64,
+    row: i64,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+    terminal_width: i32,
+    terminal_height: i32,
+}
+
+fn inline_preview(command: &str, input: &str, line: &str, tail: &str) -> Option<String> {
+    // A mid-buffer or wrapped edit cannot honestly be presented as a completion.
+    // Reject bidi/control text too: VTE's cursor column is logical, not visual.
+    if command.is_empty()
+        || !command.is_ascii()
+        || command.chars().any(char::is_control)
+        || !input.is_ascii()
+        || input.chars().any(char::is_control)
+        || !line.is_ascii()
+        || !tail.trim().is_empty()
+        || (!input.is_empty() && !line.trim_end_matches('\n').ends_with(input))
+    {
+        return None;
+    }
+    match command.strip_prefix(input) {
+        Some("") => None,
+        Some(suffix) => Some(format!("{suffix}  [Tab]")),
+        None => Some(format!(" → {command}  [Tab replaces input]")),
+    }
+}
 struct Tab {
     session: Session,
     terminal: vte::Terminal,
     assistant: AssistantPane,
     ghost: gtk::Label,
+    ghost_surface: gtk::Overlay,
+    ghost_position: Option<GhostPosition>,
     status: gtk::Label,
     activity: gtk::Label,
     pane: gtk::Revealer,
@@ -138,6 +175,134 @@ struct Tab {
     completed_ticket: Option<u64>,
 }
 impl Tab {
+    fn hide_ghost(&mut self) {
+        self.ghost.set_visible(false);
+        self.ghost.set_text("");
+        self.ghost_position = None;
+    }
+    fn discard_ghost(&mut self) {
+        if self.pending.take().is_some() {
+            self.metrics.dismissed = self.metrics.dismissed.saturating_add(1);
+        }
+        self.hide_ghost();
+    }
+    fn ghost_position(&self) -> Option<GhostPosition> {
+        if !self.terminal.is_mapped()
+            || !self.terminal.has_focus()
+            || !self.session.at_prompt
+            || self.session.remote
+            || !self.alive
+            || self.closed
+        {
+            return None;
+        }
+        let adjustment = self.terminal.vadjustment()?;
+        let top = adjustment.value();
+        // Scrolled history and fractional scrolling do not identify the current
+        // local prompt. Do not float suggestions over historical terminal text.
+        if (top + adjustment.page_size() - adjustment.upper()).abs() > 0.01
+            || top.fract().abs() > 0.01
+        {
+            return None;
+        }
+        let (column, row) = self.terminal.cursor_position();
+        let visible_row = row - top as i64;
+        let cell_width = self.terminal.char_width();
+        let cell_height = self.terminal.char_height();
+        if cell_width <= 0
+            || cell_height <= 0
+            || column < 0
+            || column >= self.terminal.column_count()
+            || visible_row < 0
+            || visible_row >= self.terminal.row_count()
+        {
+            return None;
+        }
+        let origin = self
+            .terminal
+            .compute_point(&self.ghost_surface, &gtk::graphene::Point::new(0.0, 0.0))?;
+        let style = self.terminal.style_context();
+        let padding = style.padding();
+        let border = style.border();
+        let x = origin.x().round() as i32
+            + padding.left() as i32
+            + border.left() as i32
+            + (column * cell_width) as i32;
+        let y = origin.y().round() as i32
+            + padding.top() as i32
+            + border.top() as i32
+            + (visible_row * cell_height) as i32;
+        let width = ((self.terminal.column_count() - column) * cell_width) as i32;
+        let height = cell_height as i32;
+        if x < 0
+            || y < 0
+            || width < (cell_width * 8) as i32
+            || x + width > self.ghost_surface.width()
+            || y + height > self.ghost_surface.height()
+        {
+            return None;
+        }
+        Some(GhostPosition {
+            column,
+            row,
+            x,
+            y,
+            width,
+            height,
+            terminal_width: self.terminal.width(),
+            terminal_height: self.terminal.height(),
+        })
+    }
+    fn refresh_ghost(&mut self) {
+        let Some(suggestion) = &self.pending else {
+            self.hide_ghost();
+            return;
+        };
+        if suggestion.ticket != self.cancellation.load(Ordering::Relaxed)
+            || !suggestion.binding.matches(&self.session)
+        {
+            self.discard_ghost();
+            return;
+        }
+        let position = self.ghost_position();
+        if self.ghost_position.is_some() {
+            if self.ghost_position != position {
+                self.discard_ghost();
+            }
+            return;
+        }
+        let Some(position) = position else {
+            return;
+        };
+        let (line, _) = self.terminal.text_range_format(
+            vte::Format::Text,
+            position.row,
+            0,
+            position.row,
+            position.column,
+        );
+        let (tail, _) = self.terminal.text_range_format(
+            vte::Format::Text,
+            position.row,
+            position.column,
+            position.row,
+            -1,
+        );
+        let Some(text) = inline_preview(
+            &suggestion.command,
+            &suggestion.input,
+            line.as_deref().unwrap_or(""),
+            tail.as_deref().unwrap_or(""),
+        ) else {
+            return;
+        };
+        self.ghost.set_text(&text);
+        self.ghost.set_margin_start(position.x);
+        self.ghost.set_margin_top(position.y);
+        self.ghost.set_size_request(position.width, position.height);
+        self.ghost_position = Some(position);
+        self.ghost.set_visible(true);
+    }
     fn invalidate(&mut self) {
         if self.queued.take().is_some() {
             self.metrics.cancelled = self.metrics.cancelled.saturating_add(1);
@@ -149,7 +314,7 @@ impl Tab {
         self.retry_button.set_sensitive(false);
         self.cancellation.fetch_add(1, Ordering::Relaxed);
         self.pending = None;
-        self.ghost.set_text("");
+        self.hide_ghost();
         self.activity.set_text("ai");
         if self.enabled
             && self.assistant.current_text() != "Loading.."
@@ -161,10 +326,15 @@ impl Tab {
         self.snapshot_pending = true;
     }
     fn accept(&mut self) -> bool {
+        // Invisible/stale suggestions must never steal normal Bash completion.
+        if !self.ghost.is_visible() || self.ghost_position != self.ghost_position() {
+            self.discard_ghost();
+            return false;
+        }
         let Some(s) = self.pending.take() else {
             return false;
         };
-        self.ghost.set_text("");
+        self.hide_ghost();
         if !self.session.at_prompt
             || !self.alive
             || self.closed
@@ -215,7 +385,7 @@ impl Tab {
         let ticket = self.cancellation.fetch_add(1, Ordering::Relaxed) + 1;
         self.session.request_id = ticket;
         self.pending = None;
-        self.ghost.set_text("");
+        self.hide_ghost();
         let remember_intent = !passive || !self.session.input.is_empty();
         let memory = format!("User: {text}");
         let mut session = self.session.clone();
@@ -293,7 +463,7 @@ impl Tab {
             .map(|s| s.elapsed().as_millis())
             .unwrap_or(0);
         self.pending = None;
-        self.ghost.set_text("");
+        self.hide_ghost();
         match result {
             Ok(answer) => {
                 self.metrics.validation(
@@ -330,8 +500,6 @@ impl Tab {
                     if v.risk != crate::host::Risk::Normal {
                         message.push_str(&format!("\n\n{:?}: {}", v.risk, v.reason));
                     }
-                    self.ghost.set_text(&format!("{}  [Tab]", v.command));
-                    self.ghost.set_visible(true);
                     self.suggested = Some(v.command.clone());
                     self.pending = Some(Suggestion {
                         command: v.command,
@@ -339,6 +507,9 @@ impl Tab {
                         ticket,
                         binding,
                     });
+                    // Shell FIFO events can precede VTE's Readline redraw; the
+                    // next shell poll will retry placement if not yet visible.
+                    self.refresh_ghost();
                 }
                 if !answer.source.is_empty() {
                     message.push_str(&format!("\n\n{}", answer.source));
@@ -491,7 +662,7 @@ impl Tab {
                     if self.session.input != event.text {
                         self.cancellation.fetch_add(1, Ordering::Relaxed);
                         self.pending = None;
-                        self.ghost.set_text("");
+                        self.hide_ghost();
                         self.session.edit(event.text);
                     }
                     if event.kind == "staged" {
@@ -532,6 +703,7 @@ impl Tab {
                 self.request(self.session.input.clone(), true, requests);
             }
         }
+        self.refresh_ghost();
     }
 }
 impl Drop for Tab {
@@ -576,22 +748,50 @@ fn new_tab(
     terminal.set_margin_start(6);
     terminal.set_margin_end(6);
     terminal.set_margin_top(6);
-    let scroll = gtk::ScrolledWindow::builder()
+    // VTE owns its scrolling adjustment and must not be wrapped in a
+    // GtkScrolledWindow. Its overlay therefore shares exact terminal geometry.
+    let ghost_surface = gtk::Overlay::builder()
         .child(&terminal)
         .hexpand(true)
         .vexpand(true)
         .build();
     let ghost = label("");
     ghost.add_css_class("ghost");
-    // Reserve one line so suggestions cannot resize the PTY or reflow output.
+    ghost.set_visible(false);
+    ghost.set_selectable(false);
+    ghost.set_can_target(false);
+    ghost.set_focusable(false);
+    ghost.set_wrap(false);
+    ghost.set_halign(gtk::Align::Start);
+    ghost.set_valign(gtk::Align::Start);
+    ghost.set_direction(gtk::TextDirection::Ltr);
     ghost.set_single_line_mode(true);
     ghost.set_ellipsize(gtk::pango::EllipsizeMode::End);
-    ghost.set_height_request(22);
+    if let Some(font) = terminal.font() {
+        let attributes = gtk::pango::AttrList::new();
+        attributes.insert(gtk::pango::AttrFontDesc::new(&font));
+        ghost.set_attributes(Some(&attributes));
+    }
+    // A transparent, noninteractive size observer avoids a frame-polling loop.
+    let size_observer = gtk::DrawingArea::builder()
+        .can_target(false)
+        .hexpand(true)
+        .vexpand(true)
+        .build();
+    ghost_surface.add_overlay(&size_observer);
+    ghost_surface.add_overlay(&ghost);
+    ghost_surface.set_clip_overlay(&ghost, true);
+    ghost_surface.set_measure_overlay(&ghost, false);
+    let scroll = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    scroll.append(&ghost_surface);
+    scroll.append(&gtk::Scrollbar::new(
+        gtk::Orientation::Vertical,
+        terminal.vadjustment().as_ref(),
+    ));
     let status = label("bash");
     status.add_css_class("status");
     let left = gtk::Box::new(gtk::Orientation::Vertical, 0);
     left.append(&scroll);
-    left.append(&ghost);
     left.append(&status);
     let side = gtk::Box::new(gtk::Orientation::Vertical, 0);
     side.set_size_request(260, -1);
@@ -657,6 +857,8 @@ fn new_tab(
         terminal: terminal.clone(),
         assistant,
         ghost,
+        ghost_surface,
+        ghost_position: None,
         status,
         activity: pane_label,
         pane,
@@ -686,6 +888,50 @@ fn new_tab(
         queued: None,
         completed_ticket: None,
     }));
+    // Terminal output/cursor signals are display observations, not shell
+    // authority. They can dismiss an overlay but can never authorize one.
+    let weak = Rc::downgrade(&tab);
+    terminal.connect_contents_changed(move |_| {
+        if let Some(tab) = weak.upgrade() {
+            if let Ok(mut tab) = tab.try_borrow_mut() {
+                if tab.ghost.is_visible() {
+                    tab.discard_ghost();
+                }
+            }
+        }
+    });
+    let weak = Rc::downgrade(&tab);
+    terminal.connect_cursor_moved(move |_| {
+        if let Some(tab) = weak.upgrade() {
+            if let Ok(mut tab) = tab.try_borrow_mut() {
+                if tab.ghost.is_visible() {
+                    tab.discard_ghost();
+                }
+            }
+        }
+    });
+    let weak = Rc::downgrade(&tab);
+    size_observer.connect_resize(move |_, _, _| {
+        if let Some(tab) = weak.upgrade() {
+            if let Ok(mut tab) = tab.try_borrow_mut() {
+                if tab.ghost.is_visible() {
+                    tab.discard_ghost();
+                }
+            }
+        }
+    });
+    if let Some(adjustment) = terminal.vadjustment() {
+        let weak = Rc::downgrade(&tab);
+        adjustment.connect_value_changed(move |_| {
+            if let Some(tab) = weak.upgrade() {
+                if let Ok(mut tab) = tab.try_borrow_mut() {
+                    if tab.ghost.is_visible() {
+                        tab.discard_ghost();
+                    }
+                }
+            }
+        });
+    }
     let metrics_tab = Rc::downgrade(&tab);
     export_metrics.connect_clicked(move |_| {
         if let Some(tab) = metrics_tab.upgrade() {
@@ -1214,6 +1460,32 @@ pub fn run(model: PathBuf, disabled: bool, options: crate::settings::Settings) {
 mod tests {
     use super::*;
     #[test]
+    fn inline_preview_distinguishes_suffixes_from_replacements() {
+        assert_eq!(
+            inline_preview("ls -la", "", "$ ", "\n"),
+            Some("ls -la  [Tab]".into())
+        );
+        assert_eq!(
+            inline_preview("ls -la", "ls", "$ ls", ""),
+            Some(" -la  [Tab]".into())
+        );
+        assert_eq!(
+            inline_preview("ls -la", "list files", "$ list files", ""),
+            Some(" → ls -la  [Tab replaces input]".into())
+        );
+        for (command, input, line, tail) in [
+            ("ls", "ls", "$ ls", ""),
+            ("ls -la", "ls", "$ l", "s"),
+            ("ls -la", "wrapped input", "$ input", ""),
+            ("ls\r\ntouch marker", "", "$ ", ""),
+            ("ls\x1b[200~", "", "$ ", ""),
+            ("ls", "", "\u{202e}$ ", ""),
+            ("ls", "", "$ ", "existing terminal output"),
+        ] {
+            assert_eq!(inline_preview(command, input, line, tail), None);
+        }
+    }
+    #[test]
     fn worker_events_wake_the_main_context_and_preserve_order() {
         use futures_util::StreamExt;
         let (send, receive) = std::sync::mpsc::channel();
@@ -1285,6 +1557,25 @@ mod tests {
         one.borrow_mut()
             .complete(req.ticket, false, Ok(Box::new(good)));
         assert!(one.borrow().pending.is_some());
+        pump_until(|| one.borrow().ghost.is_visible());
+        {
+            let tab = one.borrow();
+            let position = tab.ghost_position.unwrap();
+            assert_eq!(tab.ghost.text(), "ls  [Tab]");
+            assert!(!tab.ghost.can_target());
+            assert!(!tab.ghost.is_selectable());
+            assert_eq!(tab.ghost.margin_start(), position.x);
+            assert_eq!(tab.ghost.margin_top(), position.y);
+            assert!(position.y + position.height <= tab.terminal.height() + 6);
+            assert!(
+                tab.session.input.is_empty(),
+                "preview cannot mutate Readline"
+            );
+            assert!(
+                !tab.terminal.context_text().contains("[Tab]"),
+                "ghost is not PTY output"
+            );
+        }
         one.borrow_mut().request("ls".into(), false, &tx);
         let blocked = rx.recv_timeout(Duration::from_secs(2)).unwrap();
         one.borrow_mut().complete(
@@ -1336,6 +1627,74 @@ mod tests {
             one.borrow().pending.is_none(),
             "out-of-order result cannot restore ghost text"
         );
+        // Positive placement after scrollback, then dismissal on view changes.
+        // Commands remain inert until a separate user acceptance and Enter.
+        one.borrow()
+            .terminal
+            .feed_child(b"printf 'inline-history-%s\\n' {1..80}\r");
+        pump_until(|| {
+            one.borrow()
+                .session
+                .journal
+                .back()
+                .is_some_and(|r| r.command.contains("inline-history-"))
+        });
+        let settled = Instant::now() + Duration::from_millis(100);
+        pump_until(|| Instant::now() >= settled);
+        for change in ["scroll", "resize", "edit", "output"] {
+            while rx.try_recv().is_ok() {}
+            one.borrow_mut().request("ls".into(), false, &tx);
+            let request = rx.recv_timeout(Duration::from_secs(2)).unwrap();
+            let answer = worker::process_model_candidate(&request, |_| {
+                Ok(r#"{"action":"suggest_command","command":"ls","explanation":"Lists directory entries."}"#.into())
+            })
+            .unwrap();
+            one.borrow_mut()
+                .complete(request.ticket, false, Ok(Box::new(answer)));
+            pump_until(|| one.borrow().ghost.is_visible());
+            match change {
+                "scroll" => {
+                    let adjustment = one.borrow().terminal.vadjustment().unwrap();
+                    assert!(adjustment.value() > adjustment.lower());
+                    adjustment.set_value(adjustment.value() - 1.0);
+                }
+                "resize" => window.set_default_size(920, 600),
+                "edit" => one.borrow().terminal.feed_child(b"ls"),
+                _ => one.borrow().terminal.feed(b"untrusted-display-update"),
+            }
+            pump_until(|| !one.borrow().ghost.is_visible());
+            assert!(one.borrow().pending.is_none());
+            assert!(!one.borrow_mut().accept());
+            assert!(one.borrow().session.input.is_empty());
+            if change == "scroll" {
+                let adjustment = one.borrow().terminal.vadjustment().unwrap();
+                adjustment.set_value(adjustment.upper() - adjustment.page_size());
+            }
+            if change == "edit" {
+                one.borrow()
+                    .terminal
+                    .send_integration_key(crate::terminal_backend::IntegrationKey::Snapshot);
+                pump_until(|| one.borrow().session.input == "ls");
+                one.borrow_mut().request("ls -la".into(), false, &tx);
+                let request = rx.recv_timeout(Duration::from_secs(2)).unwrap();
+                let answer = worker::process_model_candidate(&request, |_| {
+                    Ok(r#"{"action":"suggest_command","command":"ls -la","explanation":"Lists all directory entries with details."}"#.into())
+                })
+                .unwrap();
+                one.borrow_mut()
+                    .complete(request.ticket, false, Ok(Box::new(answer)));
+                pump_until(|| one.borrow().ghost.is_visible());
+                assert_eq!(one.borrow().ghost.text(), " -la  [Tab]");
+                assert_eq!(one.borrow().session.input, "ls");
+                one.borrow().terminal.feed_child(b"\x15");
+                one.borrow()
+                    .terminal
+                    .send_integration_key(crate::terminal_backend::IntegrationKey::Snapshot);
+                pump_until(|| one.borrow().session.input.is_empty());
+            }
+            let settled = Instant::now() + Duration::from_millis(100);
+            pump_until(|| Instant::now() >= settled);
+        }
         let old_generation = one.borrow().session.prompt_generation;
         crate::shell::write_stage_bound(
             one.borrow().dir.path(),
@@ -1422,7 +1781,7 @@ mod tests {
         assert!(!two.borrow_mut().accept());
         println!(
             "{}",
-            serde_json::json!({"suite":"real-pty-lifecycle","passed":true,"stale_prompt":true,"request_binding":true,"alternate_screen":true,"resize":true,"delayed_close":true,"shell_death":true})
+            serde_json::json!({"suite":"real-pty-lifecycle","passed":true,"stale_prompt":true,"request_binding":true,"alternate_screen":true,"resize":true,"delayed_close":true,"shell_death":true,"inline_preview":true,"inline_suffix":true,"ghost_scroll_resize_edit_output_dismissal":true})
         );
         window.close();
     }
@@ -1642,14 +2001,46 @@ mod tests {
                 ticket,
                 binding: crate::context::ContextBinding::capture(&tab.session),
             });
-            assert!(tab.accept());
+            tab.refresh_ghost();
+            assert!(
+                tab.ghost.is_visible(),
+                "a positive staging case must have inline ghost text"
+            );
+            if std::env::var_os("CAYMAN_TEST_X11_KEYS").is_none() {
+                assert!(tab.accept());
+                assert!(!tab.ghost.is_visible());
+            }
+        }
+        if std::env::var_os("CAYMAN_TEST_X11_KEYS").is_some() {
+            assert!(std::process::Command::new("python3")
+                .arg(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/tests/type_into_test_window.py"
+                ))
+                .arg("Tab")
+                .status()
+                .unwrap()
+                .success());
         }
         pump_until(|| one.borrow().session.input == command);
+        assert!(!one.borrow().ghost.is_visible());
         assert!(!marker.exists(), "staging must never execute");
         assert!(two.borrow().session.input.is_empty());
         assert!(two.borrow().session.journal.is_empty());
-        // This byte represents the user's separate Enter action in the test.
-        one.borrow().terminal.feed_child(b"\r");
+        if std::env::var_os("CAYMAN_TEST_X11_KEYS").is_some() {
+            assert!(std::process::Command::new("python3")
+                .arg(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/tests/type_into_test_window.py"
+                ))
+                .arg("Return")
+                .status()
+                .unwrap()
+                .success());
+        } else {
+            // A separate user Enter action, never the assistant-output adapter.
+            one.borrow().terminal.feed_child(b"\r");
+        }
         pump_until(|| {
             marker.exists()
                 && one.borrow().session.at_prompt
@@ -1842,6 +2233,10 @@ mod tests {
         }
         assert_eq!(one.borrow().session.journal.len(), journal_len);
         assert!(css_errors.borrow().is_empty(), "{:?}", css_errors.borrow());
+        println!(
+            "{}",
+            serde_json::json!({"suite":"real-pty-inline-staging","passed":true,"inline_preview":true,"tab_stages_without_execution":true,"separate_enter_executes":true,"physical_x11_keys":std::env::var_os("CAYMAN_TEST_X11_KEYS").is_some()})
+        );
         window.close();
     }
 }
