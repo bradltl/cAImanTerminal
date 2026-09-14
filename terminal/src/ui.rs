@@ -1274,12 +1274,12 @@ mod tests {
             one.borrow().session.prompt_generation
         );
         let answer = worker::process_model_candidate(&req, |_| {
-            Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+            Ok(r#"{"action":"suggest_command","command":"ls","explanation":"Lists directory entries."}"#.into())
         })
         .unwrap();
         let valid = answer.validation.unwrap();
         let good = worker::process_model_candidate(&req, |_| {
-            Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+            Ok(r#"{"action":"suggest_command","command":"ls","explanation":"Lists directory entries."}"#.into())
         })
         .unwrap();
         one.borrow_mut()
@@ -1322,7 +1322,7 @@ mod tests {
         let late = worker::Answer {
             timings: None,
             response: crate::host::Response::parse(
-                r#"{"action":"suggest_command","command":"ls"}"#,
+                r#"{"action":"suggest_command","command":"ls","explanation":"Lists directory entries."}"#,
             )
             .unwrap(),
             validation: Some(valid.clone()),
@@ -1388,7 +1388,7 @@ mod tests {
             worker::process_model_candidate(&delayed, |_| {
                 entered_tx.send(()).unwrap();
                 release_rx.recv().unwrap();
-                Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+                Ok(r#"{"action":"suggest_command","command":"ls","explanation":"Lists directory entries."}"#.into())
             })
         });
         entered_rx.recv_timeout(Duration::from_secs(2)).unwrap();

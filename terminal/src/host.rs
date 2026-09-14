@@ -17,6 +17,23 @@ pub struct Response {
     pub plan: Option<Vec<String>>,
 }
 impl Response {
+    /// Shared model-response boundary for generation, worker delivery and replay.
+    /// An explanation is required, but its existence does not establish truth.
+    pub fn parse_assistant(raw: &str) -> Result<Self> {
+        let response = Self::parse(raw)?;
+        if response.action == "suggest_command"
+            && !response
+                .explanation
+                .as_deref()
+                .is_some_and(|s| !s.trim().is_empty())
+        {
+            bail!("Model suggestion omitted its explanation");
+        }
+        crate::guidance::check_response(&response)?;
+        Ok(response)
+    }
+
+    /// Legacy data/schema parsing; model responses must use parse_assistant.
     pub fn parse(raw: &str) -> Result<Self> {
         if raw.len() > 16384 {
             bail!("Response exceeds limit");
@@ -43,6 +60,36 @@ impl Response {
             _ => bail!("Invalid action or missing response fields"),
         }
         Ok(response)
+    }
+}
+
+#[cfg(test)]
+mod response_contract_tests {
+    use super::Response;
+
+    #[test]
+    fn model_suggestion_explanations_are_required_without_changing_legacy_data_parsing() {
+        for raw in [
+            r#"{"action":"suggest_command","command":"ls"}"#,
+            r#"{"action":"suggest_command","command":"ls","explanation":" \t\n "}"#,
+            r#"{"action":"suggest_command","command":"ls","explanation":null}"#,
+        ] {
+            assert!(Response::parse(raw).is_ok());
+            assert!(Response::parse_assistant(raw).is_err());
+        }
+        assert!(Response::parse_assistant(r#"{"action":"suggest_command","command":"ls","explanation":"Lists current directory entries."}"#).is_ok());
+        assert!(Response::parse_assistant(
+            r#"{"action":"suggest_command","command":"ls","explanation":"I ran this command."}"#
+        )
+        .is_err());
+        assert!(Response::parse_assistant(
+            r#"{"action":"explain","explanation":"The last command returned an error."}"#
+        )
+        .is_ok());
+        assert!(Response::parse_assistant(
+            r#"{"action":"clarify","question":"Which directory should be examined?"}"#
+        )
+        .is_ok());
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -179,6 +226,26 @@ pub fn validate(command: &str, remote: bool, documentation: &str) -> Result<Vali
 
 /// Final deterministic gate; no documentation subprocess or inference.
 pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<Validation> {
+    assess_risk_inner(command, None, remote, documentation)
+}
+
+/// Bind file-mutation targets to the same authenticated CWD used for staging.
+/// This is lexical validation, not a claim about symlink destinations or races.
+pub fn assess_risk_at(
+    command: &str,
+    cwd: &str,
+    remote: bool,
+    documentation: &str,
+) -> Result<Validation> {
+    assess_risk_inner(command, Some(cwd), remote, documentation)
+}
+
+fn assess_risk_inner(
+    command: &str,
+    cwd: Option<&str>,
+    remote: bool,
+    documentation: &str,
+) -> Result<Validation> {
     crate::secrets::check_command(command)?;
     let commands = parse_commands(command)?;
     let mut risk = Risk::Normal;
@@ -211,18 +278,7 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
         {
             bail!("Interpreter/wrapper commands need manual review and cannot be staged");
         }
-        if words.iter().any(|a| {
-            [
-                "/etc/shadow",
-                "/etc/gshadow",
-                "id_rsa",
-                "id_ed25519",
-                ".gnupg",
-                ".aws/credentials",
-            ]
-            .iter()
-            .any(|s| a.contains(s))
-        }) {
+        if words.iter().any(|a| credential_path(a)) {
             bail!("Credential access is blocked from assistant staging");
         }
         if exe.starts_with("mkfs")
@@ -231,13 +287,56 @@ pub fn assess_risk(command: &str, remote: bool, documentation: &str) -> Result<V
             bail!("Disk formatting or destructive writes cannot be staged");
         }
         let removing = matches!(exe, "rm" | "rmdir") || (exe == "find" && has("-delete"));
+        // In the audited two-operand cp form the source is read, not mutated.
+        // Keep the conservative check for -t/--target-directory or other shapes
+        // whose destination position is not established here.
+        let file_operands = audited_file_operands(exe, args);
         if [
             "chmod", "chown", "chgrp", "mv", "cp", "install", "truncate", "tee",
         ]
         .contains(&exe)
-            && args.iter().any(|a| protected_target(a))
         {
-            bail!("Mutation of protected system locations cannot be staged");
+            let protected_argument = |arg: &str| {
+                protected_target(arg)
+                    || arg
+                        .strip_prefix("--target-directory=")
+                        .is_some_and(protected_target)
+            };
+            let blocked = if let ("cp", Some(operands)) = (exe, &file_operands) {
+                operands[1..].iter().any(|arg| protected_argument(arg))
+            } else {
+                args.iter().any(|arg| protected_argument(arg))
+            };
+            if blocked {
+                bail!("Mutation of protected system locations cannot be staged");
+            }
+        }
+        if let Some(cwd) = cwd {
+            if let Some(operands) = &file_operands {
+                for operand in operands {
+                    if credential_path(&absolute_target(cwd, operand)?) {
+                        bail!("Credential access is blocked from assistant staging");
+                    }
+                }
+            }
+            if ["rm", "rmdir", "cp", "mv"].contains(&exe) {
+                let operands = file_operands.ok_or_else(|| {
+                    anyhow!("File mutation operands cannot be established from audited syntax")
+                })?;
+                let targets = if exe == "cp" {
+                    &operands[1..]
+                } else {
+                    &operands[..]
+                };
+                for target in targets {
+                    // Flags, literal echo arguments and cp's read-only source
+                    // must never be rewritten as if they were mutation paths.
+                    if !target.starts_with('/') && protected_target(&absolute_target(cwd, target)?)
+                    {
+                        bail!("Mutation of a protected system location relative to the current directory cannot be staged");
+                    }
+                }
+            }
         }
         if exe == "kill" {
             check_kill_targets(args)?;
@@ -398,6 +497,107 @@ fn check_kill_targets(args: &[String]) -> Result<()> {
         bail!("Only explicit individual process IDs above 1 are supported");
     }
     Ok(())
+}
+
+fn credential_path(path: &str) -> bool {
+    [
+        "/etc/shadow",
+        "/etc/gshadow",
+        "id_rsa",
+        "id_ed25519",
+        ".gnupg",
+        ".aws/credentials",
+    ]
+    .iter()
+    .any(|marker| path.contains(marker))
+}
+
+fn audited_file_operands<'a>(exe: &str, args: &'a [String]) -> Option<Vec<&'a str>> {
+    // Only the audited, valueless options are understood here. An unknown
+    // value-taking option cannot silently change which argument is a path.
+    let (short, long): (&str, &[&str]) = match exe {
+        "cat" => ("nbs", &["--number"]),
+        "less" => ("", &[]),
+        "mkdir" => ("pv", &["--parents", "--verbose"]),
+        "rm" => (
+            "fiIrRdv",
+            &[
+                "--force",
+                "--recursive",
+                "--dir",
+                "--verbose",
+                "--preserve-root",
+                "--one-file-system",
+            ],
+        ),
+        "rmdir" => (
+            "pv",
+            &["--parents", "--verbose", "--ignore-fail-on-non-empty"],
+        ),
+        "cp" => (
+            "afinrRpv",
+            &[
+                "--archive",
+                "--force",
+                "--interactive",
+                "--no-clobber",
+                "--recursive",
+                "--verbose",
+            ],
+        ),
+        "mv" => (
+            "finv",
+            &["--force", "--interactive", "--no-clobber", "--verbose"],
+        ),
+        _ => return None,
+    };
+    let mut operands = Vec::new();
+    let mut options = true;
+    for arg in args {
+        if options && arg == "--" {
+            options = false;
+        } else if options && arg.starts_with('-') && arg != "-" {
+            if !long.contains(&arg.as_str())
+                && !(arg.starts_with('-')
+                    && !arg.starts_with("--")
+                    && arg[1..].chars().all(|c| short.contains(c)))
+            {
+                return None;
+            }
+        } else {
+            operands.push(arg.as_str());
+        }
+    }
+    if matches!(exe, "cp" | "mv") {
+        if operands.len() != 2 {
+            return None;
+        }
+    } else if matches!(exe, "cat" | "less") {
+        if operands.len() != 1 {
+            return None;
+        }
+    } else if !(1..=16).contains(&operands.len()) {
+        return None;
+    }
+    Some(operands)
+}
+
+fn absolute_target(cwd: &str, target: &str) -> Result<String> {
+    let base = if target.starts_with('/') { "" } else { cwd };
+    if !target.starts_with('/') && (!cwd.starts_with('/') || cwd.chars().any(char::is_control)) {
+        bail!("Relative file paths require a verified absolute current directory");
+    }
+    let mut parts = Vec::new();
+    for part in base.split('/').chain(target.split('/')) {
+        match part {
+            "" | "." => (),
+            ".." => {
+                parts.pop();
+            }
+            _ => parts.push(part),
+        }
+    }
+    Ok(format!("/{}", parts.join("/")))
 }
 
 fn protected_target(arg: &str) -> bool {

@@ -62,7 +62,7 @@ fn production_stage_boundary_records_only_fixed_keys_and_rejects_every_stale_dim
         passive: false,
     };
     let answer = worker::process_model_candidate(&request, |_| {
-        Ok(r#"{"action":"suggest_command","command":"ls"}"#.into())
+        Ok(r#"{"action":"suggest_command","command":"ls","explanation":"Lists entries in the current directory."}"#.into())
     })
     .unwrap();
     let validation = answer.validation.unwrap();

@@ -44,7 +44,7 @@ impl JsonObject {
 }
 
 pub(crate) fn validate_complete(text: String) -> anyhow::Result<String> {
-    crate::host::Response::parse(&text)
+    crate::host::Response::parse_assistant(&text)
         .map_err(|_| anyhow::anyhow!("Unverifiable: model completed an invalid response"))?;
     Ok(text)
 }
@@ -73,12 +73,14 @@ mod tests {
         for text in [
             r#"{"action":"suggest_command"}"#,
             r#"{"action":"execute","command":"ls"}"#,
+            r#"{"action":"suggest_command","command":"ls"}"#,
+            r#"{"action":"suggest_command","command":"ls","explanation":"  "}"#,
             "{",
             "{} {}",
         ] {
             assert!(validate_complete(text.into()).is_err());
         }
-        assert!(validate_complete(r#"{"action":"suggest_command","command":"ls"}"#.into()).is_ok());
+        assert!(validate_complete(r#"{"action":"suggest_command","command":"ls","explanation":"Lists the current directory entries."}"#.into()).is_ok());
         assert!(JsonObject::default().push("[]").is_err());
     }
 }

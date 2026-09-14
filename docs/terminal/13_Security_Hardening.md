@@ -4,15 +4,17 @@ This supersedes older claims about passive staging, SSH detection, model loading
 and benchmark certification. The app remains an engineering preview, not a
 security sandbox or a production-administration tool.
 The [alpha acceptance guide](14_Alpha_Conformance.md) contains the current
-finding-to-test matrix and failed three-by-200 latency evidence. Alpha dogfooding
-remains blocked. Commands are printable ASCII only: a property-test native Unicode
+finding-to-test matrix and historical three-by-200 timing evidence. Latency is no
+longer an alpha gate; model correctness and full assistance coverage remain open.
+Commands are printable ASCII only: a property-test native Unicode
 scanner crash is contained by preflight before native parsing.
 
 ## Shipping staging authority
 
 `worker::process` produces the desktop's context-bound validation. Every command
 crosses syntax, CLI, host risk/secret and explicit intent checks; a repaired
-command crosses them again. Unknown/ambiguous requests clarify. Passive requests
+command crosses them again. Unknown/ambiguous requests can retain clearly
+unverified explanatory advice. Passive requests
 can explain, but cannot repair or stage. Automatic model repair is disabled.
 An unverifiable response can offer one separate **Retry suggestion** action while
 the original request snapshot is unchanged. A safety/secret rejection never
@@ -33,6 +35,12 @@ Supported natural-language staging contracts are intentionally small:
 - working directory (`pwd`), Git status (`git status`);
 - Arch system update (`pacman -Syu`, with host-selected sudo when needed);
 - read a named file in the current directory (`cat`/`less`, exact quoted operand).
+
+The `alpha-v1.1` manifest adds audited mkdir/rmdir/rm/cp/mv literal forms. Ordinary
+file operations can stage with warnings, including project-local deletion;
+unsupported options and critical mutations remain separate checks. Copying from
+a system path is distinguished from overwriting it in the audited two-operand
+form. Model-generated explanations do not grant new command authority.
 
 The versioned alpha CLI manifest limits which literals can be verified; installed
 programs outside it cannot stage. An explicit literal authorizes only that exact command, operands and privileges;

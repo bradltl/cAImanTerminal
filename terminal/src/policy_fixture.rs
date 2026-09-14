@@ -29,10 +29,7 @@ pub fn evaluate(fixture: Fixture) -> anyhow::Result<serde_json::Value> {
     );
     let raw_response = fixture.response.is_some();
     let candidate = if let Some(raw) = fixture.response {
-        match crate::host::Response::parse(&raw).and_then(|response| {
-            crate::guidance::check_response(&response)?;
-            Ok(response)
-        }) {
+        match crate::host::Response::parse_assistant(&raw) {
             Ok(response) => match response.command {
                 Some(command) => command,
                 None => {

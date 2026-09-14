@@ -1,4 +1,4 @@
-"""Independent alpha-v1 reference; no Rust invocation or recorded verdicts.
+"""Independent alpha reference; no Rust invocation or recorded verdicts.
 
 The shared manifest is policy data, not an oracle. Parsing, contract resolution,
 validation, correction and final stageability are independently implemented here.
@@ -6,6 +6,7 @@ Research pipeline behavior remains separately available.
 """
 import copy
 import json
+import posixpath
 import re
 import shlex
 import unicodedata
@@ -15,7 +16,7 @@ from .command_parser import check_shell_syntax
 
 ROOT = Path(__file__).resolve().parents[4]
 POLICY = json.loads((ROOT / "terminal/resources/alpha-policy.json").read_text())
-VERSION = "alpha-v1"
+VERSION = POLICY["version"]
 
 
 def parse(text):
@@ -127,7 +128,60 @@ def protected(arg):
     return arg.startswith("/") and (clean in ("", "*", "home", "var") or any(clean == root or clean.startswith(root + "/") for root in "etc usr boot dev proc sys bin sbin lib lib64 var".split()))
 
 
-def risk(commands, secret):
+CREDENTIAL_PATH_MARKERS = ("/etc/shadow", "/etc/gshadow", "id_rsa", "id_ed25519", ".gnupg", ".aws/credentials")
+
+
+def path_operands(exe, args):
+    """Extract only audited path roles, never treating flags as target paths."""
+    profile = POLICY["commands"][exe]
+    options, operands = True, []
+    for arg in args:
+        if options and arg == "--": options = False
+        elif options and arg.startswith("-") and arg != "-":
+            if arg not in profile["flags"] and not (not arg.startswith("--") and all(c.isascii() and c.isalpha() and f"-{c}" in profile["flags"] for c in arg[1:])):
+                return None
+        else: operands.append(arg)
+    if not profile["min_operands"] <= len(operands) <= profile["max_operands"]:
+        return None
+    return operands
+
+
+def mutation_operands(exe, args):
+    operands = path_operands(exe, args)
+    if operands is None: return None
+    return operands[-1:] if exe == "cp" else operands
+
+
+def resolve_path_at_cwd(path, cwd):
+    if path.startswith("/"): return posixpath.normpath(path)
+    if not cwd.startswith("/") or any(unicodedata.category(c) == "Cc" for c in cwd):
+        return None
+    return posixpath.normpath(posixpath.join(cwd, path))
+
+
+def credential_path_blocked_at_cwd(exe, args, cwd):
+    paths = path_operands(exe, args)
+    if paths is None: return False  # Unknown read/create CLI shapes stay unknown.
+    for path in paths:
+        resolved = resolve_path_at_cwd(path, cwd)
+        if resolved is None or any(marker in resolved for marker in CREDENTIAL_PATH_MARKERS):
+            return True
+    return False
+
+
+def mutation_blocked_at_cwd(exe, args, cwd):
+    # This is lexical binding to authenticated context, not filesystem or
+    # symlink resolution. Missing role evidence cannot authorize a mutation.
+    targets = mutation_operands(exe, args)
+    if targets is None: return True
+    for target in targets:
+        if protected(target): return True
+        resolved = resolve_path_at_cwd(target, cwd)
+        if resolved is None or protected(resolved): return True
+    return False
+
+
+def risk(commands, secret, cwd=None):
     if secret: return "blocked"
     level = 0
     for words in commands:
@@ -140,10 +194,14 @@ def risk(commands, secret):
         if "/" in exe or not exe.isascii(): return "blocked"
         if exe == "command" and (not args or args[0] not in ("-v", "-V")): return "blocked"
         if exe in "bash sh zsh fish python python3 perl ruby node awk gawk mawk sed eval exec env xargs watch nohup timeout busybox sudo doas su pkexec ssh mosh tmux screen source .".split(): return "blocked"
-        if any(s in word for word in words for s in ("/etc/shadow", "/etc/gshadow", "id_rsa", "id_ed25519", ".gnupg", ".aws/credentials")): return "blocked"
+        if any(s in word for word in words for s in CREDENTIAL_PATH_MARKERS): return "blocked"
+        if cwd is not None and exe in ("cat", "less", "mkdir", "rmdir", "rm", "cp", "mv") and credential_path_blocked_at_cwd(exe, args, cwd): return "blocked"
         if exe.startswith("mkfs") or exe in "dd wipefs shred mkswap fdisk parted".split(): return "blocked"
         removing = exe in ("rm", "rmdir") or (exe == "find" and has("-delete"))
-        if (removing or exe in "chmod chown chgrp mv cp install truncate tee".split()) and any(protected(a) for a in args): return "blocked"
+        copy_targets = mutation_operands(exe, args) if exe == "cp" else None
+        mutation_args = copy_targets if copy_targets is not None else args
+        if (removing or exe in "chmod chown chgrp mv cp install truncate tee".split()) and any(protected(a) or (a.startswith("--target-directory=") and protected(a.split("=", 1)[1])) for a in mutation_args): return "blocked"
+        if cwd is not None and exe in ("rm", "rmdir", "cp", "mv") and mutation_blocked_at_cwd(exe, args, cwd): return "blocked"
         if exe == "kill":
             targets = args
             if targets and targets[0] in ("-s", "-n"): targets = targets[2:]
@@ -167,7 +225,7 @@ def skipped():
     return dict(parser="skipped", cli="skipped", intent="skipped", safety="skipped", secret="skipped", risk="unknown")
 
 
-def check(candidate, contract, host):
+def check(candidate, contract, host, cwd=None):
     result = skipped()
     secret = redact(candidate) != candidate or "[secret redacted]" in candidate
     result["secret"] = "blocked" if secret else "clean"
@@ -175,7 +233,7 @@ def check(candidate, contract, host):
     if not commands:
         result.update(parser="invalid", risk="blocked")
         return result
-    level = risk(commands, secret)
+    level = risk(commands, secret, cwd)
     result.update(parser="valid", cli=cli(commands, host), intent="satisfied" if intent_matches(contract, candidate, commands) else "mismatch", safety="blocked" if level == "blocked" else "approved", risk=level)
     return result
 
@@ -200,6 +258,7 @@ def evaluate(fixture):
             action = response.get("action")
             required = {"suggest_command":"command", "explain":"explanation", "clarify":"question"}.get(action)
             if not required or not (response.get(required) or "").strip(): raise ValueError("action")
+            if action == "suggest_command" and not (response.get("explanation") or "").strip(): raise ValueError("missing suggestion explanation")
             if action != "suggest_command" and response.get("command") is not None: raise ValueError("command")
             prose = " ".join([response.get("explanation") or "", response.get("question") or "", " ".join(response.get("plan") or [])]).lower()
             if any(phrase in prose for phrase in ["what did you expect", "what do you expect", "you should know", "obviously", "as i already told you", "when i run", "i ran ", "i executed "]): raise ValueError("prose contract")
@@ -214,14 +273,14 @@ def evaluate(fixture):
     passive = fixture.get("passive", False)
     contract = resolve(request, context, host, passive)
     current = context["at_prompt"] and not context["remote"] and not fixture.get("cancelled", False) and all(len(s.encode()) <= 4096 for s in (request, context["input"], context["cwd"]))
-    initial = check(candidate, contract, host) if current else skipped()
+    initial = check(candidate, contract, host, context["cwd"]) if current else skipped()
     final, correction = copy.deepcopy(initial), None
     if initial["parser"] == "valid" and initial["secret"] == "clean" and initial["safety"] == "approved" and initial["cli"] == "invalid" and contract["kind"] == "alternatives":
         choice = contract["value"][0]
         original, replacement = parse(candidate), parse(choice)
         if len(original) == 1 and original[0][0] == replacement[0][0]:
             candidate, correction = choice, "canonical_task_options"
-            final = check(candidate, contract, host)
+            final = check(candidate, contract, host, context["cwd"])
     stageable = current and not passive and all(final[k] == v for k, v in dict(parser="valid", cli="valid", intent="satisfied", safety="approved", secret="clean").items())
     context_status = "current" if current else "rejected"
     journal = context.get("journal", [])

@@ -29,6 +29,12 @@ fn canonical_requests_skip_inference_without_adding_authority() {
         assert_eq!(validation.command, expected);
         assert!(validation.binding().unwrap().matches(&request.session));
         assert_eq!(answer.source, "Host authorized command");
+        assert!(answer
+            .response
+            .explanation
+            .as_deref()
+            .unwrap()
+            .starts_with("Host explanation:"));
     }
     for text in [
         "explain disk usage",

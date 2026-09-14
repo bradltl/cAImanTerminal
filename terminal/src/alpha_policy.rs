@@ -5,7 +5,7 @@ use crate::{host, intent::IntentContract, worker::Request};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, sync::LazyLock};
 
-pub const VERSION: &str = "alpha-v1";
+pub const VERSION: &str = "alpha-v1.1";
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct HostFacts {
@@ -145,7 +145,12 @@ fn cli_status(commands: &[Vec<String>], facts: &HostFacts) -> &'static str {
     "valid"
 }
 
-fn check(command: &str, contract: &IntentContract, facts: &HostFacts) -> CandidateDecision {
+fn check(
+    command: &str,
+    cwd: &str,
+    contract: &IntentContract,
+    facts: &HostFacts,
+) -> CandidateDecision {
     let mut result = skipped();
     result.secret = if crate::secrets::check_command(command).is_ok() {
         "clean"
@@ -166,7 +171,7 @@ fn check(command: &str, contract: &IntentContract, facts: &HostFacts) -> Candida
         "mismatch"
     }
     .into();
-    match host::assess_risk(command, false, "") {
+    match host::assess_risk_at(command, cwd, false, "") {
         Ok(v) => {
             result.safety = "approved".into();
             result.risk = match v.risk {
@@ -198,7 +203,7 @@ pub fn evaluate(request: &Request, candidate: &str, facts: &HostFacts) -> Decisi
         && request.session.input.len() <= 4096
         && request.session.cwd.len() <= 4096;
     let initial = if current {
-        check(candidate, &contract, facts)
+        check(candidate, &request.session.cwd, &contract, facts)
     } else {
         skipped()
     };
@@ -217,7 +222,7 @@ pub fn evaluate(request: &Request, candidate: &str, facts: &HostFacts) -> Decisi
                 let original = host::parse_commands(candidate).unwrap();
                 let replacement = host::parse_commands(choice).unwrap();
                 if original.len() == 1 && original[0][0] == replacement[0][0] {
-                    final_checks = check(choice, &contract, facts);
+                    final_checks = check(choice, &request.session.cwd, &contract, facts);
                     final_command = choice.clone();
                     correction = Some("canonical_task_options".into());
                 }

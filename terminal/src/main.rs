@@ -127,11 +127,16 @@ fn main() -> anyhow::Result<()> {
             cancellation: Arc::new(AtomicU64::new(0)),
         };
         let mut calls = 0;
-        let candidate = caiman_terminal::host::Response::parse(&input.response)
+        let candidate = caiman_terminal::host::Response::parse_assistant(&input.response)
             .ok()
             .and_then(|r| r.command)
             .unwrap_or_default();
-        let risk = caiman_terminal::host::assess_risk(&candidate, input.remote, "");
+        let risk = caiman_terminal::host::assess_risk_at(
+            &candidate,
+            &request.session.cwd,
+            input.remote,
+            "",
+        );
         let checks = serde_json::json!({
             "parser": caiman_terminal::host::parse_commands(&candidate).is_ok(),
             "secret": caiman_terminal::secrets::contains(&candidate),
@@ -139,7 +144,7 @@ fn main() -> anyhow::Result<()> {
             "safety": risk.is_ok(),
             "risk": risk.ok().map(|v| v.risk),
         });
-        let answer = caiman_terminal::worker::process(&request, |_| {
+        let answer = caiman_terminal::worker::process_model_candidate(&request, |_| {
             calls += 1;
             Ok(input.response.clone())
         });

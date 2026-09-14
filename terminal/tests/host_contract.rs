@@ -123,7 +123,7 @@ fn schema_rejects_execution_tools_and_multiple_commands() {
     for raw in [
         r#"{"action":"execute","command":"ls"}"#,
         r#"{"action":"suggest_command"}"#,
-        r#"{"action":"suggest_command","command":"ls","risk":"normal"}"#,
+        r#"{"action":"suggest_command","command":"ls","explanation":"Lists directory entries.","risk":"normal"}"#,
         r#"{"action":"explain","explanation":"ok","command":"ls"}"#,
         r#"{"action":"suggest_sequence","commands":["ls","pwd"]}"#,
         "```json\n{}\n```",
@@ -216,7 +216,14 @@ fn response_pipeline_validates_without_executing_candidate() {
     let answer = process(&req, |_| {
         Ok(serde_json::json!({"action":"suggest_command","command":format!("touch {}",marker.display()),"explanation":"Create file"}).to_string())
     });
-    assert!(answer.is_err(), "touch has no audited alpha CLI profile");
+    let answer = answer.unwrap();
+    assert!(
+        answer.validation.is_none(),
+        "touch has no audited alpha CLI profile"
+    );
+    assert!(answer.response.command.is_none());
+    assert_eq!(answer.response.action, "explain");
+    assert!(answer.response.explanation.unwrap().contains("Create file"));
     assert!(!marker.exists());
 }
 #[test]
