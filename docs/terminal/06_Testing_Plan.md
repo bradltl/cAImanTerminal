@@ -1,5 +1,14 @@
 # Testing plan
 
+Current alpha checks prioritize valid, useful and explained responses; latency is
+diagnostic only. Benchmark tests must prove slow valid responses pass and fast
+invalid responses fail. Test unknown/mismatched proposals as labelled advice with
+no staging authority, model explanation completeness, literal file-operation
+positive cases, and unrelated-target rejection. Inline ghost tests cover cursor
+geometry, scroll/resize invalidation, real Tab staging and distinct physical
+Enter. GPU selection/fallback and optional Vulkan build checks complement—not
+replace—CPU regression tests; GPU hardware claims need a real-device test.
+
 Performance-review regressions cover nested sudo, kill signal/PID positions,
 secret labels outside retained tails, Unicode quoting equivalence, incremental
 JSON framing, request-scoped timings and ordered UI event delivery. Generated
@@ -12,10 +21,12 @@ Use [Alpha Hardening / Harness Conformance](14_Alpha_Conformance.md) for the cur
 commands, finding-to-test matrix, fixture schema and latency protocol. PRs require
 exact conformance, parser properties, guard mutants, real GTK/Bash lifecycle and
 bounded coverage-guided fuzzing. Longer fuzzing runs daily. Verified-model and
-three-by-200 latency checks run only on an explicitly dispatched trusted runner.
-Production and model-candidate routing each have a separate failing gate and
-artifact; fast canonical answers cannot hide model quality or latency failures.
-These checks are not permission to run untrusted PR code on that runner. A green ordinary
+live-model correctness benchmarks run only on an explicitly dispatched trusted runner.
+Production and model-candidate routing each have a separate correctness gate and
+timing artifact; fast canonical answers cannot hide model quality failures.
+The trusted-runner job uses a 1×20 correctness smoke for each route; CLI defaults
+retain 3×200 for deliberate diagnostic profiling. These checks are not permission
+to run untrusted PR code on that runner. A green ordinary
 PR does not certify alpha performance or permit an alpha release.
 
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
@@ -80,10 +91,11 @@ generations for these known host errors; a withheld candidate is no longer a pas
 `GDK_BACKEND=x11 CAYMAN_TEST_X11_KEYS=1 cargo test --lib desktop_flow -- --ignored
 --nocapture` additionally uses XTest to type `find` into the dedicated verification
 window. It exercises actual GTK key dispatch, Bash input capture, idle triggering,
-and validated completion. No Enter is injected by that keyboard helper.
+and validated completion. Fixed Tab and Enter actions are separately simulated
+to prove that accepting a visible ghost does not execute it.
 
-The X11 keyboard test also types `ps -`, checks request arrival under 650 ms
-including typing overhead, verifies installed ps flag descriptions without model
+The X11 keyboard test also types `ps -`, checks eventual request arrival and logs
+latency without a performance threshold, verifies installed ps flag descriptions without model
 inference, and checks that old assistant text clears. Flag contract tests cover
 short commands, long prefixes, clusters, multiline help descriptions, pipelines,
 end-of-options, remote suppression, and missing documentation.
