@@ -117,7 +117,10 @@ responses fail the gate regardless of latency.
 the production model branch and every gate. Always report this separately from
 normal routing; fast deterministic responses are not evidence of model speed or
 model accuracy. The expected model digest is configuration metadata until model
-generation actually loads and verifies the weights.
+generation actually loads and verifies the weights. The dispatched trusted-runner
+job independently gates three-by-200 production and model-candidate runs, retaining
+both artifacts even on failure. A fast canonical route cannot turn unresolved
+model-path failures into a green performance gate.
 Explicit `CAYMAN_BENCH_RETRY=1` profiles a simulated single Retry suggestion action
 after eligible verification failures. These measurements remain separate and
 never replace first-attempt failures in the acceptance distribution.

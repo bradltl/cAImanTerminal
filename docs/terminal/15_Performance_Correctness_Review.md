@@ -38,7 +38,8 @@ It does not add commands, guess operands or use terminal evidence as authority.
 `process_model_candidate` and `CAYMAN_BENCH_MODEL_PATH=1` retain the actual model
 branch with all the same gates. Adversarial tests, malformed-response tests and
 live-model regression explicitly exercise this branch, so deterministic answers
-cannot hide dangerous candidates or erase model failures.
+cannot hide dangerous candidates or erase model failures. The trusted-runner CI
+job separately gates and retains three-by-200 reports for both routes.
 
 ### Measured results (release build, i7-1355U, two threads)
 
@@ -74,6 +75,10 @@ scope tests and supervised-process tests cover these fixes. The exact conformanc
 corpus now has 101 cases. Real Bash/VTE desktop and lifecycle tests cover the
 retained shell poll, explicit retry and physical-Enter staging boundary. The
 worker event-stream test verifies ordered main-context delivery and closure.
+The final 30-second instrumented fuzz smoke completed 119,875 inputs without a
+failure. It ran outside the local sandbox because LeakSanitizer cannot perform
+its shutdown check under that sandbox's tracing restriction; sanitizers remained
+enabled. PR and scheduled CI retain their normal sanitizer configuration.
 
 ## Supplied review (unverified estimates and recommendations)
 
