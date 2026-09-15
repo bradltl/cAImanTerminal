@@ -164,6 +164,21 @@ pub fn show(
         .build();
     row(&model, "Model SHA-256", &digest);
     row(&model, "CPU threads", &threads);
+    let gpu_offload = gtk::CheckButton::with_label("Enable GPU offloading when available");
+    gpu_offload.set_active(settings.inference.gpu_offload);
+    model.append(&gpu_offload);
+    let gpu_layers = spin(settings.inference.gpu_layers as f64, 1.0, 256.0, 1.0);
+    gpu_layers.set_sensitive(gpu_offload.is_active());
+    let layers = gpu_layers.clone();
+    gpu_offload.connect_toggled(move |toggle| layers.set_sensitive(toggle.is_active()));
+    row(&model, "Requested GPU layers", &gpu_layers);
+    note(
+        &model,
+        &format!(
+            "Compiled GPU backends: {}. A compatible local driver and device are required. CPU is used when unavailable or recoverable GPU allocation fails. Layer count is a request, not a measurement of actual offload.",
+            crate::settings::compiled_gpu_backends()
+        ),
+    );
     let context = spin(
         settings.inference.context_tokens as f64,
         2048.0,
@@ -244,6 +259,8 @@ pub fn show(
             Some(PathBuf::from(value.as_str()))
         };
         updated.inference.threads = threads.value_as_int();
+        updated.inference.gpu_offload = gpu_offload.is_active();
+        updated.inference.gpu_layers = gpu_layers.value_as_int() as u32;
         updated.inference.model_sha256 =
             (!digest.text().trim().is_empty()).then(|| digest.text().trim().to_string());
         updated.inference.context_tokens = context.value_as_int() as u32;
@@ -303,6 +320,13 @@ mod tests {
             move |_| called.set(true),
         );
         let widgets = descendants(window.upcast_ref());
+        let gpu = widgets
+            .iter()
+            .filter_map(|w| w.clone().downcast::<gtk::CheckButton>().ok())
+            .find(|b| b.label().as_deref() == Some("Enable GPU offloading when available"))
+            .unwrap();
+        assert!(!gpu.is_active());
+        gpu.set_active(true);
         let theme = widgets
             .iter()
             .find_map(|w| w.clone().downcast::<gtk::DropDown>().ok())
@@ -325,6 +349,7 @@ mod tests {
         button.emit_clicked();
         assert!(saved.get());
         assert_eq!(crate::settings::load(&path).unwrap().theme, "nord");
+        assert!(crate::settings::load(&path).unwrap().inference.gpu_offload);
         let until = std::time::Instant::now() + std::time::Duration::from_millis(250);
         while std::time::Instant::now() < until {
             while gtk::glib::MainContext::default().pending() {

@@ -1,7 +1,7 @@
 # cAIman Terminal documentation
 
-Updated for alpha hardening on **2026-09-14**. Alpha dogfooding is not approved;
-the measured latency and model-correctness gates remain closed.
+Updated for assistive alpha on **2026-09-14**. Alpha has no latency gate;
+correctness, useful coverage and explanation quality still require evidence.
 
 ## Current guides
 
@@ -12,7 +12,7 @@ the measured latency and model-correctness gates remain closed.
 - [Local artifacts](../artifacts/README.md)
 - [Runtime harness](../terminal/tests/README.md)
 - [Security hardening, verification and remaining limits](terminal/13_Security_Hardening.md)
-- [Alpha-v1 policy, executable review matrix and acceptance evidence](terminal/14_Alpha_Conformance.md)
+- [Alpha policy, executable review matrix and acceptance evidence](terminal/14_Alpha_Conformance.md)
 
 ## Terminal product and implementation
 
@@ -31,6 +31,7 @@ the measured latency and model-correctness gates remain closed.
 13. [Security hardening](terminal/13_Security_Hardening.md)
 14. [Alpha conformance and release gates](terminal/14_Alpha_Conformance.md)
 15. [Performance/correctness review, dispositions and measurements](terminal/15_Performance_Correctness_Review.md)
+16. [Optional GPU acceleration and CPU fallback](terminal/16_GPU_Acceleration.md)
 
 ## Development guidance and archive
 

@@ -83,7 +83,7 @@ fn session_binding_rejects_each_changed_dimension() {
 fn malformed_and_secret_responses_never_preserve_a_command() {
     for raw in [
         "{",
-        r#"{"action":"suggest_command","command":"ls","command":"pwd"}"#,
+        r#"{"action":"suggest_command","command":"ls","command":"pwd","explanation":"Reports the current working directory."}"#,
         r#"{"action":"explain","explanation":"hi","risk":"normal"}"#,
     ] {
         assert!(Response::parse(raw).is_err());

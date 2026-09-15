@@ -25,6 +25,7 @@ impl Drop for Running {
 }
 pub struct ProcessModel {
     timings: RefCell<Option<crate::metrics::GenerationTimings>>,
+    runtime: RefCell<Option<crate::settings::InferenceRuntime>>,
     path: PathBuf,
     options: crate::settings::Inference,
     running: RefCell<Option<Running>>,
@@ -34,10 +35,16 @@ impl ProcessModel {
         options.validate()?;
         Ok(Self {
             timings: RefCell::new(None),
+            runtime: RefCell::new(None),
             path: path.canonicalize()?,
             options: options.clone(),
             running: RefCell::new(None),
         })
+    }
+    /// None until the verified model helper has completed loading. This is
+    /// selection metadata, not a measurement of executed GPU operations.
+    pub fn runtime(&self) -> Option<crate::settings::InferenceRuntime> {
+        self.runtime.borrow().clone()
     }
     fn start(&self) -> Result<Running> {
         use std::os::unix::process::CommandExt;
@@ -177,6 +184,9 @@ impl ProcessModel {
     }
 }
 impl crate::adapters::ModelBackend for ProcessModel {
+    fn runtime(&self) -> Option<crate::settings::InferenceRuntime> {
+        self.runtime()
+    }
     fn timings(&self) -> Option<crate::metrics::GenerationTimings> {
         self.timings.borrow().clone()
     }
@@ -189,11 +199,13 @@ impl crate::adapters::ModelBackend for ProcessModel {
         let mut state = self.running.borrow_mut();
         let result = (|| {
             if state.is_none() {
+                self.runtime.borrow_mut().take();
                 *state = Some(self.start()?);
                 let ready =
                     self.receive(state.as_ref().unwrap(), cancellation, ticket, deadline)?;
-                let ready: std::result::Result<(), String> = serde_json::from_str(&ready)?;
-                ready.map_err(anyhow::Error::msg)?;
+                let ready: std::result::Result<crate::settings::InferenceRuntime, String> =
+                    serde_json::from_str(&ready)?;
+                *self.runtime.borrow_mut() = Some(ready.map_err(anyhow::Error::msg)?);
             }
             let running = state.as_mut().unwrap();
             self.send(
@@ -210,6 +222,7 @@ impl crate::adapters::ModelBackend for ProcessModel {
         })();
         if result.is_err() {
             state.take();
+            self.runtime.borrow_mut().take();
         }
         result
     }
@@ -233,9 +246,9 @@ pub fn serve(path: &Path) -> Result<()> {
     let options = serde_json::from_str(&line)?;
     let mut output = std::io::stdout().lock();
     let model = crate::inference::LocalModel::load_with_options(path, options);
-    let ready: std::result::Result<(), String> = model
+    let ready: std::result::Result<crate::settings::InferenceRuntime, String> = model
         .as_ref()
-        .map(|_| ())
+        .map(|model| model.runtime().clone())
         .map_err(|e| crate::context::redact(&e.to_string()));
     writeln!(output, "{}", serde_json::to_string(&ready)?)?;
     output.flush()?;

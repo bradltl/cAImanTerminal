@@ -5,7 +5,10 @@ use std::sync::{Arc, atomic::AtomicU64};
 fuzz_target!(|data: &[u8]| {
     if data.len() > 4096 { return; }
     let Ok(candidate) = std::str::from_utf8(data) else { return; };
-    let mut session = Session::new(1, "/tmp".into());
+    // Exercise relative operands at an ordinary and a protected physical CWD,
+    // including a lexically equivalent path. No filesystem commands are run.
+    let cwd = ["/tmp", "/etc", "/tmp/../etc"][data.len() % 3];
+    let mut session = Session::new(1, cwd.into());
     session.at_prompt = true;
     session.terminal_text = candidate.into();
     let request = Request { session, text: candidate.into(), ticket: 0, cancellation: Arc::new(AtomicU64::new(0)), passive: false };
@@ -13,9 +16,9 @@ fuzz_target!(|data: &[u8]| {
     if trace.stageable {
         assert!(!candidate.chars().any(char::is_control));
         assert!(host::parse_commands(candidate).is_ok());
-        assert!(host::assess_risk(candidate, false, "").is_ok());
+        assert!(host::assess_risk_at(candidate, cwd, false, "").is_ok());
     }
-    if host::assess_risk(candidate, false, "").is_err() { assert!(!trace.stageable); }
+    if host::assess_risk_at(candidate, cwd, false, "").is_err() { assert!(!trace.stageable); }
     let mut prompt: Prompt = serde_json::from_str(&worker::build_prompt(&request, candidate)).unwrap();
     assert!(!prompt.render().contains("<|"));
     for _ in 0..32 { if !prompt.compact() { break; } }

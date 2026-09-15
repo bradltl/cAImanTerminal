@@ -1,6 +1,6 @@
 # Architecture overview
 
-## Alpha-v1 amendment
+## Assistive alpha-v1.1 amendment
 
 See [the executable boundary map](14_Alpha_Conformance.md). Host facts are data
 injected into a shared production candidate gate, not precomputed verdicts.
@@ -8,6 +8,10 @@ An independent Python alpha profile compares the complete deterministic trace.
 Before inference, explicit supported contracts and verified literal commands can
 produce deterministic candidates; the shared final pipeline still revalidates
 and binds them. Model-candidate diagnostics bypass this optimization, not policy.
+Generated suggestions include an explanation and may include a concise plan.
+Deterministic answers include explicitly labelled host descriptions. Useful
+unverified advice is separate from staging authority: unknown CLI or unmatched
+intent does not become a valid check, even when its explanation is retained.
 Staging binds session/request/context/prompt generations, CWD, input and local
 prompt state. Only fixed integration keys cross the assistant-to-VTE adapter;
 Bash reads candidate text as data and checks its own prompt generation again.
@@ -16,6 +20,18 @@ Session metrics have fixed-size counters only, with manual clipboard export.
 Worker events wake a GLib future rather than a repeating window timer. The per-tab
 60 ms shell poll remains: FIFO readiness alone did not ensure VTE had processed
 the corresponding output, so the attempted replacement failed real-PTY tests.
+
+The inline ghost is a noninteractive GTK label over VTE at a verified cursor
+position, not terminal output or a Readline edit. VTE owns its scroll adjustment;
+a separate scrollbar replaces the incompatible scrolled-window wrapper. Cursor,
+output, resize, scroll and snapshot changes dismiss a stale preview. Only a
+visible bound ghost consumes Tab; otherwise Bash completion receives it.
+
+Optional compiled Vulkan/CUDA backends and explicit GPU settings affect model
+loading inside the supervised helper. Unavailable GPU support falls back to CPU;
+runtime metadata distinguishes requested offload from verified actual execution.
+No model download, cloud fallback, shared mutable KV cache or command execution
+capability is introduced. Latency reports remain diagnostic, never an alpha gate.
 
 > Scope: terminal application. Reviewed 2026-09-10 for the split workspace.
 > Code is in `terminal/`; commands run from the repository root unless stated otherwise.
@@ -35,13 +51,13 @@ flowchart LR
   Known -->|command| Host
   Known -->|no direct answer| Model[Supervised llama.cpp / resident GGUF]
   Model --> JSON[Constrained response parser]
-  JSON --> Host[alpha-v1 parser / CLI / intent / secrets]
+  JSON --> Host[alpha-v1.1 parser / CLI / intent / secrets]
   Host -->|eligible option error| Check[Deterministic canonical correction]
   Check -->|recheck every gate| Host
-  Host -->|unverifiable| Stop[No suggestion / explicit retry offer]
+  Host -->|unverifiable| Stop[Labelled advice or verification failure / explicit retry]
   User -->|Retry suggestion once, unchanged context| Worker
   Host -->|valid| Risk[Deterministic risk check]
-  Risk -->|accepted| Suggestion[Suggestion display]
+  Risk -->|accepted| Suggestion[Inline ghost + explanation and warnings]
   User -->|Tab| Readline[Readline staging widget]
   Suggestion -->|single printable line as data| Readline
   Readline -->|editable buffer, no Enter| VTE

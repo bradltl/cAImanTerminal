@@ -1,5 +1,40 @@
 # Project status
 
+## Assistive alpha revision — 2026-09-14
+
+Alpha latency thresholds have been removed at the user's direction. Timings remain
+diagnostic; incomplete or incorrect assistance is not a successful answer.
+Generated suggestions again require explanations and may include a short plan;
+deterministic answers have labelled host descriptions. Unknown CLI proposals can
+remain clearly unverified advice without acquiring staging authority.
+
+Policy `alpha-v1.1` adds audited literal mkdir/rmdir/rm/cp/mv forms, preserving
+exact intent, credential and critical-operation checks. Inline GTK ghost text now
+aligns to a verified VTE cursor; Tab stages only a visible current preview, and
+physical Enter remains separate. Scroll, edits, resize and output dismiss stale
+previews. Unsupported placement falls back to the assistant pane.
+
+Optional Vulkan/CUDA builds expose opt-in offload and layer settings, with CPU
+baseline/fallback and content-free runtime selection metadata. This environment
+does not expose a hardware GPU: CPU/fallback verification cannot establish an
+accelerated speedup. See [GPU support](16_GPU_Acceleration.md).
+
+The original PRD is not yet fully implemented: broader natural-language staging,
+remote assistance, general semantic correctness, complete multi-step workflows
+and explanation quality need further evidence. The older latency failures below
+are historical measurements, no longer numerical alpha blockers.
+
+Verification: both Rust feature modes, Clippy, real desktop/lifecycle and settings
+tests, 114 Python tests, 151 exact conformance cases, all four guard mutants and
+80,318 CWD-aware fuzz inputs passed. CPU and Vulkan builds passed verified-model
+fallback tests; CUDA and real GPU acceleration remain unverified.
+
+The current release pilot validates 20/20 normal-routing requests and 18/20
+model-candidate requests. Both model-only misses are the same frozen literal
+case. Its p50/p95 are 6.03/12.72 seconds (diagnostic only, with local compilation
+overlap). Do not convert the remaining validation failures into successes or call
+these pilots full PRD acceptance. See [aggregate evidence](evidence/assistive-alpha-20260914.json).
+
 ## Performance/correctness review — 2026-09-14
 
 Implemented validated review fixes and deterministic routing for already-authorized
@@ -13,7 +48,7 @@ showed premature output capture. See [review and evidence](15_Performance_Correc
 
 The earlier alpha-hardening measurements below are retained as history.
 
-## Current alpha-hardening status — 2026-09-11
+## Historical alpha-hardening status — 2026-09-11
 
 Engineering preview only: **not alpha-ready**. The latest conformance suite has
 98 paired cases with zero discrepancies/exceptions. New coverage includes the

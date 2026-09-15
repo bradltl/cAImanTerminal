@@ -141,7 +141,7 @@ pub fn write_stage_bound(
     expected_cwd: &str,
     prompt_generation: u64,
 ) -> Result<()> {
-    crate::host::assess_risk(command, false, "")?;
+    crate::host::assess_risk_at(command, expected_cwd, false, "")?;
     if expected_input.contains(['\n', '\r', '\0']) {
         bail!("Cannot replace a multiline input");
     }

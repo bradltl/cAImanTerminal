@@ -115,14 +115,31 @@ fn percentile(samples: &[Sample], percent: usize) -> f64 {
     times[(times.len() * percent).div_ceil(100).saturating_sub(1)]
 }
 
+fn validation_passes(samples: &[Sample]) -> bool {
+    // Duration is deliberately absent from this decision. The frozen corpus
+    // asks for stageable commands, so an explanation or unverifiable response
+    // is not a completed answer for these cases, regardless of how fast it was.
+    !samples.is_empty() && samples.iter().all(|sample| sample.valid)
+}
+
 pub fn run(model: PathBuf) -> anyhow::Result<()> {
     anyhow::ensure!(
         !cfg!(debug_assertions),
-        "Latency acceptance requires a release build"
+        "Comparable benchmark diagnostics require a release build"
     );
     let mut settings = crate::settings::Settings::default();
     if let Ok(threads) = std::env::var("CAYMAN_BENCH_THREADS") {
         settings.inference.threads = threads.parse()?;
+    }
+    if let Ok(enabled) = std::env::var("CAYMAN_BENCH_GPU_OFFLOAD") {
+        settings.inference.gpu_offload = match enabled.as_str() {
+            "1" => true,
+            "0" => false,
+            _ => anyhow::bail!("CAYMAN_BENCH_GPU_OFFLOAD must be 0 or 1"),
+        };
+    }
+    if let Ok(layers) = std::env::var("CAYMAN_BENCH_GPU_LAYERS") {
+        settings.inference.gpu_layers = layers.parse()?;
     }
     let samples: usize = std::env::var("CAYMAN_BENCH_SAMPLES")
         .unwrap_or_else(|_| "200".into())
@@ -137,16 +154,17 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
     settings.validate()?;
     let corpus_text = include_str!("../resources/alpha-latency.json");
     let corpus: Vec<String> = serde_json::from_str(corpus_text)?;
+    anyhow::ensure!(!corpus.is_empty(), "Empty benchmark corpus");
     let model_candidate = std::env::var("CAYMAN_BENCH_MODEL_PATH").as_deref() == Ok("1");
     let worker = worker::spawn_with_routing(model, false, settings.clone(), model_candidate);
     let cold = measure(&worker, &corpus[0], 0, 0)?;
     // Deliberate benchmark opt-in simulates clicking Retry suggestion once.
-    // Retries never replace first-attempt failures in the acceptance statistics.
+    // Retries never replace first-attempt failures in the correctness statistics.
     let profile_retry = std::env::var("CAYMAN_BENCH_RETRY").as_deref() == Ok("1");
     let mut next_ticket = 1;
     let mut retries = Vec::new();
     let mut measured = Vec::new();
-    let mut passed = samples >= 200 && runs == 3;
+    let mut passed = cold.valid;
     for run in 0..runs {
         let mut records = Vec::new();
         for i in 0..samples {
@@ -160,13 +178,13 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
             }
             records.push(sample);
             if (i + 1) % 20 == 0 {
-                eprintln!("alpha latency run {}: {}/{}", run + 1, i + 1, samples);
+                eprintln!("alpha benchmark run {}: {}/{}", run + 1, i + 1, samples);
             }
         }
         let p50 = percentile(&records, 50);
         let p95 = percentile(&records, 95);
         let failures = records.iter().filter(|s| !s.valid).count();
-        passed &= failures == 0 && p50 <= 750.0 && p95 <= 1500.0;
+        passed &= validation_passes(&records);
         let mut paths = serde_json::Map::new();
         for path in [
             "normal_model",
@@ -202,6 +220,7 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
         )?);
         next_ticket += 1;
     }
+    passed &= validation_passes(&deterministic);
     let deterministic_summary = serde_json::json!({
         "fixture":"read_named_file_v1", "count":deterministic.len(),
         "p50_ms":percentile(&deterministic,50), "p95_ms":percentile(&deterministic,95),
@@ -210,15 +229,68 @@ pub fn run(model: PathBuf) -> anyhow::Result<()> {
     let corpus_hash = format!("{:x}", Sha256::digest(corpus_text.as_bytes()));
     println!(
         "{}",
-        serde_json::json!({"policy":"alpha-v1","release_build":true,"corpus_sha256":corpus_hash,"expected_model_sha256":crate::model_file::DEFAULT_SHA256,"model_candidate_path":model_candidate,"threads":settings.inference.threads,"cold":cold,"runs":measured,"deterministic_calibration":deterministic_summary,"retry_profile_enabled":profile_retry,"retries":retries,"alpha_latency_passed":passed})
+        serde_json::json!({
+            "report_version":"alpha-benchmark-v2",
+            "policy":crate::alpha_policy::VERSION,
+            "release_build":true,
+            "corpus_sha256":corpus_hash,
+            "expected_model_sha256":crate::model_file::DEFAULT_SHA256,
+            "model_candidate_path":model_candidate,
+            "threads":settings.inference.threads,
+            "gpu_offload_requested":settings.inference.gpu_offload,
+            "gpu_layers_requested":settings.inference.gpu_layers,
+            "compiled_gpu_backends":crate::settings::compiled_gpu_backends(),
+            "cold":cold,
+            "runs":measured,
+            "deterministic_calibration":deterministic_summary,
+            "retry_profile_enabled":profile_retry,
+            "retries":retries,
+            "benchmark_validation_passed":passed,
+            "latency_requirement_ms":null,
+            "recommended_sampling_complete":samples >= 200 && runs == 3
+        })
     );
-    anyhow::ensure!(passed, "Alpha latency gate failed; dogfood remains blocked");
+    anyhow::ensure!(
+        passed,
+        "Benchmark command validation failed; latency is diagnostic only"
+    );
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn completed_sample(elapsed_ms: f64, valid: bool) -> Sample {
+        Sample {
+            case: 0,
+            elapsed_ms,
+            valid,
+            path: "normal_model",
+            timings: None,
+            pipeline: None,
+            queue_and_delivery_ms: 0.0,
+            retryable: false,
+        }
+    }
+
+    #[test]
+    fn slow_valid_answers_and_small_pilots_have_no_latency_gate() {
+        let samples = [completed_sample(30_000.0, true)];
+        assert_eq!(percentile(&samples, 50), 30_000.0);
+        assert_eq!(percentile(&samples, 95), 30_000.0);
+        assert!(validation_passes(&samples));
+    }
+
+    #[test]
+    fn fast_invalid_or_empty_results_cannot_pass_validation() {
+        assert!(!validation_passes(&[completed_sample(0.001, false)]));
+        assert!(!validation_passes(&[
+            completed_sample(30_000.0, true),
+            completed_sample(0.001, false),
+        ]));
+        assert!(!validation_passes(&[]));
+    }
     #[test]
     fn failed_completion_keeps_diagnostics_but_never_becomes_a_fast_success() {
         let (requests, receive) = std::sync::mpsc::sync_channel::<Request>(1);

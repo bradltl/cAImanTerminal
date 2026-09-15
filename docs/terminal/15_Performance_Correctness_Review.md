@@ -1,5 +1,17 @@
 # cAIman Terminal — Deep Review Report
 
+Current assistive-alpha pilot and regression counts are recorded in
+[the September 14 aggregate](evidence/assistive-alpha-20260914.json). Historical
+performance requirements and command-only response recommendations below are
+superseded by the current PRD: explanations are required and latency is diagnostic.
+
+> Superseded requirement: the user has removed alpha's fixed p50/p95 latency
+> thresholds. The review and measurements below are historical evidence, not
+> current latency acceptance criteria. Benchmarks now retain timing diagnostics
+> and fail on incorrect command responses, not elapsed time. Correctness,
+> completeness, explanations and explicit user submission remain priorities.
+> See [current alpha acceptance](14_Alpha_Conformance.md#acceptance).
+
 ## Implementation review
 
 The supplied analysis below is retained as a proposal, not verified evidence.

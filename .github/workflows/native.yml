@@ -11,6 +11,22 @@ on:
 permissions:
   contents: read
 jobs:
+  vulkan-build:
+    # Hosted runners establish build/API conformance, not physical GPU use.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CMAKE_BUILD_PARALLEL_LEVEL: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Vulkan development dependencies
+        run: sudo apt-get update && sudo apt-get install -y libclang-dev cmake pkg-config libvulkan-dev glslc spirv-headers
+      - name: Build Vulkan backend and exercise selection and fallback
+        run: cargo test --locked --no-default-features --features gpu-vulkan --lib inference::tests
+      - name: Verify headless GPU settings and no-load reporting
+        run: cargo test --locked --no-default-features --features gpu-vulkan --test settings_contract --test gpu_runtime
   verify:
     runs-on: ubuntu-24.04
     steps:
@@ -43,6 +59,11 @@ jobs:
       - run: python llm/tools/mutation_check.py
   live-model:
     timeout-minutes: 60
+    # Correctness smoke covers the frozen ten-request corpus twice. Full 3x200
+    # profiling remains a deliberate CLI run, not an alpha latency obligation.
+    env:
+      CAYMAN_BENCH_RUNS: '1'
+      CAYMAN_BENCH_SAMPLES: '20'
     if: github.event_name == 'workflow_dispatch' && inputs.live_model
     # Deliberately not a PR job. Provision model via CAIMAN_TEST_MODEL; digest is
     # checked by the loader. Do not execute untrusted PR code on this runner.
@@ -54,10 +75,10 @@ jobs:
       - run: ./target/debug/caiman-terminal --model "$CAIMAN_TEST_MODEL" --ask 'show disk usage'
       - id: release
         run: cargo build --release --locked
-      - name: Production latency gate, three runs of 200 warm requests
+      - name: Production correctness smoke and latency diagnostics
         shell: bash
         run: ./target/release/caiman-terminal --model "$CAIMAN_TEST_MODEL" --alpha-benchmark > alpha-latency.json
-      - name: Independent model-path gate, three runs of 200 warm requests
+      - name: Independent model-path correctness smoke and latency diagnostics
         if: ${{ !cancelled() && steps.release.outcome == 'success' }}
         shell: bash
         env:

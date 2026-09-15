@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-14",
+  "policy": "alpha-v1.1",
+  "scope": "synthetic release-build correctness pilot and local regressions, not general alpha certification",
+  "latency_requirement_ms": null,
+  "expected_model_sha256": "fdb77f88b8282cbb0e65f8362b5c11e8ea8648f1730661fb5592e5b6a633fb61",
+  "frozen_corpus_sha256": "aca5703acfa38ee7dff426b85337bb1728a2d389e2ad14febe0519590a7b4f12",
+  "threads": 2,
+  "production": {
+    "measured_requests": 20,
+    "validated": 20,
+    "deterministic": 20,
+    "worker_p50_ms": 0.220145,
+    "worker_p95_ms": 0.33699,
+    "benchmark_validation_passed": true
+  },
+  "model_candidate_diagnostic": {
+    "measured_requests": 20,
+    "validated": 18,
+    "unstaged": 2,
+    "unstaged_case_indices": [9, 9],
+    "worker_p50_ms": 6032.329601,
+    "worker_p95_ms": 12718.069733,
+    "benchmark_validation_passed": false,
+    "local_compilation_overlapped": true
+  },
+  "conformance": {"cases": 151, "discrepancies": 0, "exceptions": 0},
+  "python_tests": 114,
+  "guard_mutants_killed": 4,
+  "cwd_aware_fuzz_inputs": 80318,
+  "gpu": {
+    "cpu_and_vulkan_builds_tested": true,
+    "verified_model_cpu_fallback_smokes_passed": true,
+    "physical_gpu_available": false,
+    "hardware_speedup_verified": false,
+    "cuda_build_verified": false
+  },
+  "alpha_release_certified": false
+}

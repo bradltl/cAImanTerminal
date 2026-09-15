@@ -120,6 +120,11 @@ fn default_model_harness() {
             .validation
             .as_ref()
             .is_some_and(|v| ["df -h", "df -hT"].contains(&v.command.as_str()))
+            && answer
+                .response
+                .explanation
+                .as_deref()
+                .is_some_and(|text| !text.trim().is_empty())
     });
     report.push(serde_json::json!({"case":"live_supported_intent", "passed":generated_passed, "answer":format!("{generated:?}")}));
     let mut large: Prompt = serde_json::from_str(&worker::build_prompt(&req, "")).unwrap();

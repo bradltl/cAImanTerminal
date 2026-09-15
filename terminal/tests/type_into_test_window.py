@@ -52,9 +52,12 @@ focus, revert = c.c_ulong(), c.c_int()
 x.XGetInputFocus(d, c.byref(focus), c.byref(revert))
 assert focus.value == window, 'Verification window not focused; no keys sent'
 text = sys.argv[1] if len(sys.argv) == 2 else 'find'
-assert text in ('find', 'ps -'), 'Only fixed test inputs are allowed'
-for char in text:
-    key = x.XKeysymToKeycode(d, x.XStringToKeysym({' ': b'space', '-': b'minus'}.get(char, char.encode())))
+assert text in ('find', 'ps -', 'Tab', 'Return'), 'Only fixed test inputs are allowed'
+keys = [text.encode()] if text in ('Tab', 'Return') else [
+    {' ': b'space', '-': b'minus'}.get(char, char.encode()) for char in text
+]
+for keysym in keys:
+    key = x.XKeysymToKeycode(d, x.XStringToKeysym(keysym))
     assert key
     t.XTestFakeKeyEvent(d, key, 1, 0)
     t.XTestFakeKeyEvent(d, key, 0, 0)

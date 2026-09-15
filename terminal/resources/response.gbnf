@@ -1,6 +1,9 @@
 root ::= "{" ws "\"action\"" ws ":" ws (suggest | explain | clarify) ws "}"
-suggest ::= "\"suggest_command\"" ws "," ws "\"command\"" ws ":" ws string
+suggest ::= "\"suggest_command\"" ws "," ws "\"command\"" ws ":" ws string ws "," ws "\"explanation\"" ws ":" ws nonempty-string (ws "," ws "\"plan\"" ws ":" ws plan)?
 explain ::= "\"explain\"" ws "," ws "\"explanation\"" ws ":" ws string
 clarify ::= "\"clarify\"" ws "," ws "\"question\"" ws ":" ws string
-string ::= "\"" ([^"\\\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]))* "\""
+string ::= "\"" character* "\""
+nonempty-string ::= "\"" character+ "\""
+character ::= [^"\\\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F])
+plan ::= "[" ws nonempty-string (ws "," ws nonempty-string){0,4} ws "]"
 ws ::= [ \t\n\r]*

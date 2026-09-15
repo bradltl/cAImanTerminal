@@ -64,7 +64,7 @@ fn main() -> anyhow::Result<()> {
                 )
             }
             "--help" | "-h" => {
-                println!("{}\ncAIman Terminal 0.1\n\n  --model PATH  Local GGUF (default: SFT v2)\n  --model-sha256 HASH  Trusted digest required for custom weights\n  --policy-check  Evaluate a JSON fixture through the production worker\n  --alpha-benchmark  Run the synthetic release latency gate\n  --no-ai       Plain terminal, no model load\n  --ask TEXT    Headless final-pipeline inference; never executes commands\n  --audit-report PATH  Replay a saved benchmark through host validation\n  --theme ID    Theme override for this window\n  --list-themes List bundled theme IDs\n  --version     Print version\n\nManual: man caiman-terminal", include_str!("../resources/caiman.txt"));
+                println!("{}\ncAIman Terminal 0.1\n\n  --model PATH  Local GGUF (default: SFT v2)\n  --model-sha256 HASH  Trusted digest required for custom weights\n  --policy-check  Evaluate a JSON fixture through the production worker\n  --alpha-benchmark  Check synthetic response correctness and report timings\n  --no-ai       Plain terminal, no model load\n  --ask TEXT    Headless final-pipeline inference; never executes commands\n  --audit-report PATH  Replay a saved benchmark through host validation\n  --theme ID    Theme override for this window\n  --list-themes List bundled theme IDs\n  --version     Print version\n\nManual: man caiman-terminal", include_str!("../resources/caiman.txt"));
                 return Ok(());
             }
             _ => anyhow::bail!("Unknown option: {arg}"),
@@ -127,11 +127,16 @@ fn main() -> anyhow::Result<()> {
             cancellation: Arc::new(AtomicU64::new(0)),
         };
         let mut calls = 0;
-        let candidate = caiman_terminal::host::Response::parse(&input.response)
+        let candidate = caiman_terminal::host::Response::parse_assistant(&input.response)
             .ok()
             .and_then(|r| r.command)
             .unwrap_or_default();
-        let risk = caiman_terminal::host::assess_risk(&candidate, input.remote, "");
+        let risk = caiman_terminal::host::assess_risk_at(
+            &candidate,
+            &request.session.cwd,
+            input.remote,
+            "",
+        );
         let checks = serde_json::json!({
             "parser": caiman_terminal::host::parse_commands(&candidate).is_ok(),
             "secret": caiman_terminal::secrets::contains(&candidate),
@@ -139,7 +144,7 @@ fn main() -> anyhow::Result<()> {
             "safety": risk.is_ok(),
             "risk": risk.ok().map(|v| v.risk),
         });
-        let answer = caiman_terminal::worker::process(&request, |_| {
+        let answer = caiman_terminal::worker::process_model_candidate(&request, |_| {
             calls += 1;
             Ok(input.response.clone())
         });
@@ -212,7 +217,7 @@ fn main() -> anyhow::Result<()> {
             println!(
                 "{}",
                 serde_json::to_string_pretty(&caiman_terminal::secrets::sanitize_json(
-                    serde_json::json!({"model": model, "expected_sha256": hash, "schema": "cayman-response-v1", "response": answer.response, "validation": answer.validation, "source": answer.source, "repaired": answer.repaired, "elapsed_ms": answer.elapsed_ms})
+                    serde_json::json!({"model": model, "expected_sha256": hash, "schema": "cayman-response-v1", "response": answer.response, "validation": answer.validation, "source": answer.source, "repaired": answer.repaired, "elapsed_ms": answer.elapsed_ms, "runtime": runtime.runtime()})
                 ))?
             );
             return Ok(());

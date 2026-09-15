@@ -1,5 +1,5 @@
 {
-  "version": "alpha-v1",
+  "version": "alpha-v1.1",
   "command_encoding": "printable-ascii",
   "commands": {
     "ls": {"flags": ["-a", "-l", "-h", "-R", "--all", "--recursive"], "min_operands": 0, "max_operands": 1},
@@ -9,6 +9,11 @@
     "cat": {"flags": ["-n", "-b", "-s", "--number"], "min_operands": 1, "max_operands": 1},
     "less": {"flags": [], "min_operands": 1, "max_operands": 1},
     "echo": {"flags": [], "min_operands": 0, "max_operands": 32},
+    "mkdir": {"flags": ["-p", "-v", "--parents", "--verbose"], "min_operands": 1, "max_operands": 16},
+    "rmdir": {"flags": ["-p", "-v", "--parents", "--verbose", "--ignore-fail-on-non-empty"], "min_operands": 1, "max_operands": 16},
+    "rm": {"flags": ["-f", "-i", "-I", "-r", "-R", "-d", "-v", "--force", "--recursive", "--dir", "--verbose", "--preserve-root", "--one-file-system"], "min_operands": 1, "max_operands": 16},
+    "cp": {"flags": ["-a", "-f", "-i", "-n", "-r", "-R", "-p", "-v", "--archive", "--force", "--interactive", "--no-clobber", "--recursive", "--verbose"], "min_operands": 2, "max_operands": 2},
+    "mv": {"flags": ["-f", "-i", "-n", "-v", "--force", "--interactive", "--no-clobber", "--verbose"], "min_operands": 2, "max_operands": 2},
     "git": {"flags": ["--short", "--branch", "-s", "-b"], "prefix": ["status"], "min_operands": 0, "max_operands": 0},
     "pacman": {"flags": [], "exact_args": ["-Syu"], "min_operands": 0, "max_operands": 0}
   }

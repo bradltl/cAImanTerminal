@@ -41,8 +41,8 @@ ambiguous filenames prompt for clarification. Questions about terminal text edit
 identify an installed editor and show its save/exit keys. These common requests
 receive local guidance without model inference or package-manager suggestions.
 
-A recommendation appears in the assistant pane and a muted suggestion strip below
-the terminal. Read the command and any risk explanation. Press Tab
+A validated recommendation appears as muted inline ghost text at the prompt,
+with its explanation in the assistant pane. Read the command and any warning. Press Tab
 to place it in your Bash input; edit it if needed, then press Enter yourself.
 Without a suggestion, Tab remains normal Bash completion. Typing another key
 invalidates the old suggestion. Invalid commands are not staged.
@@ -75,15 +75,31 @@ assistant integration. See the backlog before relying on it for daily workflows.
 
 Pausing after bare `find` offers filename-search explanations, not a staged command.
 Pausing after `find . -name` or `find . -size` explains the missing operand without
-inventing a filename or size. Under alpha-v1, `find` is outside staged CLI coverage.
+inventing a filename or size. Under alpha-v1.1, `find` is outside staged CLI coverage.
 On CachyOS, failed apt updates can receive a direct pacman explanation; explicitly
 request `@ update my system` to authorize a validated update suggestion.
 
 Alpha staging is limited to audited CLI forms and printable ASCII commands.
 Unsupported commands, unknown options, and unverifiable candidates cannot stage.
 Normal manually typed Bash commands and Unicode terminal text are unaffected.
-This is an engineering preview: latency acceptance currently fails, so alpha
-dogfooding is not approved.
+This is an engineering preview: alpha has no latency gate, but complete assistance
+quality and PRD coverage are not yet certified.
+
+Validated suggestions appear inline at the current prompt. Tab accepts only a
+visible, current preview; Enter remains a distinct execution step. If the preview
+cannot fit safely (wrapping, non-ASCII/mid-buffer input or scrollback), guidance
+stays in the assistant pane and Tab keeps its normal Bash meaning. Editing,
+scrolling or resizing dismisses old previews.
+
+The assistant now explains model recommendations and retains useful unverified
+advice when CLI coverage is incomplete. Such advice is not staged. Exact audited
+file commands such as `@ mkdir -p ./build` and `@ rm -r ./build` can be staged,
+with warnings for data-changing operations. Targets and privileges are never
+invented by the host. Critical-operation and secret restrictions still apply.
+
+Optional GPU offload is enabled in Settings after installing a compatible
+Vulkan/CUDA build; see [GPU setup and fallback](16_GPU_Acceleration.md). Relaunch
+to apply runtime settings. Hardware absence does not disable CPU assistance.
 
 Copy session metrics manually copies fixed numeric aggregates to the clipboard.
 It includes scenario/outcome counts, validation risk, correction count, timing

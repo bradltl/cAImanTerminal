@@ -316,41 +316,41 @@ fn process_routed(
     }
     let mut answer = process_inner(request, generate, model_candidate)
         .map_err(|e| anyhow::anyhow!(redact(&e.to_string())))?;
+    let mut unstaged_reason = None;
     if let Some(command) = answer.response.command.as_deref() {
         let trace = check_candidate(request, command, &crate::alpha_policy::HostFacts::local());
         if let Some(command) = trace.final_command {
             answer.repaired |= trace.correction.is_some();
             if trace.correction.is_some() {
-                answer.response.explanation = Some("The host corrected the options for your requested task. Review the final command before pressing Enter.".into());
+                answer.response.explanation = Some(format!("The host corrected the options for your requested task. Review the final command before pressing Enter. {}", crate::explanation::command_summary(&command)));
                 answer.response.plan = None;
             }
-            answer.validation = Some(host::assess_risk(&command, false, "")?);
+            answer.validation = Some(host::assess_risk_at(
+                &command,
+                &request.session.cwd,
+                false,
+                "",
+            )?);
             answer.response.command = Some(command);
         } else {
             answer.validation = None;
+            unstaged_reason = Some(candidate_limitation(&trace));
         }
     }
     let contract = crate::intent::IntentContract::resolve(request);
     if let Some(command) = answer.response.command.as_deref() {
-        host::assess_risk(command, false, "")?;
+        host::assess_risk_at(command, &request.session.cwd, false, "")?;
         if request.passive || contract.check(command).is_err() || answer.validation.is_none() {
             answer.validation = None;
-            let explanation = if answer.source == "Host guidance" {
-                answer.response.explanation.clone()
-            } else {
-                None
-            };
-            answer.response = Response {
-                action: "clarify".into(),
-                command: None,
-                explanation,
-                plan: None,
-                question: Some(if request.passive {
-                    "Use @ with an explicit task to request a command.".into()
+            explain_unstaged(
+                &mut answer.response,
+                if request.passive {
+                    "Passive assistance cannot stage commands. Use @ with an explicit task to request a command."
                 } else {
-                    "Please specify an exact command or a supported task; this request does not authorize staging the proposed command.".into()
-                }),
-            };
+                    unstaged_reason.unwrap_or("The proposed command is not authorized by your explicit request. Specify the exact command or clarify the task before staging.")
+                },
+                None,
+            );
         } else if let Some(validation) = &mut answer.validation {
             validation.binding = Some(crate::context::ContextBinding::capture(&request.session));
         }
@@ -369,6 +369,39 @@ fn process_routed(
         anyhow::bail!("Request cancelled");
     }
     Ok(answer)
+}
+
+fn candidate_limitation(trace: &crate::alpha_policy::DecisionTrace) -> &'static str {
+    if trace.context == "previous_failure" {
+        "This command already failed in the recorded context. Address the reported cause before trying it again."
+    } else if trace.final_checks.cli == "unknown" {
+        "CLI coverage for this command is not yet audited, so its options and operands have not been verified."
+    } else if trace.final_checks.cli != "valid" {
+        "The proposed command did not pass host CLI validation. Check its installed documentation and required arguments."
+    } else {
+        "The proposed command is not authorized by your explicit request. Specify the exact command or clarify the task before staging."
+    }
+}
+
+fn explain_unstaged(response: &mut Response, reason: &str, quoted_proposal: Option<String>) {
+    // Keep useful assistance distinct from authorization. Only callers that
+    // passed parser, secret and risk checks may supply quoted candidate data.
+    // No command/Validation survives to become ghost text. Prose and plans
+    // remain unverified guidance and are redacted by the common return path.
+    response.action = "explain".into();
+    response.command = None;
+    response.question = None;
+    let guidance = response.explanation.take().unwrap_or_default();
+    let mut explanation = format!("No command staged. {reason}");
+    if let Some(proposal) = quoted_proposal {
+        explanation.push_str(&format!(
+            "\n\nUnverified proposal — not staged (quoted data): {proposal}"
+        ));
+    }
+    if !guidance.trim().is_empty() {
+        explanation.push_str(&format!("\n\nUnverified guidance: {guidance}"));
+    }
+    response.explanation = Some(explanation);
 }
 
 fn process_inner(
@@ -450,8 +483,7 @@ fn process_inner(
     let start = Instant::now();
     let prompt = build_prompt(request, "");
     let parse = |raw: &str| -> anyhow::Result<Response> {
-        let response = Response::parse(raw)?;
-        crate::guidance::check_response(&response)?;
+        let response = Response::parse_assistant(raw)?;
         let query = request.text.trim().to_lowercase();
         if [
             "which filename",
@@ -474,15 +506,26 @@ fn process_inner(
     let mut repaired = false;
     if let Some(command) = response.command.as_deref() {
         // Hard rejection never becomes a retry offer or correction opportunity.
-        host::assess_risk(command, request.session.remote, "")?;
+        host::assess_risk_at(command, &request.session.cwd, request.session.remote, "")?;
         let trace = check_candidate(request, command, &crate::alpha_policy::HostFacts::local());
         if let Some(command) = trace.final_command {
             repaired = trace.correction.is_some();
             if repaired {
-                response.explanation = Some("The host corrected the options for your requested task. Review the final command before pressing Enter.".into());
+                response.explanation = Some(format!("The host corrected the options for your requested task. Review the final command before pressing Enter. {}", crate::explanation::command_summary(&command)));
                 response.plan = None;
             }
             response.command = Some(command);
+        } else if trace.initial.cli == "unknown" {
+            // Unknown coverage is not a validity claim, but it need not erase
+            // useful explanation. Missing/wrong-host commands remain eligible
+            // verification failures rather than being presented as guidance.
+            crate::command_validation::check_host(command, request.session.remote)
+                .map_err(|_| anyhow::anyhow!("Unverifiable: proposed command cannot be verified on this host; no command staged."))?;
+            // A user can review unsupported CLI advice without mistaking it
+            // for an authenticated staging action. Parse/risk/secret gates
+            // above bound the line before it is JSON-quoted as display data.
+            let proposal = serde_json::to_string(command)?;
+            explain_unstaged(&mut response, candidate_limitation(&trace), Some(proposal));
         } else if trace.initial.cli != "valid" {
             anyhow::bail!(
                 "Unverifiable: CLI syntax is outside the alpha policy; no command staged."
@@ -493,7 +536,7 @@ fn process_inner(
     let validation = response
         .command
         .as_deref()
-        .map(|c| host::assess_risk(c, request.session.remote, ""))
+        .map(|c| host::assess_risk_at(c, &request.session.cwd, request.session.remote, ""))
         .transpose()?;
     Ok(Answer {
         timings: None,
@@ -520,8 +563,8 @@ fn canonical_answer(request: &Request) -> Option<Answer> {
         timings: None,
         response: Response {
             action: "suggest_command".into(),
+            explanation: Some(crate::explanation::command_summary(&command)),
             command: Some(command),
-            explanation: None,
             question: None,
             plan: None,
         },

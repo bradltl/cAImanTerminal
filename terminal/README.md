@@ -1,6 +1,6 @@
 # cAIman Terminal — desktop app
 
-Rust + GTK4/VTE + Bash + embedded CPU llama.cpp. The assistant can explain and
+Rust + GTK4/VTE + Bash + embedded llama.cpp (CPU baseline, optional GPU). The assistant can explain and
 stage commands; only the user presses Enter. This is an engineering preview.
 
 All commands below run from the **repository root**, not `terminal/`.
@@ -30,6 +30,17 @@ Alpha permits only audited CLI forms and printable ASCII commands. Unverifiable
 explicit responses may offer a separate Retry suggestion action once; safety and
 secret rejection never retry. Metrics stay in memory with manual aggregate export.
 Dogfooding remains blocked by [measured alpha gates](../docs/terminal/14_Alpha_Conformance.md).
+
+Alpha no longer has a latency threshold. Correctness, completeness and useful
+explanations take priority. Suggestions appear as inline ghost text at the active
+prompt; Tab stages a visible suggestion and only a separate Enter executes it.
+Unknown proposals may remain clearly labelled, unverified advice in the pane.
+Audited `mkdir`, `rmdir`, `rm`, `cp` and `mv` literal forms extend ordinary file
+operations while retaining intent, secret and critical-target checks.
+
+For opt-in Vulkan/CUDA builds, layer settings and CPU fallback, see
+[GPU acceleration](../docs/terminal/16_GPU_Acceleration.md). CPU-only builds remain
+the default and no runtime downloads are introduced.
 
 ## Install and settings
 
